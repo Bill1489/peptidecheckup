@@ -29,10 +29,6 @@ export function Nav() {
   }, []);
 
   React.useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
@@ -114,6 +110,7 @@ export function Nav() {
                 >
                   <Link
                     href={l.href}
+                    onClick={() => setOpen(false)}
                     className="flex items-center justify-between rounded-2xl px-4 py-4 font-display text-2xl text-ink hover:bg-white"
                   >
                     {l.label}
@@ -121,7 +118,7 @@ export function Nav() {
                   </Link>
                 </motion.div>
               ))}
-              <div className="mt-6 flex flex-col gap-3 px-1">
+              <div className="mt-6 flex flex-col gap-3 px-1" onClick={() => setOpen(false)}>
                 <Button href="/assessment" size="xl" variant="primary" className="w-full">
                   Start your free assessment
                   <ArrowRight className="h-4 w-4" />

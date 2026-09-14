@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { BRAND } from "@/lib/brand";
 
+export const dynamic = "force-static";
 export const alt = `${BRAND.displayName} — ${BRAND.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -36,10 +37,19 @@ export default function OpenGraphImage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -3, fontWeight: 500, maxWidth: 1000 }}>
-            Compare peptides.
-            <br />
-            Check your fit.
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              fontSize: 76,
+              lineHeight: 1.02,
+              letterSpacing: -3,
+              fontWeight: 500,
+              maxWidth: 1000,
+            }}
+          >
+            <div>Compare peptides.</div>
+            <div style={{ color: "#7cc3b3" }}>Check your fit.</div>
           </div>
           <div style={{ fontSize: 28, color: "rgba(255,255,255,0.72)", maxWidth: 940, lineHeight: 1.35 }}>
             Evidence grades, regulatory status and a personal suitability report you can take to a clinician.

@@ -70,14 +70,14 @@ export const SECTION_META: Record<
     short: "History",
     description: "Structured categories only — no essays.",
     optional: false,
-    estMinutes: 2,
+    estMinutes: 1,
   },
   medications: {
     title: "Medicines & substances",
     short: "Medicines",
     description: "Prescriptions, over-the-counter medicines, supplements and lifestyle.",
     optional: false,
-    estMinutes: 2,
+    estMinutes: 1,
   },
   experience: {
     title: "Previous experience",
@@ -105,14 +105,14 @@ export const SECTION_META: Record<
     short: "Report",
     description: "What you'd like the report to focus on.",
     optional: false,
-    estMinutes: 1,
+    estMinutes: 0.5,
   },
   final: {
     title: "Anything else",
     short: "Final",
     description: "Anything our structured questions may have missed.",
     optional: true,
-    estMinutes: 1,
+    estMinutes: 0.5,
   },
 };
 
@@ -233,6 +233,8 @@ export interface EntryContext {
   goal?: GoalId;
   /** Symptom / creative slug e.g. "tired", "weight", "recovery" */
   symptom?: string;
+  /** Compound slug preselected from a detail page ("Check my fit") */
+  compound?: string;
   utm?: Record<string, string>;
 }
 

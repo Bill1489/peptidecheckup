@@ -86,6 +86,12 @@ export interface CompoundReport {
   slug: string;
   name: string;
   classLabel: string;
+  /** Human-readable family label (e.g. "Metabolic (incretin-based)") — display only */
+  familyLabel?: string;
+  /** ≤ 12-word tagline from the compound record — display only */
+  tagline?: string;
+  /** ISO date the compound record was last reviewed (for the "database last reviewed" line) */
+  lastReviewed?: string;
   goalAlignment: GoalAlignment;
   goalEvidence?: EvidenceQuality;
   goalEvidenceSummary?: string;
@@ -204,4 +210,6 @@ export interface Report {
   answers: AssessmentAnswers;
   /** Whether the user asked to be contacted */
   contactRequested: boolean;
+  /** Considered slugs that were not found in the compound database (shown as "not assessed") */
+  unresolvedSlugs?: string[];
 }
