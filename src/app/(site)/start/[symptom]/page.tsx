@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Check } from "lucide-react";
 import { compoundsForGoal } from "@/data/compounds";
 import { EVIDENCE_LABELS } from "@/data/types";
-import { BRAND } from "@/lib/brand";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { assessmentHref, getSymptom, goalForSymptom, SYMPTOMS } from "@/lib/funnel";
 import { EvidenceMeter, RegulatoryBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     description: def.metaDescription,
     alternates: { canonical: `/start/${def.slug}/` },
     openGraph: {
+      images: OG_IMAGES,
       title: `${goal.funnelHeadline} · ${BRAND.displayName}`,
       description: def.metaDescription,
       url: `/start/${def.slug}/`,

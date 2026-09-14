@@ -1,3 +1,4 @@
+import { OG_IMAGES } from "@/lib/brand";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CompareSkeleton } from "@/components/compounds/compare-skeleton";
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   description: `Compare up to four of ${COMPOUNDS.length} peptides on evidence by goal, regulatory status in your jurisdiction, adverse effects, contraindications, interactions and published human studies — with combination notes for every pair.`,
   alternates: { canonical: "/compare/" },
   openGraph: {
+      images: OG_IMAGES,
     title: "Compare peptides side by side",
     description:
       "Evidence, regulatory status, safety and combination intelligence for up to four compounds, from one structured database.",

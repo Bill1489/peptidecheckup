@@ -1,3 +1,4 @@
+import { OG_IMAGES } from "@/lib/brand";
 import type { Metadata } from "next";
 import { CompoundDirectory } from "@/components/compounds/compound-directory";
 import { Eyebrow } from "@/components/ui/card";
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   description: `Browse ${count} peptides and related compounds graded on the same structured record: human evidence by goal, regulatory status in the UK, US, EU, Australia and Canada, published dosing research, safety and interactions.`,
   alternates: { canonical: "/peptides/" },
   openGraph: {
+      images: OG_IMAGES,
     title: `Peptide directory — ${count} compounds, graded the same way`,
     description: `Evidence grades, regulatory status by jurisdiction and safety information for ${count} peptides, from ${familyCount} compound families.`,
     url: "/peptides/",

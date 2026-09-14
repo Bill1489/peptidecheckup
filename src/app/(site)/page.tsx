@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BRAND } from "@/lib/brand";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { HomeHero } from "@/components/marketing/home-hero";
 import { Pillars } from "@/components/marketing/pillars";
 import { HowItWorksSteps } from "@/components/marketing/how-it-works-steps";
@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   description: BRAND.description,
   alternates: { canonical: "/" },
   openGraph: {
+      images: OG_IMAGES,
     title: `${BRAND.displayName} — Compare peptides & check your fit`,
     description: BRAND.shortDescription,
     url: "/",

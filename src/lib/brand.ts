@@ -27,6 +27,11 @@ export const BRAND = {
   foundedYear: 2026,
 } as const;
 
+/** Shared social-preview image (1200×630) for every page's Open Graph / Twitter card. */
+export const OG_IMAGES = [
+  { url: `${BRAND.url}/og.png`, width: 1200, height: 630, alt: `${BRAND.displayName} — ${BRAND.tagline}` },
+];
+
 /** Standard disclaimer shown across the site and in every report. */
 export const DISCLAIMER_SHORT =
   `${BRAND.displayName} provides educational information and a structured summary of published research and regulatory status. It is not medical advice, does not diagnose or treat any condition, and does not replace a consultation with a qualified healthcare professional.`;

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CompoundDetail } from "@/components/compounds/compound-detail";
 import { COMPOUNDS, getCompound } from "@/data/compounds";
 import { FAMILY_LABELS, ROUTE_LABELS, type Compound } from "@/data/types";
-import { BRAND } from "@/lib/brand";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
 
 type Params = { slug: string };
 
@@ -42,6 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     ],
     alternates: { canonical: path },
     openGraph: {
+      images: OG_IMAGES,
       type: "article",
       title: `${compound.name} · ${compound.classLabel}`,
       description,
