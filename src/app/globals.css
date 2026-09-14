@@ -1,26 +1,276 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ------------------------------------------------------------------
+   Design tokens — Tailwind v4 theme
+   Every token here becomes a utility (bg-paper, text-ink, font-display…)
+------------------------------------------------------------------- */
+@theme {
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Surfaces */
+  --color-paper: #faf8f4;
+  --color-paper-2: #f3f0e9;
+  --color-paper-3: #ebe7de;
+  --color-white: #ffffff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Ink (text / dark surfaces) */
+  --color-ink: #0b1220;
+  --color-ink-2: #1b2536;
+  --color-ink-3: #2f3a4d;
+  --color-muted: #5b6577;
+  --color-muted-2: #8a93a3;
+
+  /* Brand — deep evergreen teal */
+  --color-brand-50: #eef8f5;
+  --color-brand-100: #d5eee7;
+  --color-brand-200: #addcd0;
+  --color-brand-300: #7cc3b3;
+  --color-brand-400: #4ba593;
+  --color-brand-500: #2c8877;
+  --color-brand-600: #1f6e61;
+  --color-brand-700: #1b584f;
+  --color-brand-800: #184741;
+  --color-brand-900: #163b36;
+  --color-brand-950: #0a211e;
+
+  /* Accent — warm citrine */
+  --color-accent-100: #fdf3dc;
+  --color-accent-200: #fae3ad;
+  --color-accent-300: #f5cf74;
+  --color-accent-400: #f0bb4a;
+  --color-accent-500: #e9a93a;
+  --color-accent-600: #c98a1e;
+  --color-accent-700: #9a6612;
+
+  /* Semantic — evidence grades */
+  --color-evidence-strong: #059669;
+  --color-evidence-moderate: #0d9488;
+  --color-evidence-limited: #d97706;
+  --color-evidence-preliminary: #ea580c;
+  --color-evidence-insufficient: #64748b;
+
+  /* Semantic — suitability / flags */
+  --color-relevant: #059669;
+  --color-relevant-soft: #ecfdf5;
+  --color-concern: #e11d48;
+  --color-concern-soft: #fff1f2;
+  --color-caution: #d97706;
+  --color-caution-soft: #fffbeb;
+  --color-unknown: #64748b;
+  --color-unknown-soft: #f1f5f9;
+  --color-info: #2563eb;
+  --color-info-soft: #eff6ff;
+
+  /* Lines */
+  --color-line: rgb(11 18 32 / 0.08);
+  --color-line-strong: rgb(11 18 32 / 0.16);
+  --color-line-dark: rgb(255 255 255 / 0.1);
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px rgb(11 18 32 / 0.04), 0 8px 24px -12px rgb(11 18 32 / 0.12);
+  --shadow-card: 0 1px 1px rgb(11 18 32 / 0.03), 0 12px 32px -16px rgb(11 18 32 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(11 18 32 / 0.04), 0 24px 48px -20px rgb(11 18 32 / 0.28);
+  --shadow-glow: 0 0 0 1px rgb(44 136 119 / 0.25), 0 12px 40px -12px rgb(44 136 119 / 0.45);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.6);
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Animations */
+  --animate-fade-up: fade-up 0.6s var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ------------------------------------------------------------------
+   Base
+------------------------------------------------------------------- */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03", "kern";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(44 136 119 / 0.22);
+  }
+
+  h1, h2, h3, h4, .font-display {
+    @apply font-display;
+    letter-spacing: -0.015em;
+    font-variation-settings: "opsz" 144, "SOFT" 20, "WONK" 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  button, [role="button"] {
+    cursor: pointer;
+  }
+
+  input, textarea, select {
+    font: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Utilities
+------------------------------------------------------------------- */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility text-pretty {
+  text-wrap: pretty;
+}
+
+@utility container-x {
+  @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+}
+
+@utility container-narrow {
+  @apply mx-auto w-full max-w-3xl px-5 sm:px-8;
+}
+
+@utility container-prose {
+  @apply mx-auto w-full max-w-2xl px-5 sm:px-8;
+}
+
+/* Subtle paper grain for hero / dark sections */
+@utility bg-grain {
+  position: relative;
+  isolation: isolate;
+}
+.bg-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Dot-grid background */
+@utility bg-dots {
+  background-image: radial-gradient(rgb(11 18 32 / 0.08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+@utility bg-dots-dark {
+  background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Fine hairline */
+@utility hairline {
+  border: 1px solid var(--color-line);
+}
+
+/* Glass surface */
+@utility glass {
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border: 1px solid rgb(255 255 255 / 0.6);
+}
+@utility glass-dark {
+  background: rgb(11 18 32 / 0.55);
+  backdrop-filter: saturate(160%) blur(16px);
+  -webkit-backdrop-filter: saturate(160%) blur(16px);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+/* Shimmer skeleton */
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-paper-2) 25%, var(--color-paper-3) 50%, var(--color-paper-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+
+/* Gradient text */
+@utility text-gradient-brand {
+  background: linear-gradient(120deg, var(--color-brand-700), var(--color-brand-400));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hide scrollbar */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Print styles for reports */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .print-break { break-before: page; }
+  a { text-decoration: none; color: inherit; }
 }
