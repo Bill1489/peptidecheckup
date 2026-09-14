@@ -56,7 +56,7 @@ export const semaglutide: Compound = {
       status: "authorised",
       summary: "FDA-approved (Wegovy, Ozempic, Rybelsus); prescription-only.",
       detail:
-        "Wegovy (2.4 mg) is FDA-approved for chronic weight management, to reduce major cardiovascular events in adults with cardiovascular disease and overweight/obesity, and for MASH with fibrosis. Ozempic and Rybelsus are approved for type 2 diabetes. Compounded versions are not FDA-approved.",
+        "Wegovy (2.4 mg) is FDA-approved for chronic weight management (adults and adolescents ≥ 12), to reduce major cardiovascular events in adults with cardiovascular disease and overweight/obesity (2024), and — under accelerated approval since August 2025 — for non-cirrhotic MASH with moderate-to-advanced fibrosis. Ozempic and Rybelsus are approved for type 2 diabetes. Compounded versions are not FDA-approved.",
       lastReviewed: "2026-09-01",
     },
     EU: {
@@ -352,7 +352,7 @@ export const semaglutide: Compound = {
     { label: "Garvey WT et al. STEP 5. Nat Med 2022", url: "https://www.nature.com/articles/s41591-022-02026-4" },
     { label: "Lincoff AM et al. SELECT. NEJM 2023", url: "https://www.nejm.org/doi/full/10.1056/NEJMoa2307563" },
     { label: "Wegovy Summary of Product Characteristics (UK)", url: "https://www.medicines.org.uk/emc/product/13800" },
-    { label: "Wegovy US Prescribing Information (FDA)", url: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/215256s011lbl.pdf" },
+    { label: "Wegovy US Prescribing Information (FDA, Aug 2025)", url: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2025/215256s024lbl.pdf" },
     { label: "NICE TA875 — Semaglutide for managing overweight and obesity", url: "https://www.nice.org.uk/guidance/ta875" },
   ],
 };
