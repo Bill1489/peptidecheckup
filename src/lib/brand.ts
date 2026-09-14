@@ -9,7 +9,8 @@ export const BRAND = {
   /** Wordmark split for two-tone logo rendering. */
   wordmark: { a: "Peptide", b: "Checkup" },
   domain: "peptidecheckup.com",
-  url: "https://peptidecheckup.com",
+  /** Canonical origin. Overridable at build time (e.g. a preview host) via NEXT_PUBLIC_SITE_URL. */
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://peptidecheckup.com").replace(/\/+$/, ""),
   tagline: "Compare peptides. Check your fit.",
   description:
     "Evidence-led peptide comparison and a personalised health assessment that maps your goals, medical history and medications against the published research and regulatory status — so you know exactly what to discuss with a clinician.",
