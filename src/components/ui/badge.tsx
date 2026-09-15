@@ -10,16 +10,20 @@ import { SUITABILITY_LABELS, type FlagSeverity, type Suitability } from "@/lib/e
 
 type Tone = "neutral" | "brand" | "accent" | "success" | "warning" | "danger" | "info" | "ink" | "outline";
 
+/**
+ * Design system v2: badges are square mono labels with a 1px border.
+ * Colour is used semantically only (cobalt = positive/relevant, orange = concern).
+ */
 const tones: Record<Tone, string> = {
-  neutral: "bg-paper-3 text-ink-3",
-  brand: "bg-brand-100 text-brand-800",
-  accent: "bg-accent-100 text-accent-700",
-  success: "bg-relevant-soft text-emerald-800",
-  warning: "bg-caution-soft text-amber-800",
-  danger: "bg-concern-soft text-rose-800",
-  info: "bg-info-soft text-blue-800",
-  ink: "bg-ink text-white",
-  outline: "bg-transparent text-ink border border-line-strong",
+  neutral: "border-line bg-paper-2 text-ink-3",
+  brand: "border-brand-600 bg-brand-50 text-brand-700",
+  accent: "border-accent-500 bg-accent-100 text-accent-700",
+  success: "border-brand-600 bg-white text-brand-700",
+  warning: "border-caution bg-caution-soft text-[#7a5a05]",
+  danger: "border-accent-500 bg-concern-soft text-accent-700",
+  info: "border-brand-300 bg-brand-50 text-brand-700",
+  ink: "border-ink bg-ink text-white",
+  outline: "border-ink bg-transparent text-ink",
 };
 
 export function Badge({
@@ -38,15 +42,15 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-medium tracking-[-0.01em]",
-        size === "xs" && "px-2 py-0.5 text-[0.7rem]",
-        size === "sm" && "px-2.5 py-1 text-xs",
-        size === "md" && "px-3 py-1.5 text-sm",
+        "inline-flex items-center gap-1.5 rounded-none border font-mono font-medium uppercase tracking-[0.08em] whitespace-nowrap",
+        size === "xs" && "h-5 px-1.5 text-[10px]",
+        size === "sm" && "h-6 px-2 text-[10.5px]",
+        size === "md" && "h-7 px-2.5 text-[11.5px]",
         tones[tone],
         className,
       )}
     >
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" aria-hidden />}
+      {dot && <span className="h-1.5 w-1.5 bg-current" aria-hidden />}
       {children}
     </span>
   );
@@ -55,10 +59,10 @@ export function Badge({
 /* ---------------- Semantic badges ---------------- */
 
 export const EVIDENCE_TONE: Record<EvidenceQuality, Tone> = {
-  strong: "success",
-  moderate: "brand",
-  limited: "warning",
-  preliminary: "warning",
+  strong: "brand",
+  moderate: "ink",
+  limited: "outline",
+  preliminary: "neutral",
   insufficient: "neutral",
 };
 
@@ -83,24 +87,24 @@ export function EvidenceBadge({
 }) {
   return (
     <Badge tone={EVIDENCE_TONE[level]} className={className} size={size}>
-      <span className={cn("h-1.5 w-1.5 rounded-full", EVIDENCE_COLOR_CLASS[level])} aria-hidden />
+      <span className={cn("h-1.5 w-1.5", EVIDENCE_COLOR_CLASS[level])} aria-hidden />
       {prefix ? `${prefix} ` : ""}
       {EVIDENCE_LABELS[level]}
     </Badge>
   );
 }
 
-/** Five-segment evidence meter used on cards and compare tables. */
+/** Five-block evidence meter (■■■□□). */
 export function EvidenceMeter({ level, className }: { level: EvidenceQuality; className?: string }) {
   const rank = { strong: 5, moderate: 4, limited: 3, preliminary: 2, insufficient: 1 }[level];
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)} aria-label={`Evidence: ${EVIDENCE_LABELS[level]}`}>
+    <span className={cn("inline-flex items-center gap-[3px]", className)} aria-label={`Evidence: ${EVIDENCE_LABELS[level]}`}>
       {[1, 2, 3, 4, 5].map((i) => (
         <span
           key={i}
           className={cn(
-            "h-1.5 w-3 rounded-full transition-colors",
-            i <= rank ? EVIDENCE_COLOR_CLASS[level] : "bg-ink/10",
+            "h-2.5 w-2.5 border border-ink transition-colors",
+            i <= rank ? (level === "strong" ? "bg-brand-600 border-brand-600" : "bg-ink") : "bg-white",
           )}
         />
       ))}
@@ -109,9 +113,9 @@ export function EvidenceMeter({ level, className }: { level: EvidenceQuality; cl
 }
 
 export const REGULATORY_TONE: Record<RegulatoryStatus, Tone> = {
-  authorised: "success",
-  not_authorised: "danger",
-  investigational: "info",
+  authorised: "brand",
+  not_authorised: "outline",
+  investigational: "neutral",
   unclear: "neutral",
 };
 
@@ -132,7 +136,7 @@ export function RegulatoryBadge({
 }
 
 export const SUITABILITY_TONE: Record<Suitability, Tone> = {
-  potentially_relevant: "success",
+  potentially_relevant: "brand",
   higher_concern: "danger",
   insufficient_information: "neutral",
 };

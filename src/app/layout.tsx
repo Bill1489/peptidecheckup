@@ -1,59 +1,54 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { BRAND } from "@/lib/brand";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
   display: "swap",
+  axes: ["wdth"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
   display: "swap",
-  axes: ["opsz", "SOFT", "WONK"],
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(BRAND.url),
   title: {
-    default: `${BRAND.displayName} — Compare peptides & check your fit`,
+    default: `${BRAND.displayName} — Batch-tested peptides, matched to you`,
     template: `%s · ${BRAND.displayName}`,
   },
   description: BRAND.description,
   applicationName: BRAND.name,
   keywords: [
+    "buy peptides UK",
+    "peptide store",
     "peptide comparison",
     "compare peptides",
     "peptide assessment",
-    "which peptide is right for me",
-    "BPC-157 vs TB-500",
+    "BPC-157",
+    "TB-500",
     "semaglutide vs tirzepatide",
-    "peptide safety",
-    "peptide evidence",
-    "peptide regulatory status",
+    "third-party tested peptides",
+    "peptide certificate of analysis",
   ],
   openGraph: {
     type: "website",
     siteName: BRAND.displayName,
-    title: `${BRAND.displayName} — Compare peptides & check your fit`,
+    title: `${BRAND.displayName} — Batch-tested peptides, matched to you`,
     description: BRAND.shortDescription,
     url: BRAND.url,
-    images: [{ url: `${BRAND.url}/og.png`, width: 1200, height: 630, alt: `${BRAND.displayName} — ${BRAND.tagline}` }],
+    images: OG_IMAGES,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${BRAND.displayName} — Compare peptides & check your fit`,
+    title: `${BRAND.displayName} — Batch-tested peptides, matched to you`,
     description: BRAND.shortDescription,
     images: [`${BRAND.url}/og.png`],
   },
@@ -61,25 +56,22 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#faf8f4",
+  themeColor: "#0b0b0c",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable} h-full`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={`${archivo.variable} ${plexMono.variable} h-full`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster
           position="bottom-center"
           toastOptions={{
             classNames: {
-              toast: "!rounded-2xl !border-line !shadow-lift !font-sans",
+              toast: "!rounded-none !border !border-ink !bg-ink !text-white !shadow-none !font-sans",
+              description: "!text-white/70",
             },
           }}
         />

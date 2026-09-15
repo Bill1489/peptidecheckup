@@ -39,6 +39,7 @@ export function NextStepsSection({
     if (!email) return;
     setStatus("sending");
     const result = await submitLead({
+      kind: "report",
       email,
       name: report.answers.contactName?.trim() || undefined,
       reportId: report.id,

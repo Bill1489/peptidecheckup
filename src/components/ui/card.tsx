@@ -1,28 +1,36 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Design system v2: cards are bordered cells — 1px ink border, square,
+ * white or warm-grey fill. Interactive cards invert on hover.
+ */
 export function Card({
   className,
   children,
   as: Tag = "div",
   interactive,
   padding = "md",
+  tone = "white",
 }: {
   className?: string;
   children: React.ReactNode;
   as?: React.ElementType;
   interactive?: boolean;
   padding?: "none" | "sm" | "md" | "lg";
+  tone?: "white" | "grey" | "ink";
 }) {
   return (
     <Tag
       className={cn(
-        "rounded-2xl border border-line bg-white shadow-soft",
+        "rounded-none border",
+        tone === "white" && "border-ink bg-white text-ink",
+        tone === "grey" && "border-line bg-paper-2 text-ink",
+        tone === "ink" && "border-ink bg-ink text-white",
         padding === "sm" && "p-4",
-        padding === "md" && "p-6",
-        padding === "lg" && "p-8",
-        interactive &&
-          "transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-ink/15 hover:shadow-lift",
+        padding === "md" && "p-5 sm:p-6",
+        padding === "lg" && "p-6 sm:p-8",
+        interactive && "hover-invert",
         className,
       )}
     >
@@ -32,16 +40,7 @@ export function Card({
 }
 
 export function Eyebrow({ className, children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <p
-      className={cn(
-        "font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] text-brand-700",
-        className,
-      )}
-    >
-      {children}
-    </p>
-  );
+  return <p className={cn("label-mono", className)}>{children}</p>;
 }
 
 export function SectionHeading({
@@ -62,18 +61,26 @@ export function SectionHeading({
   as?: "h1" | "h2" | "h3";
 }) {
   return (
-    <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
-      {eyebrow && <Eyebrow className={cn("mb-4", tone === "light" && "text-brand-300")}>{eyebrow}</Eyebrow>}
+    <div className={cn("max-w-3xl", align === "center" && "mx-auto text-center", className)}>
+      {eyebrow && (
+        <Eyebrow className={cn("mb-4", tone === "light" ? "text-white/60" : "text-brand-600")}>{eyebrow}</Eyebrow>
+      )}
       <Tag
         className={cn(
-          "font-display text-balance text-3xl font-normal leading-[1.08] tracking-[-0.02em] sm:text-4xl lg:text-[2.75rem]",
+          "text-balance text-[2rem] sm:text-[2.6rem] lg:text-[3.2rem]",
           tone === "light" ? "text-white" : "text-ink",
         )}
       >
         {title}
       </Tag>
       {description && (
-        <p className={cn("mt-4 text-pretty text-base leading-relaxed sm:text-lg", tone === "light" ? "text-white/70" : "text-muted")}>
+        <p
+          className={cn(
+            "mt-5 max-w-2xl text-pretty text-[15px] leading-relaxed sm:text-[17px]",
+            align === "center" && "mx-auto",
+            tone === "light" ? "text-white/70" : "text-muted",
+          )}
+        >
           {description}
         </p>
       )}
@@ -82,5 +89,23 @@ export function SectionHeading({
 }
 
 export function Divider({ className }: { className?: string }) {
-  return <hr className={cn("border-0 border-t border-line", className)} />;
+  return <hr className={cn("border-0 border-t border-ink", className)} />;
+}
+
+/** Label / value row used in spec sheets, receipts, report tables. */
+export function SpecRow({
+  label,
+  value,
+  className,
+}: {
+  label: React.ReactNode;
+  value: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-baseline justify-between gap-6 border-b border-line py-3 last:border-b-0", className)}>
+      <span className="label-mono shrink-0">{label}</span>
+      <span className="text-right text-[14px] text-ink">{value}</span>
+    </div>
+  );
 }

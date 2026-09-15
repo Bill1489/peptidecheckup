@@ -1,42 +1,47 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
-import { BRAND, DISCLAIMER_SHORT } from "@/lib/brand";
+import { LogoMark } from "@/components/ui/logo";
+import { NewsletterForm } from "@/components/site/newsletter-form";
+import { BRAND, DISCLAIMER_SHORT, RESEARCH_USE_LABEL } from "@/lib/brand";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: "Explore",
+    title: "Shop",
     links: [
-      { href: "/assessment", label: "Start assessment" },
-      { href: "/peptides", label: "Peptide directory" },
-      { href: "/compare", label: "Compare peptides" },
-      { href: "/how-it-works", label: "How it works" },
+      { href: "/shop", label: "All products" },
+      { href: "/shop?category=peptide", label: "Peptides" },
+      { href: "/shop?category=kit", label: "Kits" },
+      { href: "/shop?category=supplies", label: "Supplies" },
+      { href: "/lab-testing", label: "Lab testing & CoAs" },
     ],
   },
   {
-    title: "Goals",
+    title: "Assess",
     links: [
-      { href: "/start/weight", label: "Weight management" },
+      { href: "/assessment", label: "Take the assessment" },
+      { href: "/start/weight", label: "Weight" },
       { href: "/start/recovery", label: "Injury & recovery" },
-      { href: "/start/tired", label: "Energy & wellbeing" },
+      { href: "/start/tired", label: "Energy" },
       { href: "/start/skin", label: "Skin & hair" },
       { href: "/start/sleep", label: "Sleep" },
-      { href: "/start/libido", label: "Sexual health" },
     ],
   },
   {
-    title: "Trust",
+    title: "Evidence",
     links: [
+      { href: "/peptides", label: "Compound directory" },
+      { href: "/compare", label: "Compare" },
       { href: "/methodology", label: "Methodology" },
-      { href: "/safety", label: "Safety & disclaimer" },
-      { href: "/about", label: "About" },
-      { href: "/faq", label: "FAQ" },
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/safety", label: "Safety" },
     ],
   },
   {
-    title: "Legal",
+    title: "Help",
     links: [
-      { href: "/privacy", label: "Privacy" },
-      { href: "/terms", label: "Terms" },
+      { href: "/shipping", label: "Shipping & returns" },
+      { href: "/faq", label: "FAQ" },
+      { href: "/about", label: "About" },
+      { href: "/account/orders", label: "Your orders" },
       { href: `mailto:${BRAND.supportEmail}`, label: "Contact" },
     ],
   },
@@ -44,42 +49,69 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
 
 export function Footer() {
   return (
-    <footer className="relative mt-24 border-t border-line bg-paper-2">
-      <div className="container-x py-14 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
-          <div className="max-w-sm">
-            <Logo />
-            <p className="mt-5 text-sm leading-relaxed text-muted">{BRAND.shortDescription}</p>
-            <p className="mt-6 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-2">
-              Evidence database last reviewed · September 2026
-            </p>
+    <footer className="rule-t mt-24 bg-white">
+      {/* Newsletter band */}
+      <div className="rule-b">
+        <div className="container-x grid gap-8 py-12 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+          <div>
+            <p className="label-mono text-brand-600">Batch alerts &amp; evidence updates</p>
+            <h2 className="mt-3 text-[2rem] uppercase sm:text-[2.75rem]">
+              New lots. New trials.
+              <br />
+              No hype.
+            </h2>
           </div>
-          {COLUMNS.map((col) => (
-            <div key={col.title}>
-              <h3 className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] text-ink-3">{col.title}</h3>
-              <ul className="mt-4 space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-muted transition-colors hover:text-ink">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <NewsletterForm />
         </div>
+      </div>
 
-        <div className="mt-14 rounded-2xl border border-line bg-white/60 p-5 text-xs leading-relaxed text-muted">
-          <strong className="font-medium text-ink-3">Important. </strong>
-          {DISCLAIMER_SHORT} Many compounds listed are not authorised as medicines in any jurisdiction and some are prohibited in sport. Regulatory status is maintained manually and may change — verify with your national regulator.
-        </div>
+      {/* Link columns */}
+      <div className="container-x grid gap-10 py-12 md:grid-cols-4">
+        {COLUMNS.map((col) => (
+          <div key={col.title}>
+            <h3 className="label-mono text-ink">{col.title}</h3>
+            <ul className="mt-4 space-y-2.5">
+              {col.links.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="text-[14px] text-ink-3 link-rule decoration-transparent hover:decoration-current">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
 
-        <div className="mt-8 flex flex-col gap-3 text-xs text-muted-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* Regulatory */}
+      <div className="rule-t">
+        <div className="container-x grid gap-6 py-8 text-[12px] leading-relaxed text-muted md:grid-cols-2">
           <p>
-            © {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
+            <strong className="font-semibold text-ink">Research products. </strong>
+            {RESEARCH_USE_LABEL} Prescription-only medicines are never sold directly: they are supplied by a registered pharmacy after an online consultation with a prescriber.
           </p>
-          <p className="font-mono uppercase tracking-[0.14em]">{BRAND.domain}</p>
+          <p>
+            <strong className="font-semibold text-ink">Assessment. </strong>
+            {DISCLAIMER_SHORT} Regulatory status is maintained manually per jurisdiction and may change.
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="rule-t bg-ink text-white">
+        <div className="container-x flex flex-col gap-4 py-6 font-mono text-[10.5px] uppercase tracking-[0.14em] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <LogoMark tone="light" className="h-5 w-5" />
+            <span>
+              © {new Date().getFullYear()} {BRAND.legalName}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-white/70">
+            <Link href="/privacy" className="hover:text-white">Privacy</Link>
+            <Link href="/terms" className="hover:text-white">Terms</Link>
+            <Link href="/shipping" className="hover:text-white">Refunds</Link>
+            <span>{BRAND.domain}</span>
+          </div>
         </div>
       </div>
     </footer>

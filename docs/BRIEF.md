@@ -1,119 +1,61 @@
-# PeptideCheckup — Build Brief
+# PeptideCheckup — Build Brief v2 (store + assessment funnel)
 
-Read this before touching code. It is the single shared contract for every contributor (human or agent).
+Read this before touching code. It is the single shared contract for every contributor.
 
-## 1. What we are building
+## 1. What we are building (v2)
 
-An evidence-led **peptide comparison + personalised health assessment** website.
+**An e-commerce store for batch-tested peptides, fed by an ad → assessment → report lead funnel.**
 
-Funnel: paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup") → symptom landing page (`/start/[symptom]`) → assessment (`/assessment`) with the goal pre-selected → deterministic rules engine → **personal report** (`/report`) → CTAs (clinician review request, compare tool, print/save).
+- Paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup") → symptom landing page `/start/[symptom]` → assessment `/assessment` → rules-engine report `/report` → **product matches** ("Your matches") → cart → checkout → order confirmation.
+- The store is the destination: `/shop`, `/shop/[slug]`, cart drawer, `/checkout`, `/order?id=`, `/account/orders`, `/lab-testing`, `/shipping`.
+- The evidence layer stays and is a differentiator: `/peptides`, `/peptides/[slug]`, `/compare`, `/methodology`. **Brand promise: the only peptide store whose assessment tells you when *not* to buy.** A "Higher concern" compound is never added to the cart from a report; it links to "speak to a clinician" instead.
+- Static export, no backend. Cart, orders and assessment live in the browser (zustand + localStorage). Payments use a provider abstraction (`mock` for the demo; Stripe when keys are set). Leads/orders POST to webhooks when configured.
 
-Secondary surfaces: peptide directory (`/peptides`), detail pages (`/peptides/[slug]`), side-by-side compare (`/compare`), trust pages (methodology, safety, about, FAQ, privacy, terms).
+### Sale channels (legal model — configurable per product, `src/data/products/types.ts`)
+- `research` — unlicensed compounds (BPC-157, TB-500, CJC-1295, ipamorelin, GHK-Cu injectable, MOTS-c, epitalon, selank, semax, DSIP, kisspeptin, LL-37, AOD-9604, cagrilintide/retatrutide/survodutide as research reference standards) sold **"for research use only"** with 18+ and intended-use acknowledgement at checkout. Label text: `RESEARCH_USE_LABEL` in `src/lib/brand.ts`.
+- `prescription` — authorised prescription-only medicines (semaglutide, tirzepatide, liraglutide, tesamorelin, somatropin, PT-141, elamipretide, thymosin alpha-1). **Never sold directly.** Availability `consultation` → "Start consultation" lead form (partner prescriber). Label: `RX_LABEL` in `catalog.ts`.
+- `supplement` (collagen peptides), `cosmetic` (GHK-Cu serum), `supplies` (bacteriostatic water, syringes, swabs, sharps bin, storage).
+- `not_sold` — we list but decline to sell: melanotan II, IGF-1 LR3 (regulator warnings / hypoglycaemia risk). Product page explains why and links to the evidence page.
 
-Everything is a **static export** (Next.js `output: "export"`) and runs client-side. There is no backend. The "AI" is a deterministic, clinician-reviewable rules engine reading a maintained database — this is a feature, not a limitation, and the copy should say so.
+## 2. Brand & voice
 
-## 2. Brand
+- Name **PeptideCheckup** (prose "Peptide Checkup"), from `src/lib/brand.ts`. Tagline: *Batch-tested peptides. Matched to you.*
+- Voice: direct, technical, dry. Short sentences. Facts over adjectives. UK English. No exclamation marks, no emojis, no "unlock your potential". Never a health claim for research products ("researched for", "studied in", never "helps you heal").
+- Compliance language for the assessment/report is unchanged: suitability labels **Potentially relevant / Higher concern / Insufficient information**; regulatory status only from the database; dosing = research information, not a recommendation; `DISCLAIMER_SHORT` / `DISCLAIMER_REPORT`.
+- Commerce honesty: no fake reviews, star ratings, countdown timers, "17 people are viewing", fake press logos. Trust = certificates of analysis, batch numbers, lab names, shipping facts, and the assessment saying no.
 
-- Name: **PeptideCheckup** (prose: "Peptide Checkup"). Import from `src/lib/brand.ts` — never hard-code.
-- Tagline: *Compare peptides. Check your fit.*
-- Voice: calm, precise, evidence-first, human. Think Function Health × a good pharmacist. No hype, no fear-mongering, no emojis in UI, no exclamation marks in body copy.
-- Compliance language (mandatory):
-  - Never tell the user to take anything. Never "you should take X" / "X will fix Y".
-  - Use: "researched for", "studied in", "authorised for", "your responses identified factors that…", "discuss with a qualified healthcare professional".
-  - Report suitability labels are exactly: **Potentially relevant**, **Higher concern**, **Insufficient information** (see `src/lib/engine/types.ts`).
-  - Regulatory status always comes from the database (`compound.regulatory[jurisdiction]`), never inferred.
-  - Dosing information is labelled **research information, not a recommendation**.
-  - The site provides "educational information", it is "not medical advice". Use `DISCLAIMER_SHORT` / `DISCLAIMER_REPORT` from `src/lib/brand.ts`.
+## 3. Design system v2 — "Lab Grotesk" (tokens in `src/app/globals.css`)
 
-## 3. Design system (Tailwind v4 tokens in `src/app/globals.css`)
+The previous look (warm paper, serif display, teal, rounded cards, soft shadows, mono eyebrows with gradient blobs) is **retired**. Do not reintroduce it.
 
-**Aesthetic:** premium clinical editorial. Warm off-white paper, deep ink navy, evergreen teal brand, citrine accent used sparingly. Serif display headings (Fraunces) + Inter body + JetBrains Mono for eyebrows/labels/data.
+**Principles:** flat, technical, high-contrast, typographic. Think lab spec sheet × fashion-forward DTC. One signal colour. Hard rules instead of shadows. Square corners. Big expanded grotesk headlines. Data set in monospace. Colour inversion as the hover state.
 
-Tokens → utilities:
-- Surfaces: `bg-paper`, `bg-paper-2`, `bg-paper-3`, `bg-white`, dark sections `bg-ink`
-- Text: `text-ink`, `text-ink-2`, `text-ink-3`, `text-muted`, `text-muted-2`
-- Brand: `bg-brand-50…950`, `text-brand-600` etc. Accent: `accent-100…700`
-- Semantic: `evidence-strong|moderate|limited|preliminary|insufficient`, `relevant`, `concern`, `caution`, `unknown`, `info` (+ `-soft` variants)
-- Borders: `border-line`, `border-line-strong`, `border-line-dark`
-- Shadows: `shadow-soft`, `shadow-card`, `shadow-lift`, `shadow-glow`
-- Fonts: `font-display`, `font-sans`, `font-mono`
-- Utilities: `container-x` (max-w-7xl), `container-narrow` (3xl), `container-prose` (2xl), `bg-grain`, `bg-dots`, `bg-dots-dark`, `glass`, `glass-dark`, `skeleton`, `text-gradient-brand`, `text-balance`, `text-pretty`, `no-scrollbar`, `hairline`
-- Animations: `animate-fade-up`, `animate-fade-in`, `animate-shimmer`, `animate-float`, `animate-pulse-soft`, `animate-marquee`
-- Easing: `ease-out-expo`
+- **Colour:** white `bg-white`, warm grey panels `bg-paper-2` (#f4f3f0) / `bg-paper-3`, ink `text-ink` (#0b0b0c) and dark sections `bg-ink text-white`. Signal: cobalt `brand-600` (#1d3bff) — used for the active state, the CTA hover, "Strong" evidence, "Potentially relevant". Alert: orange `accent-500` (#ff4a1c) — "Higher concern", warnings only. Caution amber `caution`. Never teal, never green, never gradients.
+- **Type:** Archivo everywhere. Headlines `font-display` (expanded 112%, weight 800, tight tracking, line-height 0.98) — often uppercase for short headlines. Body 15px/1.5. Labels/data: `label-mono` (IBM Plex Mono 11px uppercase tracking 0.12em) — this replaces the old "eyebrow". Prices and numbers: `font-mono tnum`.
+- **Shape:** radius 0 everywhere (`rounded-none`; the theme's radius tokens are 0 so `rounded-2xl` is now square — but write `rounded-none` explicitly). Structural borders `border-ink` (1px). Soft dividers `border-line`. No `shadow-*`.
+- **Layout patterns:** `cell-grid` (bordered cells sharing 1px lines, spec-sheet style), `SpecRow` label/value rows, full-bleed `rule-t/rule-b` section separators, sticky side rails, dense product grids (4-up desktop / 2-up mobile) with the `ProductVisual` illustration, ticker (`.ticker`) for trust facts, big uppercase index headlines with a mono label on the left.
+- **Interaction:** `hover-invert` (ink fill, white text) on cards/rows; `link-rule` for text links; buttons from `Button` (rectangular, uppercase mono-ish label, hover cobalt/invert). Motion is fast and rare: 150–250 ms, opacity/translate ≤ 8px, no floating, no parallax, no per-section fade-up choreography. `motion/react` only for drawers, dialogs, list reordering, and the wizard step transition.
+- **Imagery:** `ProductVisual` (`src/components/commerce/product-visual.tsx`) is the only product image. No stock photos, no 3D renders, no illustrations of people. Charts/meters use black squares (`EvidenceMeter` ■■■□□).
+- **Components (use these):** `Button`, `Badge`/`EvidenceBadge`/`EvidenceMeter`/`RegulatoryBadge`/`SuitabilityBadge`/`FlagBadge` (`src/components/ui/badge.tsx`), `Card`/`Eyebrow`/`SectionHeading`/`Divider`/`SpecRow` (`src/components/ui/card.tsx`), `Logo`/`LogoMark`/`Wordmark`, `Nav`, `Footer`, `NewsletterForm`, `CartButton`, `ProductVisual`. Radix via `radix-ui`; `cmdk`; `sonner` toasts (styled dark).
+- **Accessibility / mobile:** unchanged requirements — keyboard reachable, visible focus (cobalt outline), 44px targets, 390px-first, no horizontal overflow.
 
-**Typography rhythm:** eyebrow (mono, uppercase, tracking-[0.18em], brand-700) → display heading (`font-display`, normal weight, tracking-tight, leading-[1.08]) → muted description. H1 on marketing: `text-4xl sm:text-5xl lg:text-6xl xl:text-7xl`. Body `text-base/relaxed`. Never use bold serif.
+## 4. Routing & hosting
 
-**Shape:** cards `rounded-2xl border border-line bg-white shadow-soft`; buttons are pills (`rounded-full`); inputs `rounded-xl h-12`. Generous whitespace (`py-20 lg:py-28` sections).
+Static export, `trailingSlash: true`, `generateStaticParams` for dynamic routes, `useSearchParams` only inside `<Suspense>`, no server actions/API routes. `next/link` handles `basePath`; raw asset paths through `asset()`. `(site)` group has Nav + Footer + CartDrawer; `(flow)` is chrome-less (assessment wizard). The report lives in `(flow)` with its own header.
 
-**Motion:** `motion/react` (Framer Motion v12). Fade-up on scroll (`whileInView`, once), staggered lists, subtle hover lifts, layout animations in the wizard. Respect `prefers-reduced-motion` (CSS handles it globally; use `useReducedMotion` for heavy effects).
+## 5. Contracts
 
-**Icons:** `lucide-react` only.
+- Compounds/evidence: `src/data/types.ts`, `src/data/compounds/index.ts` (28 compounds — do not edit records unless fixing an error).
+- **Products:** `src/data/products/types.ts` (`Product`, `ProductVariant`, `SaleChannel`, `Availability`), `src/data/products/catalog.ts` (the catalogue; three reference records), `src/data/products/index.ts` (`PRODUCTS`, `getProduct`, `getProductBySlug`, `getVariant`, `getVariantProduct`, `defaultVariant`, `getProductsForCompound`, `productsByCategory`, `productsForGoal`, `purchasable`, `priceRange`, `searchProducts`).
+- **Cart:** `src/lib/commerce/cart-store.ts` (`useCartStore` with `lines`, `open`, `promoCode`, `hydrated`, `assessmentCompleted`, `add/remove/setQty/clear/setOpen/applyPromo/removePromo`; pure `computeTotals(lines, { promoCode, shippingOptionId, countryCode })`, `cartHasResearchItems`). Prices are always re-read from the catalogue.
+- **Config & money:** `src/lib/commerce/config.ts` (`COMMERCE`: currency, VAT, shipping options, promo codes, ship-to list, acknowledgements, payment provider, webhooks, trust facts), `src/lib/commerce/money.ts` (`formatMoney`, `formatFrom`, `percentOff`, `vatIncluded`).
+- **Leads:** `src/lib/leads.ts` `submitLead({ kind: 'report' | 'report_email' | 'newsletter' | 'consultation' | 'restock', email, … })`.
+- Assessment: `src/lib/assessment/types.ts`, `store.ts`, `flow.ts`. Engine: `src/lib/engine/*` → `Report`.
 
-**Shared components (use, don't duplicate):**
-- `src/components/ui/button.tsx` — `Button` (variants: primary, brand, secondary, ghost, accent, danger, link, inverted; sizes sm…xl; `href` renders a Link)
-- `src/components/ui/badge.tsx` — `Badge`, `EvidenceBadge`, `EvidenceMeter`, `RegulatoryBadge`, `SuitabilityBadge`, `FlagBadge`
-- `src/components/ui/card.tsx` — `Card`, `Eyebrow`, `SectionHeading`, `Divider`
-- `src/components/ui/logo.tsx` — `Logo`, `LogoMark`, `Wordmark`
-- `src/components/site/nav.tsx`, `footer.tsx` (already wired in `src/app/(site)/layout.tsx`)
-- Toasts: `import { toast } from "sonner"`
-- Radix primitives: `import { Dialog, Tooltip, Popover, Tabs, Accordion, Slider, Checkbox, RadioGroup } from "radix-ui"` (unified package)
-- Command palette / searchable lists: `cmdk`
-- State: `zustand` (+ `persist` middleware, localStorage)
-- Class merge: `cn()` from `src/lib/utils.ts`
+## 6. Questionnaire & report specs
 
-**Accessibility:** every interactive element keyboard-reachable, visible focus (global `:focus-visible` style), labelled inputs, `aria-live` for wizard step changes, colour is never the only signal (badges have text).
+Unchanged from v1 (see git history of this file for the full question list): 10 sections / 45 steps with conditional logic; report sections 1–12. **v2 additions:** (a) an optional "Email me my report" lead-capture step shown on the generating screen (skippable, consent checkbox, `submitLead({ kind: 'report_email' })`); (b) report section **"Your matches"** placed after Personal suitability: for each considered compound with a linked product — `potentially_relevant` → product card with price + "Add to cart" (research/supplement/cosmetic) or "Start consultation" (prescription); `higher_concern` → "Not adding this to your cart" card explaining why + "Speak to a clinician"; `insufficient_information` → "Complete the assessment to unlock" link; plus 2–3 goal-matched products the user did not consider (from `productsForGoal`), and "Unlock 10% off — code CHECKUP10" when the assessment is complete (`useCartStore.setAssessmentCompleted(true)`).
 
-**Mobile first:** ads drive mobile traffic. Design at 390px first, then scale. Tap targets ≥ 44px. Sticky bottom action bar in the wizard on mobile.
+## 7. Quality bar
 
-## 4. Routing & hosting constraints
-
-- Static export with `trailingSlash: true`. Dynamic routes MUST implement `generateStaticParams`. No server actions, no API routes, no `headers()`/`cookies()`.
-- Sub-path hosting: `next/link` and `next/image` handle `basePath` automatically. For raw `<img src>` or CSS URLs use `asset()` from `src/lib/utils.ts`.
-- Client-only state (localStorage) must be read inside `useEffect`/zustand `persist` with hydration guards — pages must render without it.
-- `useSearchParams()` must be wrapped in `<Suspense>`.
-- Route groups: `src/app/(site)/*` has Nav+Footer. `src/app/(flow)/*` is chrome-less (assessment wizard, report get their own minimal headers).
-
-## 5. Data contracts (do not change without coordinating)
-
-- `src/data/types.ts` — `Compound`, `GoalId`, `EvidenceQuality`, `Jurisdiction`, `RegulatoryEntry`, `ConditionId`, `MedicationClassId`, `DosingStudy`, `StudyExposure`, `StackNote` + label maps.
-- `src/data/goals.ts`, `conditions.ts`, `medications.ts`, `countries.ts`
-- `src/data/compounds/index.ts` — registry & helpers (`COMPOUNDS`, `getCompound`, `compoundsForGoal`, `searchCompounds`, `getStackNote`). Individual compound files live alongside; `semaglutide.ts` is the **reference record** for tone, depth and structure.
-- `src/lib/assessment/types.ts` — `AssessmentAnswers` (what the wizard writes), `SECTION_ORDER`, `SECTION_META`, option label maps.
-- `src/lib/engine/types.ts` — `Report`, `CompoundReport`, `Flag`, `StackAnalysis`… (what the engine emits, what the report renders).
-
-## 6. The questionnaire (spec — implement faithfully)
-
-Sections & questions (conditional logic in brackets):
-
-1. **Goal** — Q1 primary goal (12 options, from `GOALS`); Q2 what would success look like (free text); Q3 importance (Curious / Moderately / Very / Extremely); Q4 timeframe (No timeframe / 3–6 months / 1–3 months / < 1 month → unrealistic expectations become a flag).
-2. **Considering** — Q5 compounds (searchable multi-select from `COMPOUNDS` + "Other" free text; show goal-relevant suggestions first); for each selected compound an optional "dose you're considering" (amount, unit, frequency, route); Q6 currently taking any (Y/N); Q7 considering more than one (No / Yes / Not sure) [if ≥ 2 selected]; Q8 combinations (dynamic — default is all selected together; allow the user to pick which they'd combine) [if Q7 = Yes]; Q9 why these compounds (free text) + optional chips for where the idea came from (`INFLUENCE_LABELS`).
-3. **Basics** — Q10 age (reject < 18 with a respectful full-stop screen); Q11 sex; Q12 height & Q13 weight with metric/imperial toggle (compute BMI live, subtle); Q14 country (searchable, `COUNTRIES`); Q15 pregnant / trying / breastfeeding (Yes / No / N/A / Prefer not) [ask if sex ≠ male; if Yes → immediate inline safety notice].
-4. **Medical history** — Q16 conditions grid: base list + extended conditions referenced by selected compounds' `contraindications`; each Current / Previous / Unsure / None (default None; one tap per row); Q17 relevant surgery (Y/N + details); Q18 current concerning symptoms (Y/N + describe).
-5. **Medicines & substances** — Q19 prescriptions (Y/N → repeatable entry: searchable name via `searchMedications`, strength, frequency, reason, prescribed by clinician Y/N); Q20 OTC regular (multi: painkillers, antihistamines, acid reducers, sleep aids, other); Q21 supplements (Y/N → name, amount, frequency); Q22 recreational substances (optional, explain why we ask); Q23 alcohol (4 bands); Q24 nicotine (4 bands).
-6. **Previous experience** (skippable) — Q25 used a peptide before (Y/N) → Q26 which (search), Q27 how long, Q28 adverse effects (None/Mild/Moderate/Severe/Unsure), Q29 stopped because of adverse effect, Q30 supervised; Q31 previously stopped a treatment because ineffective.
-7. **Product / source** (skippable) — Q32 where obtaining (8 options); Q33 prescribed (Y/N/NA); Q34 authorised for use in your country (Y/N/Unsure); Q35 independent quality documentation (Y/N/Unsure).
-8. **Risk screening** — Q36–Q42 as yes/no cards: serious allergic reaction to a medicine; known allergy to a component; previous serious reaction to similar treatment; unexplained/severe current symptoms; advised by a professional not to use this type of treatment; under investigation for a relevant condition; receiving treatment that could interact. Show compound-tailored hints (e.g. for GLP-1s mention thyroid cancer/MEN2, pancreatitis).
-9. **Your report** — Q43 what would you like the report to tell you (multi, `REPORT_WANTS`); Q44 contact for professional/clinical review (separate explicit consent + email).
-10. **Final** — "Is there anything else we should know?" (free text) → Generate report.
-
-UX requirements: one focused screen per question group, big tappable option cards, auto-advance on single-select (with a short delay), keyboard (Enter/arrow keys), progress with section labels, "Skip section" on optional sections, save/resume via localStorage, "Save & exit" returns to `/assessment` with a resume card, review screen before generating, and a generating animation (≈1.5–2.5 s) before the report.
-
-## 7. The report (spec — render faithfully from `Report`)
-
-1. **Your objective** — goal, success statement, importance, timeframe (+ flag if unrealistic)
-2. **What you are considering** — compound cards
-3. **Evidence assessment** — per compound: evidence quality (Strong / Moderate / Limited / Preliminary / Insufficient) for the user's goal and overall
-4. **Regulatory status** — for the user's jurisdiction: Authorised / Not authorised / Investigational / Unclear, with `lastReviewed`
-5. **Personal suitability assessment** — per compound one of three labels + rationale + flags
-6. **Dosing — three layers**: (a) *What the evidence says about dosing* (studies: population, duration, route, doses, outcome, adverse events — labelled research information); (b) *How this compares with what you're considering* (within/above/below study exposure, frequency differs, no human data); (c) *Personal suitability and risk* → "This requires professional review before you make a decision."
-7. **Stack intelligence** [if ≥ 2 compounds] — number of compounds, evidence supporting combination, overlapping considerations, evidence gaps, overall uncertainty, summary sentence
-8. **What we would not recommend proceeding with without professional review** — compounds flagged + reasons ("Flagged because of the medical information you provided", not "don't take X")
-9. **Other options researched for your goal**, **Potential alternatives**, **Questions to ask a clinician**, **Monitoring considerations**, **Product / source considerations**, **Completeness** (what's missing; link back to skipped sections), **Your responses** appendix, disclaimer, print/save, request clinician review CTA.
-
-## 8. Quality bar
-
-- `npm run build` must pass with zero TypeScript errors and zero ESLint errors.
-- No `any`. No unused imports.
-- No placeholder text ("lorem", "TODO") left in UI. No fake testimonials, fake press logos, fake statistics. Use real trial numbers from the database instead.
-- Every page: `export const metadata` (or `generateMetadata`) with a specific title + description.
-- Images: use inline SVG / CSS illustration rather than stock photos.
+`npm run build` passes with zero TS/ESLint errors; no `any`; no unused imports; no placeholder copy; every page has specific metadata; mobile-first; no v1 visual language.
