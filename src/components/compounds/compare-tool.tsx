@@ -3,14 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, GitCompareArrows, Link2, Plus, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Link2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Eyebrow } from "@/components/ui/card";
 import { COMPOUNDS, getCompounds } from "@/data/compounds";
 import {
   MAX_COMPARE,
+  assessmentHref,
   compareHref,
+  compoundHref,
   parseCompareParam,
   sameSlugs,
   suggestedComparisons,
@@ -31,67 +32,54 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   const singles = suggestions.length === 0 ? COMPOUNDS.slice(0, 6) : [];
 
   return (
-    <div className="rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-10">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center">
-        <div>
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-            <GitCompareArrows className="h-5 w-5" aria-hidden />
-          </span>
-          <h2 className="mt-5 font-display text-2xl leading-tight tracking-[-0.02em] text-ink sm:text-3xl">
-            Choose up to {MAX_COMPARE} compounds to see them side by side
-          </h2>
-          <p className="mt-4 text-pretty text-sm leading-relaxed text-muted sm:text-base">
-            Every row comes from the same structured record — evidence for each goal, regulatory status in your jurisdiction,
-            adverse effects, contraindications, interactions and the human studies behind them. When two or more are selected,
-            the combination notes in our database are checked for every pair.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" onClick={onAdd}>
-              <Plus className="h-4 w-4" aria-hidden />
-              Add a compound
-            </Button>
-            <Button size="lg" variant="secondary" href="/peptides/">
-              Browse the directory
-            </Button>
-          </div>
+    <div className="border border-ink bg-white lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="p-5 sm:p-8">
+        <p className="label-mono">Empty selection</p>
+        <h2 className="mt-3 text-balance text-[1.6rem] uppercase leading-[0.98] text-ink sm:text-[2rem]">
+          Choose up to {MAX_COMPARE} compounds to see them side by side
+        </h2>
+        <p className="mt-4 text-pretty text-[14px] leading-relaxed text-muted sm:text-[15px]">
+          Every row comes from the same structured record — evidence for each goal, regulatory status in your jurisdiction, adverse
+          effects, contraindications, interactions and the human studies behind them, plus what each compound costs where we stock it.
+          When two or more are selected, the combination notes in our database are checked for every pair.
+        </p>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <Button size="lg" onClick={onAdd}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Add a compound
+          </Button>
+          <Button size="lg" variant="secondary" href="/peptides/">
+            Browse the directory
+          </Button>
         </div>
+      </div>
 
-        <div className="rounded-2xl border border-line bg-paper-2/60 p-5 sm:p-6">
-          <Eyebrow>Suggested comparisons</Eyebrow>
-          {suggestions.length > 0 ? (
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {suggestions.map((s) => (
+      <div className="border-t border-ink lg:border-l lg:border-t-0">
+        <p className="label-mono border-b border-line bg-paper-2 px-5 py-2.5">
+          {suggestions.length > 0 ? "Suggested comparisons" : "Start from a compound"}
+        </p>
+        <ul className="divide-y divide-line">
+          {suggestions.length > 0
+            ? suggestions.map((s) => (
                 <li key={s.slugs.join("+")}>
-                  <Link
-                    href={compareHref(s.slugs)}
-                    className="group inline-flex flex-col items-start gap-0.5 rounded-2xl border border-line bg-white px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-soft"
-                  >
-                    <span className="text-sm font-medium text-ink">{s.label}</span>
-                    <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-2">{s.reason}</span>
+                  <Link href={compareHref(s.slugs)} className="hover-invert flex min-h-14 items-center justify-between gap-3 px-5 py-3">
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-medium text-ink">{s.label}</span>
+                      <span className="label-mono mt-0.5 block">{s.reason}</span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
+                  </Link>
+                </li>
+              ))
+            : singles.map((c) => (
+                <li key={c.slug}>
+                  <Link href={compareHref([c.slug])} className="hover-invert flex min-h-12 items-center justify-between gap-3 px-5 py-3">
+                    <span className="text-[14px] font-medium text-ink">{c.name}</span>
+                    <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
                   </Link>
                 </li>
               ))}
-            </ul>
-          ) : (
-            <>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                Pair suggestions appear once a family has at least two compounds. Start from any of these:
-              </p>
-              <ul className="mt-4 flex flex-wrap gap-2">
-                {singles.map((c) => (
-                  <li key={c.slug}>
-                    <Link
-                      href={compareHref([c.slug])}
-                      className="inline-flex h-10 items-center rounded-full border border-line bg-white px-4 text-sm font-medium text-ink transition-colors hover:border-ink/20 hover:bg-paper"
-                    >
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
+        </ul>
       </div>
     </div>
   );
@@ -164,18 +152,20 @@ export function CompareTool() {
     <div className="space-y-8">
       {/* Toolbar */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Selected compounds">
           {compounds.map((c) => (
             <span
               key={c.slug}
-              className="inline-flex h-11 items-center gap-1 rounded-full border border-line bg-white pl-4 pr-1.5 text-sm font-medium text-ink shadow-soft sm:h-10"
+              className="inline-flex h-11 items-stretch border border-ink bg-white font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink"
             >
-              {c.name}
+              <Link href={compoundHref(c.slug)} className="flex items-center px-3 transition-colors duration-150 hover:bg-paper-2">
+                {c.name}
+              </Link>
               <button
                 type="button"
                 onClick={() => removeCompare(c.slug)}
                 aria-label={`Remove ${c.name} from comparison`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-paper-2 hover:text-ink"
+                className="inline-flex w-11 items-center justify-center border-l border-ink transition-colors duration-150 hover:bg-ink hover:text-white"
               >
                 <X className="h-3.5 w-3.5" aria-hidden />
               </button>
@@ -196,7 +186,7 @@ export function CompareTool() {
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-3">
-            <span className="hidden font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-2 sm:inline">Jurisdiction</span>
+            <span className="label-mono hidden sm:inline">Jurisdiction</span>
             <JurisdictionSwitch value={jurisdiction} onChange={setJurisdiction} />
           </div>
           {compounds.length > 0 && (
@@ -209,7 +199,7 @@ export function CompareTool() {
       </div>
 
       {compounds.length === 1 && (
-        <p className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
+        <p className="border border-ink bg-paper-2 px-4 py-3 text-[14px] text-muted">
           <span className="font-medium text-ink">{compounds[0].name}</span> is ready. Add at least one more compound to see the
           differences side by side and check the combination notes.
         </p>
@@ -224,25 +214,21 @@ export function CompareTool() {
       {compounds.length >= 2 && <CombinationPanel compounds={compounds} />}
 
       {compounds.length > 0 && (
-        <section
-          className="bg-grain relative overflow-hidden rounded-3xl bg-ink px-6 py-10 text-white sm:px-10 sm:py-12"
-          aria-labelledby="compare-cta-title"
-        >
-          <div className="bg-dots-dark pointer-events-none absolute inset-0 opacity-60" aria-hidden />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <section className="border border-ink bg-ink text-white" aria-labelledby="compare-cta-title">
+          <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:items-end lg:gap-10">
+            <p className="label-mono text-white/60">Next step</p>
             <div className="max-w-2xl">
-              <Eyebrow className="text-brand-300">Next step</Eyebrow>
-              <h2 id="compare-cta-title" className="mt-3 font-display text-2xl leading-[1.1] tracking-[-0.02em] text-balance sm:text-3xl">
+              <h2 id="compare-cta-title" className="text-balance text-[1.8rem] uppercase leading-[0.95] sm:text-[2.4rem]">
                 Check these against your health profile
               </h2>
-              <p className="mt-3 text-pretty text-sm leading-relaxed text-white/70 sm:text-base">
-                The assessment maps {compounds.length === 1 ? "this compound" : "these compounds"} against your goal, medical
-                history and medicines, then gives you a structured report to discuss with a clinician.
+              <p className="mt-4 text-pretty text-[14px] leading-relaxed text-white/70 sm:text-[15px]">
+                The assessment maps {compounds.length === 1 ? "this compound" : "these compounds"} against your goal, medical history and
+                medicines, then gives you a structured report to discuss with a clinician — and says when not to buy.
               </p>
             </div>
-            <Button href="/assessment/" size="xl" variant="inverted" className="shrink-0">
+            <Button href={assessmentHref(compounds.length === 1 ? compounds[0].slug : undefined)} size="xl" variant="inverted" className="shrink-0">
               Start the assessment
-              <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" aria-hidden />
+              <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </div>
         </section>

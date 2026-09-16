@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Check, Layers } from "lucide-react";
 import { getCompound } from "@/data/compounds";
 import { useAssessmentStore } from "@/lib/assessment/store";
 import { cn } from "@/lib/utils";
 import { useAnswers } from "../hooks";
-import { FieldError } from "../primitives";
+import { FieldError, InlineNotice } from "../primitives";
+import { Marker } from "./option-cards";
 
 /**
  * Q8 — which of the selected compounds would be combined. Defaults to all of
@@ -47,52 +47,44 @@ export function CombinationBuilder({ showErrors }: { showErrors?: boolean }) {
 
   return (
     <div className="grid gap-5">
-      <div role="group" aria-label="Compounds to combine" className="grid gap-2.5">
-        {selectedSlugs.map((slug) => {
+      <div role="group" aria-label="Compounds to combine" className="cell-grid">
+        {selectedSlugs.map((slug, i) => {
           const compound = getCompound(slug);
           const checked = combo.has(slug);
           return (
-            <button
-              key={slug}
-              type="button"
-              role="checkbox"
-              aria-checked={checked}
-              data-option
-              onClick={() => toggle(slug)}
-              className={cn(
-                "flex min-h-14 w-full items-center gap-4 rounded-2xl border bg-white px-4 py-3 text-left shadow-soft transition-all duration-200 ease-out-expo hover:border-ink/20 active:scale-[0.99]",
-                checked ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500" : "border-line",
-              )}
-            >
-              <span
-                aria-hidden
+            <div key={slug} className="flex">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={checked}
+                data-option
+                onClick={() => toggle(slug)}
                 className={cn(
-                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors",
-                  checked ? "border-brand-500 bg-brand-500 text-white" : "border-line-strong bg-white text-transparent",
+                  "flex min-h-14 w-full items-center gap-3 rounded-none px-4 py-3.5 text-left transition-colors duration-150",
+                  checked ? "bg-ink text-white" : "hover-invert",
                 )}
               >
-                <Check className="h-3.5 w-3.5" strokeWidth={3} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium text-ink">{compound?.name ?? slug}</span>
-                {compound && <span className="block text-xs text-muted">{compound.classLabel}</span>}
-              </span>
-            </button>
+                <Marker index={i + 1} selected={checked} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-medium">{compound?.name ?? slug}</span>
+                  {compound && <span className="block text-[13px] opacity-70">{compound.classLabel}</span>}
+                </span>
+              </button>
+            </div>
           );
         })}
       </div>
 
-      <div className="flex items-start gap-3 rounded-2xl border border-line bg-paper-2/70 p-4 text-sm leading-relaxed text-ink-2">
-        <Layers className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+      <InlineNotice tone="brand">
         {names.length >= 2 ? (
           <p>
-            You would combine <span className="font-medium text-ink">{names.join(" + ")}</span>. Your report will
-            assess this combination for overlapping considerations and evidence gaps.
+            You would combine <span className="font-medium text-ink">{names.join(" + ")}</span>. Your report will assess
+            this combination for overlapping considerations and evidence gaps.
           </p>
         ) : (
           <p>Tick at least two compounds to describe a combination.</p>
         )}
-      </div>
+      </InlineNotice>
 
       {invalid && <FieldError>Choose at least two compounds to describe a combination.</FieldError>}
     </div>

@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getCompounds } from "@/data/compounds";
 import { MAX_COMPARE, compareHref } from "@/lib/compare";
 
-/**
- * Floating action bar shown while at least one compound is selected for comparison.
- */
+/** Fixed ink bar shown while at least one compound is selected for comparison. */
 export function CompareBar({
   slugs,
   onRemove,
@@ -26,51 +24,54 @@ export function CompareBar({
       {compounds.length > 0 && (
         <motion.div
           key="compare-bar"
-          initial={reduce ? false : { y: 32, opacity: 0 }}
+          initial={reduce ? false : { y: 8, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={reduce ? { opacity: 0 } : { y: 32, opacity: 0 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-ink text-white"
           role="region"
           aria-label="Compare selection"
         >
-          <div className="glass pointer-events-auto w-full max-w-3xl rounded-2xl shadow-lift">
-            <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-3.5">
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                <span className="shrink-0 font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-brand-700">
-                  Compare
-                  <span className="ml-1 text-muted-2">
-                    {compounds.length}/{MAX_COMPARE}
-                  </span>
+          <div className="container-x flex flex-col gap-2 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:flex-row sm:items-center sm:gap-4 sm:py-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <span className="label-mono shrink-0 text-white/60">
+                Compare{" "}
+                <span className="text-white tnum">
+                  {compounds.length}/{MAX_COMPARE}
                 </span>
-                <ul className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
-                  {compounds.map((c) => (
-                    <li
-                      key={c.slug}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line bg-white pl-3 pr-1 text-xs font-medium text-ink"
+              </span>
+              <ul className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto" aria-label="Selected compounds">
+                {compounds.map((c) => (
+                  <li
+                    key={c.slug}
+                    className="inline-flex h-11 shrink-0 items-stretch border border-white/40 font-mono text-[11px] uppercase tracking-[0.08em] sm:h-9"
+                  >
+                    <span className="flex items-center pl-2.5 pr-2">{c.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => onRemove(c.slug)}
+                      aria-label={`Remove ${c.name} from comparison`}
+                      className="inline-flex w-11 items-center justify-center border-l border-white/40 transition-colors duration-150 hover:bg-white hover:text-ink sm:w-9"
                     >
-                      {c.name}
-                      <button
-                        type="button"
-                        onClick={() => onRemove(c.slug)}
-                        aria-label={`Remove ${c.name} from comparison`}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-paper-2 hover:text-ink"
-                      >
-                        <X className="h-3.5 w-3.5" aria-hidden />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={onClear} className="flex-1 sm:flex-none">
-                  Clear
-                </Button>
-                <Button href={compareHref(slugs)} size="sm" className="flex-1 sm:flex-none">
-                  Compare now
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" aria-hidden />
-                </Button>
-              </div>
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClear}
+                className="h-11 flex-1 text-white hover:border-white hover:text-white sm:h-9 sm:flex-none"
+              >
+                Clear
+              </Button>
+              <Button href={compareHref(slugs)} size="sm" variant="inverted" className="h-11 flex-1 sm:h-9 sm:flex-none">
+                Compare now
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Button>
             </div>
           </div>
         </motion.div>

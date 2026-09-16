@@ -24,14 +24,14 @@ export function ReportWants({ showErrors }: { showErrors?: boolean }) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted" aria-live="polite">
+      <div className="flex items-center justify-between gap-3">
+        <span className="label-mono tnum" aria-live="polite">
           {selected.length === 0 ? "Nothing selected yet" : `${selected.length} of ${REPORT_WANTS.length} selected`}
         </span>
         <button
           type="button"
           onClick={() => setAnswers({ reportWants: all ? [] : REPORT_WANTS.map((w) => w.id) })}
-          className="inline-flex min-h-11 items-center rounded-full px-3 font-medium text-brand-700 underline-offset-4 hover:underline"
+          className="link-rule inline-flex min-h-11 items-center font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-ink"
         >
           {all ? "Clear all" : "Select all"}
         </button>

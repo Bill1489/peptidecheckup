@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Search, SearchX, SlidersHorizontal, X } from "lucide-react";
+import { Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { COMPOUNDS, searchCompounds } from "@/data/compounds";
@@ -21,16 +20,14 @@ import {
   type RegulatoryStatus,
   type Route,
 } from "@/data/types";
-import { cn } from "@/lib/utils";
-import {
-  MAX_COMPARE,
-  REGULATORY_RANK,
-  type SelectableJurisdiction,
-} from "@/lib/compare";
+import { MAX_COMPARE, REGULATORY_RANK, type SelectableJurisdiction } from "@/lib/compare";
 import { useHydratePrefs, usePrefsStore } from "@/lib/compare-store";
+import { cn } from "@/lib/utils";
 import { CompareBar } from "./compare-bar";
 import { CompoundCard } from "./compound-card";
 import { JurisdictionSwitch } from "./jurisdiction-switch";
+import { CellGrid } from "./primitives";
+import { Segmented } from "./segmented";
 
 /* ------------------------------------------------------------------ */
 /* Static option lists (derived from the registry once)                */
@@ -73,14 +70,12 @@ const ROUTE_OPTIONS: Option<Route>[] = ROUTE_ORDER.map((r) => ({
 
 type SortKey = "evidence" | "name" | "regulatory" | "family";
 
-const SORT_OPTIONS: { id: SortKey; label: string }[] = [
-  { id: "evidence", label: "Evidence (strongest first)" },
-  { id: "name", label: "Name (A–Z)" },
-  { id: "regulatory", label: "Regulatory (authorised first)" },
-  { id: "family", label: "Family" },
+const SORT_OPTIONS: { value: SortKey; label: string; title: string }[] = [
+  { value: "evidence", label: "Evidence", title: "Evidence (strongest first)" },
+  { value: "name", label: "Name", title: "Name (A–Z)" },
+  { value: "regulatory", label: "Regulatory", title: "Regulatory (authorised first)" },
+  { value: "family", label: "Family", title: "Family" },
 ];
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 function toggleValue<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -135,27 +130,39 @@ function Chip({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-medium transition-colors duration-200 sm:h-8 sm:px-3",
-        active
-          ? "border-ink bg-ink text-white"
-          : "border-line bg-white text-ink-3 hover:border-ink/30 hover:text-ink",
+        "inline-flex h-11 items-center gap-2 border px-3 font-mono text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-150 sm:h-9 sm:px-2.5",
+        active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:border-ink",
         disabled && "pointer-events-none opacity-40",
       )}
     >
       {children}
-      {count !== undefined && (
-        <span className={cn("font-mono text-[0.65rem] tabular-nums", active ? "text-white/70" : "text-muted-2")}>{count}</span>
-      )}
+      {count !== undefined && <span className={cn("tnum", active ? "text-white/60" : "text-muted-2")}>{count}</span>}
     </button>
   );
 }
 
-function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function FilterGroup({
+  label,
+  selected,
+  children,
+}: {
+  label: string;
+  selected: number;
+  children: React.ReactNode;
+}) {
+  const id = React.useId();
   return (
-    <fieldset className="min-w-0">
-      <legend className="mb-2.5 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2">{label}</legend>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
-    </fieldset>
+    <div role="group" aria-labelledby={id} className="min-w-0">
+      <div className="flex h-10 items-center justify-between gap-3 border-b border-line bg-paper-2 px-3">
+        <p id={id} className="label-mono truncate text-ink">
+          {label}
+        </p>
+        <p className="label-mono tnum" aria-live="polite">
+          {selected > 0 ? `${selected} on` : "Any"}
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-1 p-2">{children}</div>
+    </div>
   );
 }
 
@@ -165,7 +172,6 @@ function FilterGroup({ label, children }: { label: string; children: React.React
 
 export function CompoundDirectory() {
   useHydratePrefs();
-  const reduce = useReducedMotion();
 
   const jurisdiction = usePrefsStore((s) => s.jurisdiction);
   const setJurisdiction = usePrefsStore((s) => s.setJurisdiction);
@@ -258,11 +264,11 @@ export function CompoundDirectory() {
   ];
 
   return (
-    <div>
+    <div className={cn(compareSlugs.length > 0 && "pb-24")}>
       {/* Toolbar */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="relative flex-1 lg:max-w-xl">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-2" aria-hidden />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
           <input
             type="search"
             value={query}
@@ -270,14 +276,14 @@ export function CompoundDirectory() {
             placeholder="Search by name, brand or class"
             aria-label="Search compounds"
             autoComplete="off"
-            className="h-12 w-full rounded-xl border border-line bg-white pl-11 pr-11 text-[0.95rem] text-ink shadow-inset placeholder:text-muted-2 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
+            className="h-12 w-full border border-ink bg-white pl-11 pr-12 text-[15px] text-ink placeholder:text-muted-2 [&::-webkit-search-cancel-button]:hidden"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-muted transition-colors hover:bg-paper-2 hover:text-ink"
+              className="absolute right-0.5 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted transition-colors hover:text-ink"
             >
               <X className="h-4 w-4" aria-hidden />
             </button>
@@ -286,7 +292,7 @@ export function CompoundDirectory() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="hidden font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-2 sm:inline">Jurisdiction</span>
+            <span className="label-mono hidden sm:inline">Jurisdiction</span>
             <JurisdictionSwitch value={jurisdiction} onChange={setJurisdiction} />
           </div>
           <button
@@ -294,12 +300,15 @@ export function CompoundDirectory() {
             onClick={() => setFiltersOpen((v) => !v)}
             aria-expanded={filtersOpen}
             aria-controls="directory-filters"
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-sm font-medium text-ink transition-colors hover:bg-paper-2 lg:hidden"
+            className={cn(
+              "inline-flex h-11 items-center gap-2 border border-ink px-3.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors duration-150 lg:hidden",
+              filtersOpen ? "bg-ink text-white" : "bg-white text-ink hover:bg-paper-2",
+            )}
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden />
             Filters
             {activeCount > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 font-mono text-[0.65rem] text-white">
+              <span className={cn("inline-flex h-5 min-w-5 items-center justify-center px-1 tnum", filtersOpen ? "bg-white text-ink" : "bg-brand-600 text-white")}>
                 {activeCount}
               </span>
             )}
@@ -307,24 +316,20 @@ export function CompoundDirectory() {
         </div>
       </div>
 
-      <div className="mt-8 lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[280px_minmax(0,1fr)]">
-        {/* Filters */}
+      <div className="mt-6 lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[280px_minmax(0,1fr)] xl:gap-10">
+        {/* Filter rail */}
         <aside id="directory-filters" className={cn("lg:block", filtersOpen ? "block" : "hidden")} aria-label="Filters">
-          <div className="no-scrollbar space-y-6 rounded-2xl border border-line bg-white p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:border-0 lg:bg-transparent lg:p-0 lg:pr-2">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl text-ink">Filters</h2>
+          <div className="no-scrollbar divide-y divide-ink border border-ink bg-white lg:sticky lg:top-[7.1rem] lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+            <div className="flex h-11 items-center justify-between gap-3 px-3">
+              <h2 className="label-mono text-ink">Filters</h2>
               {activeCount > 0 && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="text-xs font-medium text-brand-700 underline-offset-4 hover:underline"
-                >
+                <button type="button" onClick={clearFilters} className="link-rule label-mono text-ink">
                   Clear all ({activeCount})
                 </button>
               )}
             </div>
 
-            <FilterGroup label="Goal">
+            <FilterGroup label="Goal" selected={goals.length}>
               {GOAL_OPTIONS.map((o) => (
                 <Chip key={o.id} active={goals.includes(o.id)} count={o.count} onClick={() => setGoals((p) => toggleValue(p, o.id))}>
                   {o.label}
@@ -332,7 +337,7 @@ export function CompoundDirectory() {
               ))}
             </FilterGroup>
 
-            <FilterGroup label="Family">
+            <FilterGroup label="Family" selected={families.length}>
               {FAMILY_OPTIONS.map((o) => (
                 <Chip key={o.id} active={families.includes(o.id)} count={o.count} onClick={() => setFamilies((p) => toggleValue(p, o.id))}>
                   {o.label}
@@ -340,7 +345,7 @@ export function CompoundDirectory() {
               ))}
             </FilterGroup>
 
-            <FilterGroup label="Overall evidence">
+            <FilterGroup label="Overall evidence" selected={evidence.length}>
               {EVIDENCE_OPTIONS.map((o) => (
                 <Chip
                   key={o.id}
@@ -354,7 +359,7 @@ export function CompoundDirectory() {
               ))}
             </FilterGroup>
 
-            <FilterGroup label={`Regulatory status · ${JURISDICTION_LABELS[jurisdiction]}`}>
+            <FilterGroup label={`Regulatory · ${JURISDICTION_LABELS[jurisdiction]}`} selected={regulatory.length}>
               {regulatoryOptions.map((o) => (
                 <Chip key={o.id} active={regulatory.includes(o.id)} count={o.count} onClick={() => setRegulatory((p) => toggleValue(p, o.id))}>
                   {o.label}
@@ -362,7 +367,7 @@ export function CompoundDirectory() {
               ))}
             </FilterGroup>
 
-            <FilterGroup label="Route">
+            <FilterGroup label="Route" selected={routes.length}>
               {ROUTE_OPTIONS.map((o) => (
                 <Chip key={o.id} active={routes.includes(o.id)} count={o.count} onClick={() => setRoutes((p) => toggleValue(p, o.id))}>
                   {o.label}
@@ -371,31 +376,28 @@ export function CompoundDirectory() {
             </FilterGroup>
 
             <div>
-              <p className="mb-2.5 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2">Sport</p>
+              <div className="flex h-10 items-center border-b border-line bg-paper-2 px-3">
+                <p className="label-mono text-ink">Sport</p>
+              </div>
               <button
                 type="button"
                 role="switch"
                 aria-checked={wadaSafe}
                 onClick={() => setWadaSafe((v) => !v)}
-                className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-line bg-white px-3.5 py-2 text-left text-sm text-ink transition-colors hover:border-ink/20"
+                className="flex min-h-11 w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-paper-2"
               >
                 <span>
-                  Not WADA-prohibited
-                  <span className="block text-xs text-muted">Hide compounds on the Prohibited List</span>
+                  <span className="block text-[13px] font-medium text-ink">Not WADA-prohibited</span>
+                  <span className="block text-[12px] text-muted">Hide compounds on the Prohibited List</span>
                 </span>
                 <span
                   className={cn(
-                    "relative h-6 w-10 shrink-0 rounded-full transition-colors duration-200",
-                    wadaSafe ? "bg-brand-600" : "bg-ink/15",
+                    "flex h-5 w-5 shrink-0 items-center justify-center border border-ink transition-colors duration-150",
+                    wadaSafe ? "bg-ink text-white" : "bg-white",
                   )}
                   aria-hidden
                 >
-                  <span
-                    className={cn(
-                      "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-soft transition-transform duration-200 ease-out-expo",
-                      wadaSafe && "translate-x-4",
-                    )}
-                  />
+                  {wadaSafe && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                 </span>
               </button>
             </div>
@@ -405,39 +407,29 @@ export function CompoundDirectory() {
         {/* Results */}
         <div className="mt-6 min-w-0 lg:mt-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted" aria-live="polite">
-              Showing <span className="font-medium text-ink">{results.length}</span> of {COMPOUNDS.length} compounds
+            <p className="label-mono" aria-live="polite">
+              Showing <span className="text-ink tnum">{results.length}</span> of {COMPOUNDS.length}
               {trimmedQuery && (
                 <>
                   {" "}
-                  for <span className="font-medium text-ink">“{trimmedQuery}”</span>
+                  for <span className="normal-case tracking-normal text-ink">“{trimmedQuery}”</span>
                 </>
               )}
             </p>
-            <label className="flex items-center gap-2 text-sm text-muted">
-              <span className="font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-2">Sort</span>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as SortKey)}
-                className="h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="flex items-center gap-3">
+              <span className="label-mono hidden sm:inline">Sort</span>
+              <Segmented size="sm" label="Sort by" options={SORT_OPTIONS} value={sort} onChange={setSort} />
+            </div>
           </div>
 
           {activeChips.length > 0 && (
-            <ul className="mt-4 flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+            <ul className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Active filters">
               {activeChips.map((chip) => (
                 <li key={chip.key}>
                   <button
                     type="button"
                     onClick={chip.remove}
-                    className="inline-flex h-8 items-center gap-1 rounded-full bg-brand-50 pl-3 pr-2 text-xs font-medium text-brand-800 transition-colors hover:bg-brand-100"
+                    className="inline-flex h-9 items-center gap-1.5 border border-ink bg-white pl-2.5 pr-2 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ink transition-colors duration-150 hover:bg-ink hover:text-white"
                   >
                     {chip.label}
                     <X className="h-3.5 w-3.5" aria-hidden />
@@ -446,11 +438,7 @@ export function CompoundDirectory() {
                 </li>
               ))}
               <li>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="h-8 px-2 text-xs font-medium text-muted underline-offset-4 hover:text-ink hover:underline"
-                >
+                <button type="button" onClick={clearFilters} className="link-rule label-mono h-9 px-2 text-ink">
                   Clear all
                 </button>
               </li>
@@ -458,53 +446,30 @@ export function CompoundDirectory() {
           )}
 
           {results.length === 0 ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-line-strong bg-white/60 px-6 py-16 text-center">
-              <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-paper-2 text-muted">
-                <SearchX className="h-5 w-5" aria-hidden />
-              </span>
-              <h3 className="mt-5 font-display text-2xl text-ink">No compounds match</h3>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+            <div className="mt-5 border border-ink px-6 py-14 text-center">
+              <p className="label-mono">0 results</p>
+              <h3 className="font-display mt-3 text-[1.6rem] uppercase text-ink sm:text-[2rem]">No compounds match</h3>
+              <p className="mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-muted">
                 Try a different spelling or brand name, or remove some filters. Every compound in the database is graded on the same
-                record, so widening the search will not lower the standard.
+                record, so widening the search does not lower the standard.
               </p>
               <Button variant="secondary" size="md" className="mt-6" onClick={clearEverything}>
                 Clear search and filters
               </Button>
             </div>
           ) : (
-            <motion.ul layout={!reduce} className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" role="list">
-              <AnimatePresence mode="popLayout">
-                {results.map((c, i) => (
-                  <motion.li
-                    key={c.slug}
-                    layout={!reduce}
-                    custom={Math.min(i, 9)}
-                    variants={{
-                      hidden: { opacity: 0, y: 14 },
-                      show: (index: number) => ({
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.45, delay: index * 0.045, ease: EASE },
-                      }),
-                      exit: { opacity: 0, scale: 0.97, transition: { duration: 0.18 } },
-                    }}
-                    initial={reduce ? false : "hidden"}
-                    animate="show"
-                    exit="exit"
-                    whileHover={reduce ? undefined : { y: -4 }}
-                    transition={{ layout: { duration: 0.35, ease: EASE } }}
-                    className="h-full"
-                  >
-                    <CompoundCard
-                      compound={c}
-                      jurisdiction={jurisdiction}
-                      selected={compareSlugs.includes(c.slug)}
-                      onToggleCompare={onToggleCompare}
-                    />
-                  </motion.li>
-                ))}
-              </AnimatePresence>
-            </motion.ul>
+            <CellGrid as="ul" itemAs="li" cols={[2, 2, 3]} count={results.length} className="mt-5 grid-cols-2 lg:grid-cols-3" role="list">
+              {results.map((c) => (
+                <li key={c.slug} className="min-w-0">
+                  <CompoundCard
+                    compound={c}
+                    jurisdiction={jurisdiction}
+                    selected={compareSlugs.includes(c.slug)}
+                    onToggleCompare={onToggleCompare}
+                  />
+                </li>
+              ))}
+            </CellGrid>
           )}
         </div>
       </div>

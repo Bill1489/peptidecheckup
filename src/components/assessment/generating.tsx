@@ -1,22 +1,23 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Check, LoaderCircle } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { useLatest } from "./hooks";
-import { EASE } from "./primitives";
 
-export const GENERATING_TOTAL_MS = 2200;
-const LINE_INTERVAL_MS = 480;
+export const GENERATING_TOTAL_MS = 2400;
+const LINE_INTERVAL_MS = 520;
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
- * Full-screen "Building your report" sequence (~2.2 s): four status lines
- * appear in turn, then `onDone` fires.
+ * Full-screen "Building your report" sequence (~2.4 s) on ink: mono status
+ * lines tick through with a blinking cursor, then `onDone` fires.
  */
 export function GeneratingScreen({ lines, onDone }: { lines: string[]; onDone: () => void }) {
   const [shown, setShown] = React.useState(1);
+  const [finished, setFinished] = React.useState(false);
   const reduced = useReducedMotion();
   const doneRef = useLatest(onDone);
 
@@ -25,6 +26,7 @@ export function GeneratingScreen({ lines, onDone }: { lines: string[]; onDone: (
     for (let i = 2; i <= lines.length; i++) {
       timers.push(setTimeout(() => setShown(i), (i - 1) * LINE_INTERVAL_MS));
     }
+    timers.push(setTimeout(() => setFinished(true), lines.length * LINE_INTERVAL_MS));
     timers.push(setTimeout(() => doneRef.current(), GENERATING_TOTAL_MS));
     return () => timers.forEach(clearTimeout);
   }, [lines.length, doneRef]);
@@ -37,51 +39,50 @@ export function GeneratingScreen({ lines, onDone }: { lines: string[]; onDone: (
       initial={reduced ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-paper bg-dots px-6"
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-ink text-white"
     >
-      <motion.div
-        animate={reduced ? undefined : { scale: [1, 1.06, 1], opacity: [1, 0.75, 1] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-card"
-      >
-        <LogoMark className="h-10 w-10" />
-      </motion.div>
+      <div className="border-b border-white/20">
+        <div className="container-x flex h-14 items-center justify-between sm:h-16">
+          <LogoMark tone="light" className="h-7 w-7" />
+          <p className="label-mono text-white/60">Building your report</p>
+        </div>
+      </div>
 
-      <p className="mt-8 font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] text-brand-700">Building your report</p>
-      <h2 className="mt-2 text-center font-display text-2xl text-ink sm:text-3xl">A moment while we check the evidence</h2>
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-10 sm:px-6">
+        <p className="label-mono text-brand-300">Rules engine · running on this device</p>
+        <h2 className="mt-4 font-display text-[2rem] uppercase leading-[0.98] text-white sm:text-[2.6rem]">
+          Checking the evidence
+        </h2>
 
-      <ol className="mt-8 w-full max-w-sm space-y-2.5">
-        <AnimatePresence initial={false}>
+        <ol className="mt-8 border border-white/25 font-mono text-[12.5px] sm:text-[13px]">
           {lines.slice(0, shown).map((line, i) => {
-            const done = i < shown - 1 || shown === lines.length;
+            const done = finished || i < shown - 1;
             return (
-              <motion.li
-                key={line}
-                initial={reduced ? false : { opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, ease: EASE }}
-                className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink-2 shadow-soft"
-              >
-                <span
-                  className={cn(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors",
-                    done ? "bg-brand-500 text-white" : "text-brand-600",
-                  )}
-                  aria-hidden
-                >
-                  {done ? (
-                    <Check className="h-3 w-3" strokeWidth={3} />
-                  ) : (
-                    <LoaderCircle className={cn("h-4 w-4", !reduced && "animate-spin")} />
+              <li key={line} className="flex items-start gap-3 border-b border-white/15 px-4 py-3 last:border-b-0">
+                <span className="w-6 shrink-0 text-white/50 tnum">{pad(i + 1)}</span>
+                <span className="min-w-0 flex-1 leading-snug">
+                  {line}
+                  {!done && (
+                    <span
+                      className={cn("ml-1 inline-block h-[1em] w-[0.55em] translate-y-[0.15em] bg-brand-400", !reduced && "animate-blink")}
+                      aria-hidden
+                    />
                   )}
                 </span>
-                {line}
-              </motion.li>
+                <span className={cn("shrink-0 text-[10.5px] uppercase tracking-[0.12em]", done ? "text-brand-300" : "text-white/40")}>
+                  {done ? "ok" : "…"}
+                </span>
+              </li>
             );
           })}
-        </AnimatePresence>
-      </ol>
+        </ol>
+
+        <p className="mt-6 text-[13px] leading-relaxed text-white/60">
+          Nothing is sent anywhere. Your answers are compared against our compound, evidence and regulatory database in
+          your browser.
+        </p>
+      </div>
     </motion.div>
   );
 }

@@ -1,11 +1,12 @@
 import { COMPOUNDS } from "@/data/compounds";
+import { PRODUCTS } from "@/data/products";
 import { JURISDICTION_LABELS, type Jurisdiction } from "@/data/types";
 import { SECTION_META, SECTION_ORDER } from "@/lib/assessment/types";
 
 /**
- * Numbers shown in marketing copy are computed from the database and the
- * questionnaire spec — never typed by hand — so they stay true as the
- * registry grows from 1 to 28 compounds.
+ * Numbers shown in marketing copy are computed from the database, the
+ * catalogue and the questionnaire spec — never typed by hand — so they stay
+ * true as the registry and the range grow.
  */
 
 /** Headline time estimate used consistently across nav, hero and landing pages. */
@@ -22,21 +23,33 @@ export function pluralise(count: number, singular: string, plural = `${singular}
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-/** The four mono facts under the hero CTAs. */
-export function trustFacts(): string[] {
-  return [
-    `${pluralise(COMPOUNDS.length, "compound")} researched`,
-    `${NAMED_JURISDICTIONS.length} regulatory jurisdictions`,
-    "Deterministic, clinician-reviewable rules",
-    `≈${ASSESSMENT_MINUTES} minutes · no account`,
-  ];
+/** Two-digit index used on spec-sheet rows: 1 → "01". */
+export function index(n: number) {
+  return String(n).padStart(2, "0");
 }
 
-/** What the report contains — mirrors docs/BRIEF.md §7 and the `Report` type. */
+/** Most recent `lastReviewed` across the compound registry (ISO date). */
+export function latestReviewDate(): string | undefined {
+  return COMPOUNDS.map((c) => c.lastReviewed)
+    .sort()
+    .at(-1);
+}
+
+/** Laboratories named on published certificates of analysis, de-duplicated. */
+export function coaLabs(): string[] {
+  return Array.from(new Set(PRODUCTS.flatMap((p) => (p.coa ? [p.coa.lab] : []))));
+}
+
+/** Products that carry a published certificate for the lot currently shipping. */
+export function productsWithCoa(): number {
+  return PRODUCTS.filter((p) => p.coa).length;
+}
+
+/** What the report contains — mirrors docs/BRIEF.md §6 and the `Report` type. */
 export const REPORT_CONTENTS: { title: string; body: string }[] = [
   {
     title: "Your objective",
-    body: "Goal, what success would look like, importance and timeframe — flagged if the timeframe is shorter than trials measured.",
+    body: "Goal, what success would look like, importance and timeframe — flagged if the timeframe is shorter than the trials measured.",
   },
   {
     title: "What you are considering",
@@ -53,6 +66,10 @@ export const REPORT_CONTENTS: { title: string; body: string }[] = [
   {
     title: "Personal suitability",
     body: "One of three labels per compound, the rationale, and every flag with the answer it came from.",
+  },
+  {
+    title: "Your matches",
+    body: "Products linked to compounds the report marked Potentially relevant, with price and lot. Higher-concern compounds are not added to the cart.",
   },
   {
     title: "Dosing in three layers",
@@ -75,10 +92,3 @@ export const REPORT_CONTENTS: { title: string; body: string }[] = [
     body: "What the report could not assess, which sections you skipped, and what would improve it.",
   },
 ];
-
-/** Most recent `lastReviewed` across the registry (ISO date), for "last reviewed" stamps. */
-export function latestReviewDate(): string | undefined {
-  return COMPOUNDS.map((c) => c.lastReviewed)
-    .sort()
-    .at(-1);
-}

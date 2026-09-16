@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { Command } from "cmdk";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Check, Plus, Search, Sparkles } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { COMPOUNDS, compoundsForGoal, searchCompounds } from "@/data/compounds";
 import { GOAL_MAP } from "@/data/goals";
 import { EVIDENCE_LABELS, FAMILY_LABELS, type Compound, type CompoundFamily, type EvidenceQuality } from "@/data/types";
@@ -12,10 +11,11 @@ import { useAssessmentStore } from "@/lib/assessment/store";
 import { cn } from "@/lib/utils";
 import { EvidenceMeter } from "@/components/ui/badge";
 import { useAnswers, useDebouncedField } from "../hooks";
-import { EASE, Field, RemovableChip, TextInput } from "../primitives";
+import { Field, RemovableChip, TextInput } from "../primitives";
+import { Marker } from "./option-cards";
 
 const GROUP_CLASS =
-  "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[0.65rem] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.18em] [&_[cmdk-group-heading]]:text-brand-700";
+  "[&_[cmdk-group-heading]]:border-t [&_[cmdk-group-heading]]:border-line [&_[cmdk-group-heading]]:bg-paper-2 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.12em] [&_[cmdk-group-heading]]:text-muted";
 
 const FAMILY_ORDER = Object.keys(FAMILY_LABELS) as CompoundFamily[];
 
@@ -29,7 +29,6 @@ export function CompoundPicker({ showErrors }: { showErrors?: boolean }) {
   const setAnswers = useAssessmentStore((s) => s.setAnswers);
   const [query, setQuery] = React.useState("");
   const [showOther, setShowOther] = React.useState(Boolean(answers.otherCompoundText));
-  const reduced = useReducedMotion();
 
   const selected = answers.consideredCompounds;
   const selectedSlugs = React.useMemo(() => new Set(selected.map((c) => c.slug)), [selected]);
@@ -77,57 +76,41 @@ export function CompoundPicker({ showErrors }: { showErrors?: boolean }) {
 
   return (
     <div className="grid gap-5">
-      <AnimatePresence initial={false}>
-        {selected.length > 0 && (
-          <motion.div
-            key="selected"
-            initial={reduced ? false : { opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: EASE }}
-            className="overflow-hidden"
-          >
-            <div className="flex flex-wrap gap-2" aria-label="Selected compounds">
-              {selected.map((c) => {
-                const compound = COMPOUNDS.find((x) => x.slug === c.slug);
-                return (
-                  <RemovableChip key={c.slug} label={compound?.name ?? c.slug} onRemove={() => toggle(c.slug)}>
-                    {compound?.name ?? c.slug}
-                  </RemovableChip>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-2" aria-label="Selected compounds">
+          {selected.map((c) => {
+            const compound = COMPOUNDS.find((x) => x.slug === c.slug);
+            return (
+              <RemovableChip key={c.slug} label={compound?.name ?? c.slug} onRemove={() => toggle(c.slug)}>
+                {compound?.name ?? c.slug}
+              </RemovableChip>
+            );
+          })}
+        </div>
+      )}
 
       <Command
         shouldFilter={false}
         label="Search compounds"
         loop
-        className={cn(
-          "overflow-hidden rounded-2xl border bg-white shadow-soft",
-          invalid ? "border-concern/60" : "border-line",
-        )}
+        className={cn("overflow-hidden rounded-none border bg-white", invalid ? "border-accent-500" : "border-ink")}
       >
-        <div className="flex items-center gap-3 border-b border-line px-4">
-          <Search className="h-4 w-4 shrink-0 text-muted-2" aria-hidden />
+        <div className="flex items-center gap-3 border-b border-ink px-4">
+          <Search className="h-4 w-4 shrink-0 text-ink" aria-hidden />
           <Command.Input
             value={query}
             onValueChange={setQuery}
             placeholder="Search by name, brand or class"
             data-autofocus="pointer"
-            className="h-13 w-full bg-transparent text-base text-ink placeholder:text-muted-2 focus:outline-none"
+            className="h-12 w-full bg-transparent text-[15px] text-ink placeholder:text-muted-2 focus:outline-none"
           />
         </div>
 
-        <Command.List className="max-h-[26rem] overflow-y-auto p-1.5">
+        <Command.List className="max-h-[26rem] overflow-y-auto">
           {results ? (
             <>
               {results.length === 0 && (
-                <p className="px-4 pb-2 pt-6 text-center text-sm text-muted">
-                  Nothing in our database matches “{trimmed}”.
-                </p>
+                <p className="px-4 pb-3 pt-6 text-center text-sm text-muted">Nothing in our database matches “{trimmed}”.</p>
               )}
               {results.map((c) => (
                 <CompoundItem
@@ -142,26 +125,16 @@ export function CompoundPicker({ showErrors }: { showErrors?: boolean }) {
               <Command.Item
                 value={`other:${trimmed}`}
                 onSelect={addOther}
-                className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-line-strong px-3 py-2 text-sm text-brand-700 transition-colors data-[selected=true]:bg-brand-50"
+                className="flex min-h-12 cursor-pointer items-center gap-3 border-t border-ink px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-ink data-[selected=true]:bg-ink data-[selected=true]:text-white"
               >
                 <Plus className="h-4 w-4 shrink-0" aria-hidden />
-                <span>
-                  Add “{trimmed}” as something else
-                </span>
+                <span>Add “{trimmed}” as something else</span>
               </Command.Item>
             </>
           ) : (
             <>
               {goalMatches.length > 0 && goalLabel && (
-                <Command.Group
-                  heading={
-                    <span className="inline-flex items-center gap-1.5">
-                      <Sparkles className="h-3 w-3" aria-hidden />
-                      Researched for {goalLabel.toLowerCase()}
-                    </span>
-                  }
-                  className={GROUP_CLASS}
-                >
+                <Command.Group heading={`Researched for ${goalLabel.toLowerCase()}`} className={GROUP_CLASS}>
                   {goalMatches.map(({ compound, evidence }) => (
                     <CompoundItem
                       key={compound.slug}
@@ -202,7 +175,7 @@ export function CompoundPicker({ showErrors }: { showErrors?: boolean }) {
           <button
             type="button"
             onClick={() => setShowOther(true)}
-            className="inline-flex min-h-11 items-center justify-self-start text-sm font-medium text-brand-700 underline-offset-4 hover:underline"
+            className="link-rule inline-flex min-h-11 items-center justify-self-start font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-ink"
           >
             Considering something that isn&apos;t listed?
           </button>
@@ -234,30 +207,20 @@ function CompoundItem({
       onSelect={onSelect}
       aria-checked={selected}
       className={cn(
-        "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors",
+        "flex min-h-14 cursor-pointer items-center gap-3 border-b border-line px-4 py-2.5 text-ink transition-colors last:border-b-0",
         "data-[selected=true]:bg-paper-2",
-        selected && "bg-brand-50 data-[selected=true]:bg-brand-50",
+        selected && "bg-brand-50 data-[selected=true]:bg-brand-100",
       )}
     >
-      <span
-        aria-hidden
-        className={cn(
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors",
-          selected ? "border-brand-500 bg-brand-500 text-white" : "border-line-strong bg-white text-transparent",
-        )}
-      >
-        <Check className="h-3.5 w-3.5" strokeWidth={3} />
-      </span>
+      <Marker selected={selected} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[0.95rem] font-medium text-ink">{compound.name}</span>
-        <span className="block truncate text-xs text-muted">{compound.classLabel}</span>
+        <span className="block truncate text-[15px] font-medium">{compound.name}</span>
+        <span className="block truncate text-[12.5px] text-muted">{compound.classLabel}</span>
       </span>
       {evidence && (
         <span className="flex shrink-0 flex-col items-end gap-1">
           <EvidenceMeter level={evidence} />
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted-2">
-            {EVIDENCE_LABELS[evidence]}
-          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">{EVIDENCE_LABELS[evidence]}</span>
         </span>
       )}
     </Command.Item>
@@ -271,7 +234,7 @@ function OtherCompoundField() {
   const [value, update, flush] = useDebouncedField(answers.otherCompoundText ?? "", commit);
 
   return (
-    <div className="rounded-2xl border border-line bg-paper-2/60 p-4">
+    <div className="border border-ink border-l-[3px] border-l-brand-600 bg-white p-4">
       <Field
         label="Something else"
         htmlFor="other-compound"

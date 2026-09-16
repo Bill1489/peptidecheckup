@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Info } from "lucide-react";
 import { stepOptions, type YesNoStep } from "@/lib/assessment/flow";
 import { useAnswers, useSetAnswer } from "../hooks";
 import { Reveal } from "../primitives";
@@ -9,7 +8,7 @@ import { OptionCards } from "./option-cards";
 import { FollowUpText } from "./text-area";
 
 /**
- * Yes / No (or Yes / No / Unsure, Yes / No / N/A) cards with an optional
+ * Yes / No (or Yes / No / Unsure, Yes / No / N/A) cells with an optional
  * follow-up textarea and a compound-tailored hint.
  */
 export function YesNoCards({
@@ -36,10 +35,10 @@ export function YesNoCards({
   const showFollowUp = Boolean(step.followUp && value && step.followUp.when.includes(value));
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-5">
       {hint && (
-        <p className="flex items-start gap-2 text-sm leading-relaxed text-muted">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+        <p className="flex items-start gap-3 text-sm leading-relaxed text-muted">
+          <span className="mt-[0.45rem] h-2 w-2 shrink-0 bg-brand-600" aria-hidden />
           <span>{hint}</span>
         </p>
       )}

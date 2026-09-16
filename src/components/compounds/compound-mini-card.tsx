@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Badge, EvidenceMeter } from "@/components/ui/badge";
-import { EVIDENCE_LABELS, FAMILY_LABELS, HUMAN_EVIDENCE_LABELS, type Compound } from "@/data/types";
-import { cn } from "@/lib/utils";
+import { FAMILY_LABELS, HUMAN_EVIDENCE_LABELS, type Compound } from "@/data/types";
 import { compoundHref } from "@/lib/compare";
+import { cn } from "@/lib/utils";
+import { MeterLabel } from "./primitives";
 
 /**
- * Compact link card used for alternatives and related compounds.
- * Server-safe: no preferences (regulatory status is jurisdiction-specific).
+ * Compact link cell used for alternatives and related compounds. Inverts to
+ * ink on hover. Server-safe: no preferences (regulatory status is
+ * jurisdiction-specific and lives on the full record).
  */
 export function CompoundMiniCard({
   compound,
@@ -23,28 +24,22 @@ export function CompoundMiniCard({
     <Link
       href={compoundHref(compound.slug)}
       className={cn(
-        "group flex h-full flex-col rounded-2xl border border-line bg-white p-5 shadow-soft transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-ink/15 hover:shadow-lift",
+        "group flex h-full flex-col bg-white p-4 text-ink transition-colors duration-150 hover:bg-ink hover:text-white sm:p-5",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <Badge tone="neutral" size="xs">
-          {FAMILY_LABELS[compound.family]}
-        </Badge>
-        <ArrowUpRight
-          className="h-4 w-4 shrink-0 text-muted-2 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
-          aria-hidden
-        />
+        <p className="label-mono truncate group-hover:text-white/60">{FAMILY_LABELS[compound.family]}</p>
+        <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
       </div>
-      <h3 className="mt-3 font-display text-xl leading-tight text-ink">{compound.name}</h3>
-      <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-brand-700">{compound.classLabel}</p>
-      <p className="mt-3 text-sm leading-relaxed text-muted">{note ?? compound.tagline}</p>
-      <div className="mt-auto flex flex-col gap-1.5 border-t border-line pt-4">
-        <span className="flex items-center gap-2 text-xs font-medium text-ink">
-          <EvidenceMeter level={compound.overallEvidence} />
-          {EVIDENCE_LABELS[compound.overallEvidence]}
-        </span>
-        <span className="text-xs leading-snug text-muted">{HUMAN_EVIDENCE_LABELS[compound.humanEvidenceLevel]}</span>
+      <h3 className="font-display mt-3 break-words text-[1.25rem] uppercase leading-[0.98]">{compound.name}</h3>
+      <p className="label-mono mt-1.5 truncate group-hover:text-white/60" title={compound.classLabel}>
+        {compound.classLabel}
+      </p>
+      <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3 group-hover:text-white/80">{note ?? compound.tagline}</p>
+      <div className="mt-auto flex flex-col items-start gap-2 border-t border-line pt-4 group-hover:border-white/20">
+        <MeterLabel level={compound.overallEvidence} chip />
+        <span className="label-mono group-hover:text-white/60">{HUMAN_EVIDENCE_LABELS[compound.humanEvidenceLevel]}</span>
       </div>
     </Link>
   );

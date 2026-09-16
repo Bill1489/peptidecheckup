@@ -1,37 +1,49 @@
 import type { Metadata } from "next";
-import { BRAND } from "@/lib/brand";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
-import { Eyebrow } from "@/components/ui/card";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Faq } from "@/components/marketing/faq";
 import { ALL_FAQ, HOME_FAQ, MORE_FAQ } from "@/components/marketing/faq-data";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { PageHeader } from "@/components/marketing/page-shell";
-import { Toc } from "@/components/marketing/toc";
+import { Toc, TocRow } from "@/components/marketing/toc";
+
+const DESCRIPTION =
+  "Answers to the questions people ask before buying or starting the Peptide Checkup: research-use labelling, prescription medicines, certificates of analysis, shipping, returns, the assessment, data and deletion.";
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description:
-    "Answers to the questions people ask before starting the Peptide Checkup: medical advice, regulatory sources, selling, privacy, dosing, stacks, printing, deleting data and clinician review.",
+  description: DESCRIPTION,
   alternates: { canonical: "/faq/" },
+  openGraph: { images: OG_IMAGES, title: `FAQ · ${BRAND.displayName}`, description: DESCRIPTION, url: "/faq/" },
 };
+
+const pick = (ids: string[]) => MORE_FAQ.filter((i) => ids.includes(i.id));
 
 const GROUPS = [
   {
-    id: "before-you-start",
-    title: "Before you start",
-    description: "What this is, where the information comes from, and what it will and will not do.",
-    items: HOME_FAQ,
+    id: "store",
+    title: "Products, testing, shipping",
+    description: "What the label means, what the certificate says, and how orders move.",
+    items: [...HOME_FAQ.slice(0, 5), ...pick(["consultation", "not-sold", "who-tests", "countries"])],
   },
   {
-    id: "reports-and-data",
-    title: "Reports, dosing and your data",
-    description: "What the report contains, how dosing and combinations are handled, and how to keep or delete your data.",
-    items: MORE_FAQ,
+    id: "assessment",
+    title: "The assessment and the report",
+    description: "What it is, what it is not, and why it sometimes says no.",
+    items: [...HOME_FAQ.slice(5, 7), ...pick(["discount", "regulatory-source", "dosing", "stacks", "athletes", "print"])],
+  },
+  {
+    id: "data",
+    title: "Accounts, data and deletion",
+    description: "Where things are stored, what leaves your device, and how to remove it.",
+    items: [...HOME_FAQ.slice(7), ...pick(["account", "delete"])],
   },
 ];
 
 export default function FaqPage() {
+  const toc = GROUPS.map((g) => ({ id: g.id, label: g.title }));
+
   return (
     <>
       <JsonLd
@@ -46,38 +58,40 @@ export default function FaqPage() {
         }}
       />
       <PageHeader
-        eyebrow="FAQ"
+        label="FAQ"
+        meta={[`${ALL_FAQ.length} questions`, BRAND.supportEmail]}
         title="Questions, answered plainly."
-        description={`${ALL_FAQ.length} questions people ask before, during and after the assessment. If yours isn’t here, email us — a person reads every message.`}
-        meta={BRAND.supportEmail}
+        description="What people ask before they buy, before they start the assessment, and after the report. If yours is not here, email us — a person reads every message."
       />
-      <div className="container-x py-14 lg:py-20">
-        <div className="lg:grid lg:grid-cols-[13rem_minmax(0,46rem)] lg:justify-center lg:gap-16">
+      <TocRow items={toc} />
+      <div className="container-x py-10 lg:py-16">
+        <div className="lg:grid lg:grid-cols-[14rem_minmax(0,46rem)] lg:gap-10">
           <aside className="hidden lg:block">
             <div className="sticky top-28">
-              <Toc items={GROUPS.map((g) => ({ id: g.id, label: g.title }))} />
-              <div className="mt-8">
-                <Button href={`mailto:${BRAND.supportEmail}`} variant="secondary" size="sm">
-                  Ask a question
-                </Button>
-              </div>
+              <Toc items={toc} />
+              <Button href={`mailto:${BRAND.supportEmail}`} variant="secondary" size="sm" className="mt-6">
+                Ask a question
+              </Button>
             </div>
           </aside>
-          <div className="space-y-16">
-            {GROUPS.map((group) => (
-              <section key={group.id} id={group.id} className="scroll-mt-28" aria-labelledby={`${group.id}-title`}>
-                <Eyebrow>{group.items.length} questions</Eyebrow>
-                <h2 id={`${group.id}-title`} className="mt-3 font-display text-3xl font-normal leading-tight tracking-[-0.02em] text-ink">
+          <div className="space-y-14">
+            {GROUPS.map((group, gi) => (
+              <section key={group.id} id={group.id} className="scroll-mt-32" aria-labelledby={`${group.id}-title`}>
+                <p className="label-mono">
+                  <span className="tnum">{String(gi + 1).padStart(2, "0")} — </span>
+                  {group.items.length} questions
+                </p>
+                <h2 id={`${group.id}-title`} className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
                   {group.title}
                 </h2>
-                <p className="mt-2 max-w-xl text-muted">{group.description}</p>
-                <Faq items={group.items} className="mt-8" />
+                <p className="mt-3 max-w-xl text-[14px] text-muted">{group.description}</p>
+                <Faq items={group.items} className="mt-6" />
               </section>
             ))}
           </div>
         </div>
       </div>
-      <CtaBand />
+      <CtaBand secondary={{ href: "/shop", label: "Or go to the shop" }} />
     </>
   );
 }

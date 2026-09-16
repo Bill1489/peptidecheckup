@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, CircleAlert, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Kbd } from "./primitives";
@@ -29,53 +28,47 @@ export function ActionBar({
   hideKeyHint?: boolean;
 }) {
   return (
-    <div className="sticky bottom-0 z-40 border-t border-line glass">
-      <AnimatePresence initial={false}>
-        {error && (
-          <motion.div
-            key="error"
-            role="alert"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.2 }}
-            className="border-b border-concern/15 bg-concern-soft"
-          >
-            <p className="container-narrow flex items-center gap-2 py-2 text-sm text-concern">
-              <CircleAlert className="h-4 w-4 shrink-0" aria-hidden />
-              {error}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <div className="container-narrow flex items-center justify-between gap-2 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <Button variant="ghost" size="md" onClick={onBack} disabled={!canBack} className="px-3 sm:px-4" aria-label="Back">
+    <div className="rule-t sticky bottom-0 z-40 bg-white">
+      {error && (
+        <div role="alert" className="border-b border-ink bg-accent-100">
+          <p className="container-narrow flex items-center gap-2 py-2.5 text-sm text-accent-700">
+            <CircleAlert className="h-4 w-4 shrink-0" aria-hidden />
+            {error}
+          </p>
+        </div>
+      )}
+      <div className="container-narrow flex items-center justify-between gap-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={!canBack}
+          aria-label="Back"
+          className="inline-flex h-11 items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink transition-colors hover:text-brand-600 disabled:pointer-events-none disabled:opacity-30"
+        >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           <span className="hidden sm:inline">Back</span>
-        </Button>
+        </button>
 
         {!hideKeyHint && !isReview && (
-          <span className="hidden items-center gap-1.5 text-xs text-muted-2 md:inline-flex" aria-hidden>
+          <span className="label-mono hidden items-center gap-1.5 text-muted-2 md:inline-flex" aria-hidden>
             <Kbd>↵</Kbd> to continue
           </span>
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-3 sm:gap-5">
           {skippable && (
-            <Button variant="ghost" size="md" onClick={onSkipSection} className="px-3 text-ink-3 sm:px-4">
+            <button
+              type="button"
+              onClick={onSkipSection}
+              className="link-rule inline-flex h-11 items-center font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink-3"
+            >
               <span className="sm:hidden">Skip section</span>
               <span className="hidden sm:inline">Skip this section</span>
-            </Button>
+            </button>
           )}
-          <Button
-            variant={isReview ? "brand" : "primary"}
-            size="lg"
-            onClick={onNext}
-            className={cn("min-w-[8.5rem]", isReview && "min-w-[11rem]")}
-          >
-            {isReview && <Sparkles className="h-4 w-4" aria-hidden />}
+          <Button variant={isReview ? "brand" : "primary"} size="lg" onClick={onNext} className={cn("min-w-[8.5rem]", isReview && "min-w-[11rem]")}>
             {nextLabel}
-            {!isReview && <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" aria-hidden />}
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
         </div>
       </div>

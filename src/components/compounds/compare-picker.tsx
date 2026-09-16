@@ -4,13 +4,16 @@ import * as React from "react";
 import { Command } from "cmdk";
 import { Dialog } from "radix-ui";
 import { Check, Plus, Search, X } from "lucide-react";
-import { EvidenceMeter } from "@/components/ui/badge";
 import { COMPOUNDS, searchCompounds } from "@/data/compounds";
-import { EVIDENCE_LABELS, FAMILY_LABELS, type Compound, type CompoundFamily } from "@/data/types";
-import { cn } from "@/lib/utils";
+import { FAMILY_LABELS, type Compound, type CompoundFamily } from "@/data/types";
 import { MAX_COMPARE } from "@/lib/compare";
+import { cn } from "@/lib/utils";
+import { MeterLabel } from "./primitives";
 
 const FAMILY_ORDER = Object.keys(FAMILY_LABELS) as CompoundFamily[];
+
+const GROUP_HEADING =
+  "[&_[cmdk-group-heading]]:border-y [&_[cmdk-group-heading]]:border-line [&_[cmdk-group-heading]]:bg-paper-2 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.12em] [&_[cmdk-group-heading]]:text-muted";
 
 function Item({
   compound,
@@ -28,31 +31,28 @@ function Item({
       disabled={added}
       onSelect={onSelect}
       className={cn(
-        "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors",
-        "data-[selected=true]:bg-paper-2 data-[disabled=true]:cursor-default data-[disabled=true]:opacity-60",
+        "group flex min-h-14 cursor-pointer items-center gap-3 border-b border-line px-4 py-2.5 text-[14px] text-ink outline-none transition-colors duration-150 last:border-b-0",
+        "data-[selected=true]:bg-ink data-[selected=true]:text-white data-[disabled=true]:cursor-default data-[disabled=true]:opacity-50",
       )}
     >
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2">
-          <span className="truncate font-medium text-ink">{compound.name}</span>
-          {compound.aliases[0] && <span className="truncate text-xs text-muted-2">{compound.aliases[0]}</span>}
+        <span className="flex items-baseline gap-2">
+          <span className="truncate font-medium">{compound.name}</span>
+          {compound.aliases[0] && (
+            <span className="truncate text-[12px] text-muted group-data-[selected=true]:text-white/60">{compound.aliases[0]}</span>
+          )}
         </span>
-        <span className="mt-0.5 block truncate font-mono text-[0.62rem] uppercase tracking-[0.12em] text-brand-700">
-          {compound.classLabel}
-        </span>
+        <span className="label-mono mt-0.5 block truncate group-data-[selected=true]:text-white/60">{compound.classLabel}</span>
       </span>
-      <span className="hidden items-center gap-1.5 text-[0.7rem] text-muted sm:flex">
-        <EvidenceMeter level={compound.overallEvidence} />
-        {EVIDENCE_LABELS[compound.overallEvidence]}
-      </span>
+      <MeterLabel level={compound.overallEvidence} chip className="hidden sm:inline-flex" />
       <span
         className={cn(
-          "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
-          added ? "bg-brand-100 text-brand-800" : "bg-paper-2 text-muted",
+          "flex h-5 w-5 shrink-0 items-center justify-center border transition-colors",
+          added ? "border-brand-600 bg-brand-600 text-white" : "border-ink group-data-[selected=true]:border-white",
         )}
         aria-hidden
       >
-        {added ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+        {added ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <Plus className="h-3.5 w-3.5" />}
       </span>
     </Command.Item>
   );
@@ -96,35 +96,35 @@ export function ComparePicker({
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm data-[state=open]:animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-ink/60 data-[state=open]:animate-fade-in" />
         <Dialog.Content
           aria-describedby={undefined}
           className={cn(
-            "fixed inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] z-50 flex max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-lift focus:outline-none",
+            "fixed inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] z-50 flex max-h-[85vh] flex-col overflow-hidden border border-ink bg-white focus:outline-none",
             "data-[state=open]:animate-fade-up sm:inset-x-auto sm:left-1/2 sm:top-[12vh] sm:w-full sm:max-w-lg sm:-translate-x-1/2",
           )}
         >
           <Dialog.Title className="sr-only">Add a compound to compare</Dialog.Title>
           <Command shouldFilter={false} label="Add a compound to compare" className="flex min-h-0 flex-col">
-            <div className="flex items-center gap-2 border-b border-line px-3">
-              <Search className="h-4 w-4 shrink-0 text-muted-2" aria-hidden />
+            <div className="flex items-center gap-2 border-b border-ink pl-4 pr-1">
+              <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden />
               <Command.Input
                 autoFocus
                 value={query}
                 onValueChange={setQuery}
                 placeholder="Search by name, brand or class"
-                className="h-14 min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-muted-2"
+                className="h-14 min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted-2"
               />
               <Dialog.Close
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-paper-2 hover:text-ink"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center text-muted transition-colors duration-150 hover:bg-ink hover:text-white"
                 aria-label="Close"
               >
                 <X className="h-4 w-4" aria-hidden />
               </Dialog.Close>
             </div>
 
-            <Command.List className="min-h-0 flex-1 overflow-y-auto p-2">
-              <Command.Empty className="px-3 py-10 text-center text-sm text-muted">
+            <Command.List className={cn("min-h-0 flex-1 overflow-y-auto", GROUP_HEADING)}>
+              <Command.Empty className="px-4 py-10 text-center text-[14px] text-muted">
                 No compounds match “{trimmed}”. Try a brand name or drug class.
               </Command.Empty>
 
@@ -136,11 +136,7 @@ export function ComparePicker({
                 </Command.Group>
               ) : (
                 groups.map((g) => (
-                  <Command.Group
-                    key={g.family}
-                    heading={FAMILY_LABELS[g.family]}
-                    className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[0.62rem] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.16em] [&_[cmdk-group-heading]]:text-muted-2"
-                  >
+                  <Command.Group key={g.family} heading={FAMILY_LABELS[g.family]}>
                     {g.items.map((c) => (
                       <Item key={c.slug} compound={c} added={selectedSlugs.includes(c.slug)} onSelect={select} />
                     ))}
@@ -149,15 +145,13 @@ export function ComparePicker({
               )}
             </Command.List>
 
-            <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2.5 text-xs text-muted">
-              <span>
+            <div className="label-mono flex items-center justify-between gap-3 border-t border-ink px-4 py-2.5">
+              <span className="tnum">
                 {remaining > 0
                   ? `${remaining} more ${remaining === 1 ? "slot" : "slots"} available`
-                  : `Selection full — remove a compound to add another`}
+                  : "Selection full — remove a compound to add another"}
               </span>
-              <span className="hidden font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-2 sm:inline">
-                ↑↓ navigate · ↵ add · esc close
-              </span>
+              <span className="hidden sm:inline">↑↓ navigate · ↵ add · esc close</span>
             </div>
           </Command>
         </Dialog.Content>

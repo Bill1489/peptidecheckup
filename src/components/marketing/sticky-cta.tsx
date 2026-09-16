@@ -1,32 +1,29 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EASE_OUT_EXPO } from "./reveal";
+import { cn } from "@/lib/utils";
 
 /**
- * Mobile-only sticky action bar for ad landing pages. Appears once the hero
- * CTA has scrolled out of view so the primary action is always one tap away.
+ * Mobile-only fixed action bar for ad landing pages. Appears once the hero
+ * CTA has scrolled away; hidden near the page end so it never covers the footer.
+ * Motion is a 200 ms opacity / 8 px translate — nothing floats.
  */
 export function StickyCta({
   href,
-  label = "Start your free assessment",
+  label,
   note,
-  revealAfter = 420,
-  hideBeforeEnd = 760,
+  revealAfter = 480,
+  hideBeforeEnd = 720,
 }: {
   href: string;
-  label?: string;
+  label: string;
   note?: string;
-  /** Scroll offset (px) after which the bar appears */
   revealAfter?: number;
-  /** Hide the bar within this many px of the page end so it never covers the footer */
   hideBeforeEnd?: number;
 }) {
   const [visible, setVisible] = React.useState(false);
-  const reduce = useReducedMotion();
 
   React.useEffect(() => {
     const onScroll = () => {
@@ -44,24 +41,20 @@ export function StickyCta({
   }, [revealAfter, hideBeforeEnd]);
 
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ y: reduce ? 0 : 72, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: reduce ? 0 : 72, opacity: 0 }}
-          transition={{ duration: reduce ? 0 : 0.4, ease: EASE_OUT_EXPO }}
-          className="fixed inset-x-0 bottom-0 z-40 md:hidden"
-        >
-          <div className="glass border-t border-line px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift">
-            <Button href={href} size="xl" variant="primary" className="w-full">
-              {label}
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Button>
-            {note && <p className="mt-2 text-center text-[0.7rem] text-muted">{note}</p>}
-          </div>
-        </motion.div>
+    <div
+      inert={!visible}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-white transition-[opacity,transform] duration-200 ease-out md:hidden",
+        visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
       )}
-    </AnimatePresence>
+    >
+      <div className="flex items-center gap-4 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {note && <p className="label-mono shrink-0 text-ink">{note}</p>}
+        <Button href={href} size="lg" variant="primary" className="flex-1">
+          {label}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Button>
+      </div>
+    </div>
   );
 }

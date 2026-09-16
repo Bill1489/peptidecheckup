@@ -1,0 +1,90 @@
+// Source for public/og.png. To regenerate: copy this file to src/app/opengraph-image.tsx,
+// run `npm run build`, copy out/opengraph-image → public/og.png, then delete the route again
+// (it is kept out of the app so the static export has one canonical PNG).
+import { ImageResponse } from "next/og";
+import { BRAND } from "@/lib/brand";
+
+export const dynamic = "force-static";
+export const alt = `${BRAND.displayName} — ${BRAND.tagline}`;
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+async function loadFont(family: string, weight: number) {
+  const css = await fetch(`https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`, {
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0" },
+  }).then((r) => r.text());
+  const url = css.match(/src: url\(([^)]+)\)/)?.[1];
+  if (!url) throw new Error(`No font url for ${family}`);
+  return fetch(url).then((r) => r.arrayBuffer());
+}
+
+export default async function OpenGraphImage() {
+  const [archivoBlack, plexMono] = await Promise.all([loadFont("Archivo", 800), loadFont("IBM+Plex+Mono", 500)]);
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: 64,
+          background: "#0b0b0c",
+          color: "#ffffff",
+          fontFamily: "Archivo",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+            <div style={{ display: "flex", width: 56, height: 56 }}>
+              <svg width="56" height="56" viewBox="0 0 32 32" fill="none">
+                <path d="M5 17.5 L12.5 25 L27 7" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="square" />
+                <rect x="2.2" y="14.7" width="5.6" height="5.6" fill="#ffffff" />
+                <rect x="9.7" y="22.2" width="5.6" height="5.6" fill="#ffffff" />
+                <rect x="17" y="13" width="4.6" height="4.6" fill="#ffffff" />
+                <rect x="24.2" y="4.2" width="5.6" height="5.6" fill="#1d3bff" />
+              </svg>
+            </div>
+            <div style={{ display: "flex", fontSize: 30, letterSpacing: -0.5 }}>
+              <span>{BRAND.wordmark.a.toUpperCase()}</span>
+              <span style={{ color: "#5d76ff", marginLeft: 10 }}>{BRAND.wordmark.b.toUpperCase()}</span>
+            </div>
+          </div>
+          <div style={{ fontFamily: "IBM Plex Mono", fontSize: 18, letterSpacing: 3, color: "rgba(255,255,255,0.55)" }}>
+            BATCH-TESTED · COA PER LOT · UK
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", fontSize: 128, lineHeight: 0.92, letterSpacing: -6 }}>
+          <div>TESTED.</div>
+          <div>MATCHED.</div>
+          <div style={{ color: "#1d3bff" }}>SHIPPED.</div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderTop: "1px solid rgba(255,255,255,0.3)",
+            paddingTop: 22,
+            fontFamily: "IBM Plex Mono",
+            fontSize: 18,
+            letterSpacing: 2,
+          }}
+        >
+          <div style={{ color: "rgba(255,255,255,0.75)" }}>PEPTIDES WITH THE PAPERWORK · THE ASSESSMENT THAT SAYS NO</div>
+          <div>{BRAND.domain.toUpperCase()}</div>
+        </div>
+      </div>
+    ),
+    {
+      ...size,
+      fonts: [
+        { name: "Archivo", data: archivoBlack, weight: 800, style: "normal" },
+        { name: "IBM Plex Mono", data: plexMono, weight: 500, style: "normal" },
+      ],
+    },
+  );
+}

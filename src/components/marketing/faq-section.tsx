@@ -1,38 +1,28 @@
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SectionHeading } from "@/components/ui/card";
-import { BRAND } from "@/lib/brand";
 import { Faq } from "./faq";
-import { HOME_FAQ } from "./faq-data";
-import { Reveal } from "./reveal";
-import { Section } from "./section";
+import { ALL_FAQ, HOME_FAQ } from "./faq-data";
 
+/** Home FAQ: label and headline in the left column, the accordion on the right. */
 export function FaqSection() {
   return (
-    <Section tone="paper-2" id="faq">
-      <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-5">
-          <Reveal className="lg:sticky lg:top-28">
-            <SectionHeading
-              eyebrow="Questions"
-              title="The things people ask before they start."
-              description="Short answers here; longer ones on the FAQ page. If yours isn’t covered, email us — a person reads every message."
-            />
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button href="/faq" variant="secondary" size="md">
-                All questions
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Button>
-              <Button href={`mailto:${BRAND.supportEmail}`} variant="ghost" size="md">
-                {BRAND.supportEmail}
-              </Button>
-            </div>
-          </Reveal>
+    <section className="rule-b">
+      <div className="container-x grid gap-8 py-14 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10 lg:py-20">
+        <div>
+          <p className="label-mono text-ink">
+            <span className="tnum">08 — </span>FAQ
+          </p>
+          <h2 className="mt-4 text-[2rem] uppercase sm:text-[2.6rem] lg:text-[2.75rem]">Questions.</h2>
+          <Link
+            href="/faq"
+            className="mt-5 inline-flex min-h-[44px] items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink link-rule"
+          >
+            All {ALL_FAQ.length} questions
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
         </div>
-        <Reveal className="lg:col-span-7" delay={0.1}>
-          <Faq items={HOME_FAQ} />
-        </Reveal>
+        <Faq items={HOME_FAQ} />
       </div>
-    </Section>
+    </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { index } from "./copy";
 
 export interface TocItem {
   id: string;
@@ -9,8 +10,8 @@ export interface TocItem {
 }
 
 /**
- * Sticky in-page table of contents for long trust/legal pages. Tracks the
- * heading nearest the top of the viewport and highlights it.
+ * In-page table of contents for long trust/legal pages. Rendered as a sticky
+ * rail on desktop; tracks the heading nearest the top of the viewport.
  */
 export function Toc({ items, className }: { items: TocItem[]; className?: string }) {
   const [active, setActive] = React.useState<string>(items[0]?.id ?? "");
@@ -39,28 +40,48 @@ export function Toc({ items, className }: { items: TocItem[]; className?: string
   }, [items]);
 
   return (
-    <nav aria-label="On this page" className={cn("text-sm", className)}>
-      <p className="mb-3 font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-muted-2">On this page</p>
-      <ol className="relative border-l border-line">
-        {items.map((item) => {
+    <nav aria-label="On this page" className={className}>
+      <p className="label-mono mb-3 text-ink">On this page</p>
+      <ol className="border-t border-ink">
+        {items.map((item, i) => {
           const isActive = item.id === active;
           return (
-            <li key={item.id} className="relative">
+            <li key={item.id} className="border-b border-line">
               <a
                 href={`#${item.id}`}
                 aria-current={isActive ? "location" : undefined}
                 className={cn(
-                  "-ml-px block border-l py-1.5 pl-4 leading-snug transition-colors",
-                  isActive
-                    ? "border-brand-600 font-medium text-ink"
-                    : "border-transparent text-muted hover:border-line-strong hover:text-ink",
+                  "flex items-baseline gap-3 py-2 text-[13px] leading-snug transition-colors duration-150",
+                  isActive ? "text-brand-600" : "text-ink-3 hover:text-ink",
                 )}
               >
-                {item.label}
+                <span className="font-mono text-[10.5px] tnum">{index(i + 1)}</span>
+                <span>{item.label}</span>
               </a>
             </li>
           );
         })}
+      </ol>
+    </nav>
+  );
+}
+
+/** Compact horizontal variant shown under the page header on small screens. */
+export function TocRow({ items }: { items: TocItem[] }) {
+  return (
+    <nav aria-label="On this page" className="rule-b lg:hidden">
+      <ol className="no-scrollbar container-x flex gap-6 overflow-x-auto">
+        {items.map((item, i) => (
+          <li key={item.id} className="shrink-0">
+            <a
+              href={`#${item.id}`}
+              className="flex h-11 items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink-3 hover:text-ink"
+            >
+              <span className="tnum">{index(i + 1)}</span>
+              {item.label}
+            </a>
+          </li>
+        ))}
       </ol>
     </nav>
   );

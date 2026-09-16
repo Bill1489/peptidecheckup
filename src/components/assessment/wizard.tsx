@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
-import { CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { countryName } from "@/lib/assessment/derived";
 import {
@@ -27,12 +26,12 @@ import {
 } from "@/lib/assessment/flow";
 import { useAssessmentStore } from "@/lib/assessment/store";
 import type { SectionId } from "@/lib/assessment/types";
+import { useCartStore } from "@/lib/commerce/cart-store";
 import { formatDate } from "@/lib/utils";
-import { Eyebrow } from "@/components/ui/card";
 import { ActionBar } from "./action-bar";
+import { EmailCaptureScreen } from "./email-capture";
 import { GeneratingScreen } from "./generating";
 import { useAnswers, useCoarsePointer, useMounted } from "./hooks";
-import { EASE } from "./primitives";
 import { AUTO_ADVANCE_MS } from "./questions/option-cards";
 import { StepRenderer } from "./step-renderer";
 import { TopBar } from "./top-bar";
@@ -40,19 +39,21 @@ import { Under18Screen } from "./under-18";
 import { WizardSkeleton } from "./wizard-skeleton";
 
 type Direction = 1 | -1;
+type Phase = "idle" | "generating" | "email";
 
+/** Direction-aware step transition: opacity + 6px, 180 ms in, 120 ms out. */
 function makeVariants(reduced: boolean): Variants {
   if (reduced) {
     return {
       enter: { opacity: 0 },
-      center: { opacity: 1, transition: { duration: 0.15 } },
-      exit: { opacity: 0, transition: { duration: 0.1 } },
+      center: { opacity: 1, transition: { duration: 0.12 } },
+      exit: { opacity: 0, transition: { duration: 0.08 } },
     };
   }
   return {
-    enter: (dir: Direction) => ({ x: dir * 24, opacity: 0 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.28, ease: EASE } },
-    exit: (dir: Direction) => ({ x: dir * -24, opacity: 0, transition: { duration: 0.16, ease: EASE } }),
+    enter: (dir: Direction) => ({ x: dir * 6, opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { duration: 0.18, ease: "easeOut" } },
+    exit: (dir: Direction) => ({ x: dir * -6, opacity: 0, transition: { duration: 0.12, ease: "easeIn" } }),
   };
 }
 
@@ -78,7 +79,7 @@ export function AssessmentWizard() {
   const [direction, setDirection] = React.useState<Direction>(1);
   const [attemptedStepId, setAttemptedStepId] = React.useState<string | null>(null);
   const [underage, setUnderage] = React.useState(false);
-  const [generating, setGenerating] = React.useState(false);
+  const [phase, setPhase] = React.useState<Phase>("idle");
   const keyTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ready = mounted && hydrated;
@@ -213,15 +214,27 @@ export function AssessmentWizard() {
     [go],
   );
 
+  /** "Generate my report": mark complete, unlock the assessment promo, run the generating sequence. */
   const generate = React.useCallback(() => {
     const state = useAssessmentStore.getState();
     if (!state.answers.skippedSections.includes("final")) state.markSectionComplete("final");
     complete();
-    setGenerating(true);
+    useCartStore.getState().setAssessmentCompleted(true);
+    setPhase("generating");
   }, [complete]);
 
+  const openReport = React.useCallback(() => router.push("/report/"), [router]);
+
+  const onEmailSent = React.useCallback(
+    (email: string) => {
+      setAnswers({ contactEmail: email });
+      openReport();
+    },
+    [setAnswers, openReport],
+  );
+
   const saveAndExit = React.useCallback(() => {
-    toast.success("Progress saved on this device", {
+    toast("Progress saved on this device", {
       description: "Come back any time and we'll pick up where you left off.",
     });
     router.push("/assessment/");
@@ -237,7 +250,7 @@ export function AssessmentWizard() {
   /* ---------------------------------------------------------------- */
 
   React.useEffect(() => {
-    if (!ready || underage || generating) return;
+    if (!ready || underage || phase !== "idle") return;
 
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.altKey) return;
@@ -285,7 +298,7 @@ export function AssessmentWizard() {
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ready, underage, generating, step, onPrimary, goNext, goBack, setAnswer, advanceFrom]);
+  }, [ready, underage, phase, step, onPrimary, goNext, goBack, setAnswer, advanceFrom]);
 
   /* ---------------------------------------------------------------- */
   /* Render                                                            */
@@ -297,11 +310,12 @@ export function AssessmentWizard() {
   const nextLabel = isReview ? "Generate my report" : step.optional && step.isEmpty?.(answers) ? "Skip" : "Continue";
   const canBack = Boolean(prevStep(answers, position));
   const eyebrow = sectionEyebrow(step);
-  const compoundCount = answers.consideredCompounds.length + (answers.otherCompoundText?.trim() ? 1 : 0);
+  const compoundSlugs = answers.consideredCompounds.map((c) => c.slug);
+  const compoundCount = compoundSlugs.length + (answers.otherCompoundText?.trim() ? 1 : 0);
   const country = countryName(answers.countryCode) ?? "your country";
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="flex min-h-dvh flex-col bg-white">
       <TopBar sections={sections} percent={percent} minutesLeft={minutesLeft} onJump={jumpToSection} onSaveExit={saveAndExit} />
 
       <div className="sr-only" aria-live="polite" aria-atomic="true">
@@ -323,22 +337,9 @@ export function AssessmentWizard() {
           <div className="flex-1">
             <div className="container-narrow overflow-x-clip py-8 sm:py-12">
               <AnimatePresence mode="wait" custom={direction} initial={false}>
-                <motion.div
-                  key={step.id}
-                  custom={direction}
-                  variants={variants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                >
+                <motion.div key={step.id} custom={direction} variants={variants} initial="enter" animate="center" exit="exit">
                   <StepBody step={step} eyebrow={eyebrow} coarse={coarse} completedAt={isReview ? answers.completedAt : undefined}>
-                    <StepRenderer
-                      step={step}
-                      showErrors={showErrors}
-                      onAdvance={onAdvance}
-                      onEdit={editStep}
-                      onAddSection={jumpToSection}
-                    />
+                    <StepRenderer step={step} showErrors={showErrors} onAdvance={onAdvance} onEdit={editStep} onAddSection={jumpToSection} />
                   </StepBody>
                 </motion.div>
               </AnimatePresence>
@@ -360,15 +361,28 @@ export function AssessmentWizard() {
       )}
 
       <AnimatePresence>
-        {generating && (
+        {phase === "generating" && (
           <GeneratingScreen
+            key="generating"
             lines={[
               "Mapping your goal to the evidence base",
               `Checking regulatory status for ${country}`,
               `Screening ${compoundCount} ${compoundCount === 1 ? "compound" : "compounds"} against your history`,
+              "Matching products to your suitability labels",
               "Compiling clinician questions",
             ]}
-            onDone={() => router.push("/report/")}
+            onDone={() => setPhase("email")}
+          />
+        )}
+        {phase === "email" && (
+          <EmailCaptureScreen
+            key="email"
+            initialEmail={answers.contactEmail}
+            goal={answers.primaryGoal}
+            compounds={compoundSlugs}
+            countryCode={answers.countryCode}
+            onSent={onEmailSent}
+            onSkip={openReport}
           />
         )}
       </AnimatePresence>
@@ -377,9 +391,10 @@ export function AssessmentWizard() {
 }
 
 /**
- * Question frame: eyebrow → display-serif title → help → content. Autofocuses
- * the first `[data-autofocus]` control on mount (skipping search boxes on
- * touch devices so the keyboard doesn't hide the suggestions).
+ * Question frame: mono section label → uppercase expanded title → help →
+ * content. Autofocuses the first `[data-autofocus]` control on mount
+ * (skipping search boxes on touch devices so the keyboard doesn't hide the
+ * suggestions).
  */
 function StepBody({
   step,
@@ -406,12 +421,11 @@ function StepBody({
 
   return (
     <div ref={ref}>
-      <Eyebrow>{eyebrow}</Eyebrow>
-      <h1 className="mt-3 text-balance font-display text-2xl leading-[1.15] tracking-tight text-ink sm:text-3xl">{step.title}</h1>
-      {step.help && <p className="mt-3 max-w-prose text-pretty text-base leading-relaxed text-muted">{step.help}</p>}
+      <p className="label-mono text-ink">{eyebrow}</p>
+      <h1 className="mt-4 text-balance font-display text-[1.7rem] uppercase leading-[0.98] text-ink sm:text-[2.2rem]">{step.title}</h1>
+      {step.help && <p className="mt-4 max-w-prose text-pretty text-[15px] leading-relaxed text-muted">{step.help}</p>}
       {completedAt && (
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-xs text-muted shadow-soft">
-          <CalendarClock className="h-3.5 w-3.5 text-brand-600" aria-hidden />
+        <p className="mt-4 inline-flex items-start gap-2 border border-ink border-l-[3px] border-l-brand-600 bg-white px-3 py-2 text-[13px] leading-snug text-ink-2">
           You generated a report on {formatDate(completedAt)}. Generating again replaces it.
         </p>
       )}

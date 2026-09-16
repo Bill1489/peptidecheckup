@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { FlaskConical } from "lucide-react";
 import { getCompound } from "@/data/compounds";
 import { ROUTE_LABELS, type DoseFrequency, type DoseUnit, type Route } from "@/data/types";
 import { useAssessmentStore } from "@/lib/assessment/store";
@@ -40,17 +39,17 @@ export function DoseInput({ showErrors }: { showErrors?: boolean }) {
         const routes = compound?.routes.length ? compound.routes : ALL_ROUTES;
         const amountInvalid = Boolean(showErrors && c.dose?.amount !== undefined && !(c.dose.amount > 0));
         return (
-          <div key={c.slug} className="rounded-2xl border border-line bg-white p-4 shadow-soft sm:p-5">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium text-ink">{compound?.name ?? c.slug}</p>
-                {compound && <p className="text-xs text-muted">{compound.classLabel}</p>}
+          <div key={c.slug} className="border border-ink bg-white">
+            <div className="flex items-center justify-between gap-3 border-b border-ink px-4 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-[15px] font-medium text-ink">{compound?.name ?? c.slug}</p>
+                {compound && <p className="truncate text-xs text-muted">{compound.classLabel}</p>}
               </div>
-              <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-2">
-                {i + 1} / {answers.consideredCompounds.length}
+              <span className="label-mono shrink-0 tnum">
+                {String(i + 1).padStart(2, "0")} / {String(answers.consideredCompounds.length).padStart(2, "0")}
               </span>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
               <div className="grid grid-cols-[1fr_6.5rem] gap-2">
                 <Field label="Amount" htmlFor={`dose-${c.slug}-amount`} optional>
                   <AmountInput
@@ -80,9 +79,7 @@ export function DoseInput({ showErrors }: { showErrors?: boolean }) {
                 <Select
                   id={`dose-${c.slug}-freq`}
                   value={c.dose?.frequency ?? ""}
-                  onChange={(e) =>
-                    update(c.slug, { frequency: (e.target.value || undefined) as DoseFrequency | undefined })
-                  }
+                  onChange={(e) => update(c.slug, { frequency: (e.target.value || undefined) as DoseFrequency | undefined })}
                 >
                   <option value="">Select</option>
                   {FREQUENCIES.map((f) => (
@@ -106,20 +103,15 @@ export function DoseInput({ showErrors }: { showErrors?: boolean }) {
                   ))}
                 </Select>
               </Field>
+              {amountInvalid && <FieldError className="sm:col-span-2">Enter an amount greater than zero, or leave it blank.</FieldError>}
             </div>
-            {amountInvalid && <FieldError className="mt-3">Enter an amount greater than zero, or leave it blank.</FieldError>}
           </div>
         );
       })}
 
-      <InlineNotice tone="brand">
-        <span className="flex items-start gap-2">
-          <FlaskConical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <span>
-            Optional — this lets us compare what you are considering against published study exposures. It is research
-            information, not a recommendation, and leaving it blank is fine.
-          </span>
-        </span>
+      <InlineNotice tone="brand" title="Research information — not a recommendation">
+        Optional — this lets us compare what you are considering against published study exposures. It is research
+        information, not a recommendation, and leaving it blank is fine.
       </InlineNotice>
     </div>
   );
@@ -155,7 +147,7 @@ function AmountInput({
         const n = raw === "" ? undefined : Number(raw.replace(",", "."));
         onCommit(n === undefined || Number.isNaN(n) ? undefined : n);
       }}
-      className="tabular-nums"
+      className="font-mono tnum"
     />
   );
 }

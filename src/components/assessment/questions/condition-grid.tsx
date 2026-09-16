@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { CircleCheck } from "lucide-react";
 import type { ConditionDef, ConditionId, ConditionStatus } from "@/data/types";
 import { conditionRows, joinNatural } from "@/lib/assessment/derived";
 import { useAssessmentStore } from "@/lib/assessment/store";
@@ -46,16 +45,15 @@ export function ConditionGrid() {
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted" aria-live="polite">
-          {reported === 0 ? "Nothing reported yet." : `${reported} ${reported === 1 ? "row" : "rows"} reported.`}
+        <p className="label-mono" aria-live="polite">
+          {reported === 0 ? "Nothing reported yet" : `${reported} ${reported === 1 ? "row" : "rows"} reported`}
         </p>
         <Button variant="secondary" size="sm" onClick={clearAll}>
-          <CircleCheck className="h-4 w-4" aria-hidden />
           I&apos;ve had none of these
         </Button>
       </div>
 
-      <ul className="grid gap-2.5" aria-label="Medical history">
+      <ul className="border border-ink" aria-label="Medical history">
         {base.map((c) => (
           <ConditionRow key={c.id} condition={c} value={statusOf(c.id)} onChange={(s) => setStatus(c.id, s)} />
         ))}
@@ -73,7 +71,7 @@ export function ConditionGrid() {
               Added because {extended.length === 1 ? "a compound you selected references it" : "compounds you selected reference them"}.
             </p>
           </div>
-          <ul className="grid gap-2.5" aria-label="Conditions specific to your selection">
+          <ul className="border border-ink" aria-label="Conditions specific to your selection">
             {extended.map(({ condition, compounds }) => (
               <ConditionRow
                 key={condition.id}
@@ -105,14 +103,17 @@ function ConditionRow({
   return (
     <li
       className={cn(
-        "grid gap-3 rounded-2xl border bg-white p-4 shadow-soft transition-colors lg:grid-cols-[1fr_20rem] lg:items-center",
-        reported ? "border-brand-300" : "border-line",
+        "grid gap-3 border-b border-ink p-4 last:border-b-0 lg:grid-cols-[1fr_20rem] lg:items-center",
+        reported ? "bg-paper-2" : "bg-white",
       )}
     >
-      <div className="min-w-0">
-        <p className="font-medium text-ink">{condition.label}</p>
-        {condition.hint && <p className="mt-0.5 text-xs leading-snug text-muted">{condition.hint}</p>}
-        {because && <p className="mt-1 text-xs text-brand-700">Relevant to {because}</p>}
+      <div className="flex min-w-0 items-start gap-3">
+        <span className={cn("mt-[0.45rem] h-2 w-2 shrink-0", reported ? "bg-brand-600" : "border border-ink bg-white")} aria-hidden />
+        <div className="min-w-0">
+          <p className="text-[15px] font-medium text-ink">{condition.label}</p>
+          {condition.hint && <p className="mt-0.5 text-xs leading-snug text-muted">{condition.hint}</p>}
+          {because && <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brand-700">Relevant to {because}</p>}
+        </div>
       </div>
       <Segmented<ConditionStatus> label={condition.label} value={value} onChange={onChange} options={STATUS_OPTIONS} size="sm" />
     </li>
@@ -125,7 +126,7 @@ function OtherConditionField() {
   const commit = React.useCallback((v: string) => setAnswers({ conditionOtherText: v }), [setAnswers]);
   const [value, update, flush] = useDebouncedField(answers.conditionOtherText ?? "", commit);
   return (
-    <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-4">
+    <div className="border border-ink border-l-[3px] border-l-brand-600 bg-white p-4">
       <Field label="Which other condition?" htmlFor="condition-other" optional>
         <TextInput
           id="condition-other"

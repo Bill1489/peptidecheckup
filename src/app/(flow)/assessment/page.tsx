@@ -4,12 +4,13 @@ import { AssessmentIntro } from "@/components/assessment/intro";
 
 export const metadata: Metadata = {
   title: { absolute: `Start your ${BRAND.displayName} assessment` },
-  description: `Answer a few structured questions about your goal, the compounds you're considering and your health. ${BRAND.displayName} maps your answers against the published evidence and regulatory status and builds a report to discuss with a clinician. Around 7 minutes, private, no account.`,
+  description: `Answer structured questions about your goal, the compounds you're considering and your health. ${BRAND.displayName} maps your answers against the published evidence and regulatory status, builds a report to discuss with a clinician and matches batch-tested products to it — or tells you not to buy. Around 7 minutes, private, no account.`,
   alternates: { canonical: "/assessment/" },
   openGraph: {
-      images: OG_IMAGES,
+    images: OG_IMAGES,
     title: `Start your ${BRAND.displayName} assessment`,
-    description: "Evidence grades, regulatory status for your country, personal suitability flags and questions for your clinician — in about 7 minutes.",
+    description:
+      "Evidence grades, regulatory status for your country, personal suitability flags, product matches and questions for your clinician — in about 7 minutes.",
     url: "/assessment/",
   },
 };

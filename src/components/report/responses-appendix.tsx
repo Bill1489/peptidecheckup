@@ -36,7 +36,7 @@ type Row = { label: string; value: React.ReactNode };
 const yn = (v: YesNo | YesNoNA | YesNoUnsure | undefined) =>
   v === "yes" ? "Yes" : v === "no" ? "No" : v === "na" ? "Not applicable" : v === "unsure" ? "Unsure" : undefined;
 
-const NOT_ANSWERED = <span className="italic text-muted-2">Not answered</span>;
+const NOT_ANSWERED = <span className="text-muted-2">Not answered</span>;
 
 function val(v: React.ReactNode | undefined | null | ""): React.ReactNode {
   return v === undefined || v === null || v === "" ? NOT_ANSWERED : v;
@@ -152,7 +152,7 @@ function rowsFor(section: SectionId, a: AssessmentAnswers): Row[] {
                     {p.strength && <span className="text-muted"> · {p.strength}</span>}
                     {p.frequency && <span className="text-muted"> · {p.frequency}</span>}
                     {p.classId && <span className="ml-2 font-mono text-xs text-muted">{MEDICATION_CLASS_MAP[p.classId].label}</span>}
-                    {p.prescribed === "no" && <span className="ml-2 font-mono text-xs text-amber-700">not prescribed</span>}
+                    {p.prescribed === "no" && <span className="ml-2 font-mono text-xs text-caution">not prescribed</span>}
                   </li>
                 ))}
               </ul>
@@ -255,7 +255,7 @@ const APPENDIX_SECTIONS: SectionId[] = [
 export function ResponsesAppendix({ answers }: { answers: AssessmentAnswers }) {
   return (
     <Accordion.Root type="multiple" defaultValue={["goals"]} className="divide-y divide-line" data-report-appendix>
-      {APPENDIX_SECTIONS.map((id) => {
+      {APPENDIX_SECTIONS.map((id, i) => {
         const meta = SECTION_META[id];
         const skipped = answers.skippedSections.includes(id);
         const completed = answers.completedSections.includes(id);
@@ -263,20 +263,16 @@ export function ResponsesAppendix({ answers }: { answers: AssessmentAnswers }) {
         return (
           <Accordion.Item key={id} value={id} className="break-inside-avoid">
             <Accordion.Header>
-              <Accordion.Trigger className="group flex w-full items-center justify-between gap-4 py-4 text-left">
-                <span className="flex min-w-0 items-baseline gap-3">
-                  <span className="font-display text-lg leading-tight tracking-[-0.02em] text-ink">{meta.title}</span>
-                  <span
-                    className={cn(
-                      "font-mono text-[0.6rem] uppercase tracking-[0.14em]",
-                      skipped ? "text-amber-700" : completed ? "text-muted-2" : "text-muted-2",
-                    )}
-                  >
+              <Accordion.Trigger className="group flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left hover:text-brand-600">
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="label-mono tnum">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="text-[15px] font-bold text-ink group-hover:text-inherit">{meta.title}</span>
+                  <span className={cn("font-mono text-[10.5px] uppercase tracking-[0.1em]", skipped ? "text-caution" : "text-muted-2")}>
                     {skipped ? "Skipped" : completed ? "Completed" : "Not completed"}
                   </span>
                 </span>
                 <ChevronDown
-                  className="no-print h-4 w-4 shrink-0 text-muted transition-transform duration-300 group-data-[state=open]:rotate-180"
+                  className="no-print h-4 w-4 shrink-0 text-ink transition-transform duration-150 group-data-[state=open]:rotate-180"
                   aria-hidden
                 />
               </Accordion.Trigger>
@@ -285,7 +281,7 @@ export function ResponsesAppendix({ answers }: { answers: AssessmentAnswers }) {
               <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-[14rem_1fr]">
                 {rows.map((r) => (
                   <React.Fragment key={r.label}>
-                    <MonoLabel as="dt" className="pt-0.5 text-[0.62rem]">
+                    <MonoLabel as="dt" className="pt-0.5">
                       {r.label}
                     </MonoLabel>
                     <dd className="text-sm leading-relaxed text-ink-2">{r.value}</dd>

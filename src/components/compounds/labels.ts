@@ -32,6 +32,13 @@ export const STACK_EVIDENCE_TONE: Record<StackEvidence, Tone> = {
   none: "neutral",
 };
 
+/** Square marker fills (see `Marker` in ./primitives). Cobalt = studied, amber = limited, outlined = no data. */
+export const STACK_EVIDENCE_MARKER: Record<StackEvidence, string> = {
+  studied: "bg-brand-600",
+  limited: "bg-caution",
+  none: "border border-ink bg-white",
+};
+
 export const INTERACTION_SEVERITY_LABELS: Record<Interaction["severity"], string> = {
   major: "Major",
   moderate: "Moderate",
@@ -42,6 +49,13 @@ export const INTERACTION_SEVERITY_TONE: Record<Interaction["severity"], Tone> = 
   major: "danger",
   moderate: "warning",
   minor: "neutral",
+};
+
+/** Orange = major, amber = moderate, grey = minor. */
+export const INTERACTION_SEVERITY_MARKER: Record<Interaction["severity"], string> = {
+  major: "bg-accent-500",
+  moderate: "bg-caution",
+  minor: "bg-muted-2",
 };
 
 export const INTERACTION_SEVERITY_DESCRIPTIONS: Record<Interaction["severity"], string> = {
@@ -58,4 +72,9 @@ export const CONTRAINDICATION_LABELS: Record<Contraindication["severity"], strin
 export const CONTRAINDICATION_TONE: Record<Contraindication["severity"], Tone> = {
   absolute: "danger",
   caution: "warning",
+};
+
+export const CONTRAINDICATION_MARKER: Record<Contraindication["severity"], string> = {
+  absolute: "bg-accent-500",
+  caution: "bg-caution",
 };

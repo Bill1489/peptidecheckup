@@ -1,7 +1,8 @@
-import { EVIDENCE_COLOR_CLASS } from "@/components/ui/badge";
+import { SpecRow } from "@/components/ui/card";
 import {
   EVIDENCE_DESCRIPTIONS,
   EVIDENCE_LABELS,
+  EVIDENCE_RANK,
   HUMAN_EVIDENCE_LABELS,
   type EvidenceQuality,
   type HumanEvidenceLevel,
@@ -10,9 +11,19 @@ import { cn } from "@/lib/utils";
 
 const LADDER: EvidenceQuality[] = ["strong", "moderate", "limited", "preliminary", "insufficient"];
 
+/** Bar length per grade — a descending ladder, 5/5 down to 1/5. */
+const WIDTH: Record<EvidenceQuality, string> = {
+  strong: "w-full",
+  moderate: "w-4/5",
+  limited: "w-3/5",
+  preliminary: "w-2/5",
+  insufficient: "w-1/5",
+};
+
 /**
- * Shows where a compound sits on the five-point evidence scale, with the
- * definition of its grade. Pure presentational — safe in server components.
+ * Where a compound sits on the five-point evidence scale, drawn as stacked
+ * bars: the compound's grade is filled ink (cobalt for "Strong"), the rest
+ * stay grey. Pure presentational — safe in server components.
  */
 export function EvidenceLadder({
   level,
@@ -24,41 +35,42 @@ export function EvidenceLadder({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-line bg-white p-5 shadow-soft sm:p-6", className)}>
-      <p className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2">Overall evidence grade</p>
-      <p className="mt-2 font-display text-3xl text-ink">{EVIDENCE_LABELS[level]}</p>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{EVIDENCE_DESCRIPTIONS[level]}</p>
+    <section className={cn("p-5 sm:p-6", className)} aria-labelledby="evidence-grade-title">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="evidence-grade-title" className="label-mono text-ink">
+          Overall evidence
+        </h2>
+        <p className="label-mono tnum">{EVIDENCE_RANK[level]} / 5</p>
+      </div>
+      <p className="mt-3 text-[2rem] uppercase leading-none text-ink sm:text-[2.4rem]">{EVIDENCE_LABELS[level]}</p>
+      <p className="mt-3 text-[13.5px] leading-relaxed text-muted">{EVIDENCE_DESCRIPTIONS[level]}</p>
 
       <ol className="mt-5 space-y-1.5" aria-label="Evidence scale">
         {LADDER.map((grade) => {
           const active = grade === level;
           return (
-            <li key={grade} className="flex items-center gap-3">
-              <span
-                className={cn(
-                  "h-2 flex-1 rounded-full transition-colors",
-                  active ? EVIDENCE_COLOR_CLASS[grade] : "bg-ink/8",
-                )}
-                aria-hidden
-              />
-              <span
-                className={cn(
-                  "w-24 shrink-0 font-mono text-[0.65rem] uppercase tracking-[0.12em]",
-                  active ? "text-ink" : "text-muted-2",
-                )}
-              >
+            <li key={grade} className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-3">
+              <span className={cn("label-mono", active && "text-ink")}>
                 {EVIDENCE_LABELS[grade]}
                 {active && <span className="sr-only"> (this compound)</span>}
+              </span>
+              <span className="block h-3 w-full bg-paper-2" aria-hidden>
+                <span
+                  className={cn(
+                    "block h-full transition-colors",
+                    WIDTH[grade],
+                    active ? (grade === "strong" ? "bg-brand-600" : "bg-ink") : "bg-paper-3",
+                  )}
+                />
               </span>
             </li>
           );
         })}
       </ol>
 
-      <dl className="mt-5 border-t border-line pt-4">
-        <dt className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2">Human evidence</dt>
-        <dd className="mt-1 text-sm font-medium text-ink">{HUMAN_EVIDENCE_LABELS[humanEvidenceLevel]}</dd>
-      </dl>
-    </div>
+      <div className="mt-5 border-t border-line">
+        <SpecRow label="Human evidence" value={HUMAN_EVIDENCE_LABELS[humanEvidenceLevel]} />
+      </div>
+    </section>
   );
 }

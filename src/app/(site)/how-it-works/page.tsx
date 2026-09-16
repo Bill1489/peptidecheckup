@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GOALS } from "@/data/goals";
 import { COMPOUNDS } from "@/data/compounds";
+import { GOALS } from "@/data/goals";
+import { PRODUCTS } from "@/data/products";
 import { SECTION_META, SECTION_ORDER } from "@/lib/assessment/types";
-import { BRAND } from "@/lib/brand";
-import { Badge } from "@/components/ui/badge";
+import { BRAND, OG_IMAGES } from "@/lib/brand";
+import { COMMERCE } from "@/lib/commerce/config";
+import { formatMoney } from "@/lib/commerce/money";
+import { SUITABILITY_LABELS } from "@/lib/engine/types";
 import {
   ASSESSMENT_MINUTES,
   NAMED_JURISDICTIONS,
@@ -14,227 +17,271 @@ import {
   SECTION_COUNT,
 } from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { Callout, MetaStrip, Prose, ProseH2, TrustPage } from "@/components/marketing/page-shell";
+import { Note, NumberedRows, Prose, ProseH2, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
+
+const DESCRIPTION = `How the ${ASSESSMENT_MINUTES}-minute Peptide Checkup and the store fit together: the ${SECTION_COUNT} assessment sections, what the rules engine checks, how matches become a cart, what happens at checkout and what arrives in the box.`;
 
 export const metadata: Metadata = {
   title: "How it works",
-  description: `How the ${ASSESSMENT_MINUTES}-minute Peptide Checkup works end to end: the ${SECTION_COUNT} sections, what the rules engine checks, what the report contains, how long it takes and where your data lives.`,
+  description: DESCRIPTION,
   alternates: { canonical: "/how-it-works/" },
+  openGraph: { images: OG_IMAGES, title: `How it works · ${BRAND.displayName}`, description: DESCRIPTION, url: "/how-it-works/" },
 };
 
 const TOC = [
   { id: "overview", label: "Overview" },
-  { id: "sections", label: `The ${SECTION_COUNT} sections` },
-  { id: "engine", label: "What the engine checks" },
+  { id: "assessment", label: "01 · Assessment" },
+  { id: "engine", label: "02 · Rules engine" },
+  { id: "matches", label: "03 · Your matches" },
+  { id: "checkout", label: "04 · Checkout" },
+  { id: "box", label: "05 · In the box" },
   { id: "report", label: "What the report contains" },
   { id: "time", label: "Time and saving progress" },
-  { id: "privacy", label: "Privacy" },
   { id: "after", label: "After the report" },
 ];
+
+const checkupPromo = COMMERCE.promoCodes.CHECKUP10;
+const standard = COMMERCE.shippingOptions[0];
 
 export default function HowItWorksPage() {
   return (
     <TrustPage
-      eyebrow="How it works"
-      title="From a question to a report you can take to a clinician."
-      description="The whole thing runs in your browser: structured questions, a deterministic rules engine and a maintained database. Here is exactly what happens at each step."
-      meta={`≈${ASSESSMENT_MINUTES} minutes · ${SECTION_COUNT} sections · no account`}
+      label="How it works"
+      meta={[`≈${ASSESSMENT_MINUTES} min · ${SECTION_COUNT} sections`, `${pluralise(PRODUCTS.length, "product")} · ${pluralise(COMPOUNDS.length, "compound")}`]}
+      title="Assessment. Matches. Checkout. Certificate."
+      description="The store has one front door: a structured assessment that checks your goal, history and medicines against the evidence, then lists the products that fit. This page follows an order from the first question to the box."
       toc={TOC}
-      after={<CtaBand />}
+      after={<CtaBand secondary={{ href: "/shop", label: "Skip to the shop" }} />}
     >
       <Prose>
         <h2 id="overview">Overview</h2>
         <p>
-          {BRAND.displayName} answers one question well: <strong>given your goal, your history and your medicines, which
-          peptides are worth discussing with a clinician — and which are not?</strong> It does this in three parts.
+          {BRAND.displayName} sells batch-tested peptides. It also answers one question before you buy:{" "}
+          <strong>given your goal, your history and your medicines, which compounds are worth discussing with a clinician — and which are not?</strong>{" "}
+          Four parts do the work.
         </p>
         <ol>
           <li>
-            <strong>A database</strong> of {pluralise(COMPOUNDS.length, "compound")}, each written to the same standard from
-            regulator labels and peer-reviewed trials: mechanism, evidence for each goal, regulatory status in{" "}
-            {NAMED_JURISDICTIONS.length} jurisdictions, published dosing studies, contraindications, interactions,
-            pregnancy guidance and sources.
+            <strong>A database</strong> of {pluralise(COMPOUNDS.length, "compound")}, each written to the same standard from regulator labels and
+            peer-reviewed trials: mechanism, evidence for each goal, regulatory status in {NAMED_JURISDICTIONS.length} jurisdictions, published dosing
+            studies, contraindications, interactions and pregnancy guidance.
           </li>
           <li>
-            <strong>A structured assessment</strong> of {SECTION_COUNT} short sections. It asks in categories — conditions,
-            medicine classes, yes/no safety checks — because categories are what the rules can evaluate reliably.
+            <strong>A structured assessment</strong> of {SECTION_COUNT} short sections that asks in categories — conditions, medicine classes, yes/no
+            safety checks — because categories are what rules can evaluate reliably.
           </li>
           <li>
-            <strong>A deterministic rules engine</strong> that maps your answers onto the database and produces a
-            report. The same answers always produce the same report, and every label in it can be traced to a field a
-            clinician can inspect.
+            <strong>A deterministic rules engine</strong> that maps your answers onto the database and produces a report. The same answers always give
+            the same report, and every label can be traced to a field a clinician can inspect.
+          </li>
+          <li>
+            <strong>A catalogue</strong> of {pluralise(PRODUCTS.length, "product")}, each linked to its compound record where one exists, each lot tested
+            by an independent laboratory before it is listed.
           </li>
         </ol>
         <p>
-          If you arrived from an advert, your goal is pre-selected from the landing page and recorded so the report can
-          address it directly. You can change it in the first section.
+          If you arrived from an advert, your goal is pre-selected from the landing page and recorded so the report can address it. You can change it in
+          the first section.
         </p>
       </Prose>
 
-      <ProseH2 id="sections">The {SECTION_COUNT} sections</ProseH2>
+      <ProseH2 id="assessment">01 · Assessment</ProseH2>
       <Prose>
         <p>
-          One focused screen per question group. Single-choice questions advance automatically; optional sections can be
-          skipped, and the report will say what it could not assess as a result.
+          One focused screen per question group. Single-choice questions advance automatically; the {OPTIONAL_SECTION_COUNT} optional sections can be
+          skipped, and the report says what it could not assess as a result.
         </p>
       </Prose>
-      <ol className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
-        {SECTION_ORDER.map((id, i) => {
-          const meta = SECTION_META[id];
-          return (
-            <li key={id} className="flex gap-4 p-5">
-              <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-paper-2 font-mono text-xs text-ink-3">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <h3 className="font-sans text-[1.02rem] font-medium text-ink [font-variation-settings:normal]">{meta.title}</h3>
-                  {meta.optional && (
-                    <Badge tone="outline" size="xs">
-                      Optional
-                    </Badge>
-                  )}
-                </div>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{meta.description}</p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+      <NumberedRows
+        className="mt-6"
+        items={SECTION_ORDER.map((id) => ({
+          title: SECTION_META[id].title,
+          meta: SECTION_META[id].optional ? "Optional" : undefined,
+          body: SECTION_META[id].description,
+        }))}
+      />
       <Prose>
         <p>
-          A few things the sections do that are easy to miss: the compound picker shows goal-relevant suggestions first
-          and lets you record the dose you are considering; the conditions grid extends itself with any condition a
-          selected compound lists as a contraindication; the safety screen shows compound-specific hints (for an
-          incretin medicine, for example, it mentions thyroid cancer history and pancreatitis); and anyone under 18 is
-          shown a respectful full stop rather than a report.
+          Details that are easy to miss: the compound picker shows goal-relevant suggestions first and lets you record the dose you are considering; the
+          conditions grid extends itself with any condition a selected compound lists as a contraindication; the safety screen shows compound-specific
+          hints; and anyone under 18 is shown a full stop rather than a report.
         </p>
       </Prose>
 
       <Prose>
-        <h2 id="engine">What the engine checks</h2>
-        <p>
-          The rules engine is a fixed set of checks — no language model, no free-text generation. For each compound you
-          are considering it evaluates:
-        </p>
+        <h2 id="engine">02 · Rules engine</h2>
+        <p>A fixed set of checks — no language model, no free text. For each compound you are considering it evaluates:</p>
         <ul>
           <li>
-            <strong>Goal alignment</strong> — whether the compound has any human evidence for your goal, and at what grade
-            on the five-point scale.
+            <strong>Goal alignment</strong> — whether the compound has human evidence for your goal, and at what grade on the five-point scale.
           </li>
           <li>
-            <strong>Contraindications</strong> — your medical history against the compound’s documented absolute and
-            caution-level contraindications.
+            <strong>Contraindications</strong> — your medical history against the compound’s documented absolute and caution-level contraindications.
           </li>
           <li>
-            <strong>Interactions</strong> — the classes of medicine you take against the compound’s documented
-            interactions, graded major, moderate or minor.
+            <strong>Interactions</strong> — the classes of medicine you take against the compound’s documented interactions, graded major, moderate or minor.
           </li>
           <li>
             <strong>Pregnancy, breastfeeding and age</strong> — with an immediate notice where relevant.
           </li>
           <li>
-            <strong>Dose comparison</strong> — if you entered a dose, how it compares with exposures used in published
-            human studies: within, above or below, or a different route or frequency. Where there are no human data, it
-            says so.
+            <strong>Dose comparison</strong> — if you entered a dose, how it compares with exposures used in published human studies. Where there are no
+            human data, it says so.
           </li>
           <li>
-            <strong>Regulatory status and anti-doping status</strong> for your country and, where relevant, your sport.
+            <strong>Regulatory and anti-doping status</strong> for your country and, where relevant, your sport.
           </li>
           <li>
-            <strong>Expectations, source and previous experience</strong> — unrealistic timeframes, unregulated sources
-            and previous adverse reactions become flags.
+            <strong>Expectations, source and previous experience</strong> — unrealistic timeframes, unregulated sources and previous adverse reactions become flags.
           </li>
           <li>
-            <strong>Stack analysis</strong> — for two or more compounds: whether the combination has been studied,
-            overlapping mechanisms, evidence gaps and an overall uncertainty rating.
+            <strong>Stack analysis</strong> — for two or more compounds: combination evidence, overlapping mechanisms, evidence gaps and an uncertainty rating.
           </li>
         </ul>
         <p>
-          The result for each compound is one of three suitability labels — <strong>Potentially relevant</strong>,{" "}
-          <strong>Higher concern</strong> or <strong>Insufficient information</strong> — with the rationale and every
-          flag that contributed. The label is not a clinical determination; it describes whether your answers identified
-          factors that warrant professional review. The <Link href="/methodology">methodology page</Link> explains the
-          grading in detail.
+          The result per compound is one of three labels — <strong>{SUITABILITY_LABELS.potentially_relevant}</strong>,{" "}
+          <strong>{SUITABILITY_LABELS.higher_concern}</strong> or <strong>{SUITABILITY_LABELS.insufficient_information}</strong> — with the rationale and every
+          flag that contributed. The label is not a clinical determination; it describes whether your answers identified factors that warrant professional
+          review. The <Link href="/methodology">methodology</Link> explains the grading in detail.
+        </p>
+      </Prose>
+
+      <Prose>
+        <h2 id="matches">03 · Your matches</h2>
+        <p>
+          After the suitability section, the report lists products. What it does with each one depends on the label its compound received — not on
+          price, margin or stock.
+        </p>
+      </Prose>
+      <NumberedRows
+        className="mt-6"
+        items={[
+          {
+            title: SUITABILITY_LABELS.potentially_relevant,
+            body: "The linked product appears with its price and current lot. Research, supplement and cosmetic products add straight to the cart; prescription-only medicines show “Start consultation” instead, because they are supplied by a prescriber and pharmacy, not by us.",
+          },
+          {
+            title: SUITABILITY_LABELS.higher_concern,
+            body: "The product is not added to your cart. The report shows a “Not adding this to your cart” card that names the answer responsible and links to speaking to a clinician. The product page carries the same message.",
+          },
+          {
+            title: SUITABILITY_LABELS.insufficient_information,
+            body: "No product is shown until the assessment is complete enough to judge. The completeness section says which sections would change that.",
+          },
+        ]}
+      />
+      <Prose>
+        <p>
+          The report also lists two or three goal-matched products you did not consider, drawn from the same database, so the list is not limited to what
+          you searched for.
+          {checkupPromo && <> Completing the assessment unlocks the code <strong>CHECKUP10</strong> ({checkupPromo.label.replace(/ — .*$/, "").toLowerCase()}).</>}
+        </p>
+        <Note tone="brand" title="The rule">
+          If your answers raise a flag, the report tells you not to buy — and we don’t add it to your cart. The report is the same whether you buy nothing
+          or everything.
+        </Note>
+      </Prose>
+
+      <Prose>
+        <h2 id="checkout">04 · Checkout</h2>
+        <p>
+          The cart is standard: sizes, quantities, a promo field and totals with VAT included. Two things are not standard.
+        </p>
+        <ul>
+          <li>
+            <strong>Research-use acknowledgement.</strong> If the cart contains a research-channel product you must confirm you are 18 or over and that the
+            product is for research use, not human consumption. The label is printed on the product page, in the cart, at checkout and on the vial.
+          </li>
+          <li>
+            <strong>Prescription medicines are not in the cart.</strong> They go through the consultation route on the product page.
+          </li>
+        </ul>
+        <p>
+          Card details are handled by the payment provider and never touch this site. Orders are confirmed by email.
+          {standard && (
+            <>
+              {" "}
+              {standard.label} shipping is {formatMoney(standard.price)} ({standard.eta}) and free on orders of{" "}
+              {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more; UK orders placed before 2 pm on a working day are dispatched the same day.
+            </>
+          )}{" "}
+          The <Link href="/shipping">shipping page</Link> has every option and the returns policy.
+        </p>
+      </Prose>
+
+      <Prose>
+        <h2 id="box">05 · In the box</h2>
+        <ul>
+          <li>
+            <strong>The vial</strong>, labelled with the compound, the amount, the lot number and the research-use statement.
+          </li>
+          <li>
+            <strong>The certificate of analysis</strong> for that lot: purity by HPLC, identity by LC-MS, endotoxin by LAL, the laboratory and the test date.
+            The same certificate is published online against the lot number.
+          </li>
+          <li>
+            <strong>Storage instructions</strong> — lyophilised peptides are stable at room temperature in transit and should be stored as the label says on
+            arrival.
+          </li>
+        </ul>
+        <p>
+          Check that the lot number on the vial matches the certificate. If it does not, or anything about the package looks wrong, email{" "}
+          <a href={`mailto:${BRAND.supportEmail}`}>{BRAND.supportEmail}</a> before you use it. The <Link href="/lab-testing">lab-testing page</Link> explains
+          how to read each figure.
         </p>
       </Prose>
 
       <ProseH2 id="report">What the report contains</ProseH2>
       <Prose>
         <p>
-          The report is rendered directly from the engine’s output and nothing else. Sections appear in this order;
-          the stack section appears only when you are considering more than one compound.
+          The report is rendered directly from the engine’s output and nothing else. Sections appear in this order; the stack section appears only when you
+          are considering more than one compound.
         </p>
       </Prose>
-      <ol className="mt-6 grid gap-3 sm:grid-cols-2">
-        {REPORT_CONTENTS.map((item, i) => (
-          <li key={item.title} className="rounded-2xl border border-line bg-white p-5 shadow-soft">
-            <p className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-muted-2">{String(i + 1).padStart(2, "0")}</p>
-            <h3 className="mt-2 font-sans text-[1rem] font-medium text-ink [font-variation-settings:normal]">{item.title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{item.body}</p>
-          </li>
-        ))}
-      </ol>
+      <NumberedRows className="mt-6" items={REPORT_CONTENTS.map((item) => ({ title: item.title, body: item.body }))} />
       <Prose>
         <p>
-          Every report ends with the questions to ask a clinician, the monitoring a clinician would typically consider,
-          an appendix of the answers you gave, the full disclaimer, and two actions: print or save, and request a
-          clinician review.
+          Every report ends with questions to ask a clinician, the monitoring a clinician would typically consider, an appendix of your answers, the full
+          disclaimer, and the option to print or save.
         </p>
-        <Callout tone="brand" title="Dosing is research information, not a recommendation">
-          The dosing section shows what published human studies used — population, duration, route, doses, outcomes
-          and adverse events — and how a dose you are considering compares. It never tells you what to take. Where a
-          comparison raises concern, the report says: this requires professional review before you make a decision.
-        </Callout>
+        <Note title="Dosing is research information, not a recommendation">
+          The dosing section shows what published human studies used — population, duration, route, doses, outcomes and adverse events — and how a dose
+          you are considering compares. It never tells you what to take, and neither does a product page.
+        </Note>
       </Prose>
 
       <Prose>
         <h2 id="time">Time and saving progress</h2>
         <p>
-          Most people finish in about {ASSESSMENT_MINUTES} minutes. It takes longer if you enter several compounds or a
-          long list of medicines, and each of the {OPTIONAL_SECTION_COUNT} optional sections adds a minute or two if you
-          choose to complete them — the report is better when you do.
+          Most people finish in about {ASSESSMENT_MINUTES} minutes. It takes longer if you enter several compounds or a long list of medicines, and each of
+          the {OPTIONAL_SECTION_COUNT} optional sections adds a minute or two — the report is better when you complete them.
         </p>
         <p>
-          Progress is saved in your browser as you go. Choose <strong>Save &amp; exit</strong> at any point and you will
-          find a resume card on the assessment page when you come back on the same device and browser. Before the
-          report is generated you see a review screen where you can change any answer.
+          Progress is saved in your browser as you go. Choose <strong>Save &amp; exit</strong> at any point and a resume card appears on the assessment page
+          when you return on the same device and browser. Before the report is generated you see a review screen where you can change any answer.
         </p>
       </Prose>
-      <MetaStrip
+      <SpecSheet
         items={[
           { label: "Required sections", value: `${SECTION_COUNT - OPTIONAL_SECTION_COUNT} of ${SECTION_COUNT}` },
           { label: "Optional sections", value: `${OPTIONAL_SECTION_COUNT} · skippable` },
-          { label: "Goals available", value: `${GOALS.length}, including “Other”` },
+          { label: "Goals", value: `${GOALS.length}, including “Other”` },
+          { label: "Where answers live", value: "Your browser only" },
         ]}
       />
 
       <Prose>
-        <h2 id="privacy">Privacy</h2>
-        <p>
-          There is no account and no server. Your answers are stored only in your browser’s local storage so you can
-          pause and resume; the report is generated on your device. Nothing is transmitted unless you explicitly request
-          a clinician review and provide an email address, and that consent is asked for separately. To delete
-          everything, choose <strong>Start over</strong> or clear this site’s data in your browser. The{" "}
-          <Link href="/privacy">privacy notice</Link> has the full detail.
-        </p>
-      </Prose>
-
-      <Prose>
         <h2 id="after">After the report</h2>
-        <p>Three things are worth doing with it.</p>
         <ul>
           <li>
-            <strong>Take it to an appointment.</strong> It is written for that: the questions section is specific to the
-            compounds and flags in your report.
+            <strong>Take it to an appointment.</strong> The questions section is specific to the compounds and flags in your report.
           </li>
           <li>
-            <strong>Compare the alternatives it names.</strong> The <Link href="/compare">compare tool</Link> puts evidence,
-            regulatory status and dosing studies side by side.
+            <strong>Add what fits, or don’t.</strong> Matches carry the current lot and price. Nothing is added until you choose to add it.
           </li>
           <li>
-            <strong>Read the compound pages.</strong> Each one lists its sources, so you and your clinician can check the
-            underlying trials and labels.
+            <strong>Compare the alternatives it names.</strong> The <Link href="/compare">compare tool</Link> puts evidence, regulatory status and dosing
+            studies side by side, and every <Link href="/peptides">compound page</Link> lists its sources.
           </li>
         </ul>
       </Prose>

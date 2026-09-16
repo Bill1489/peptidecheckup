@@ -1,6 +1,16 @@
 import { COMPOUNDS, COMPOUND_MAP, getStackNote } from "@/data/compounds";
 import { GOALS } from "@/data/goals";
 import {
+  AVAILABILITY_LABELS,
+  CHANNEL_LABELS,
+  defaultVariant,
+  getProductsForCompound,
+  purchasable,
+  type Product,
+  type ProductVariant,
+} from "@/data/products";
+import { formatFrom, formatMoney } from "@/lib/commerce/money";
+import {
   EVIDENCE_RANK,
   FAMILY_LABELS,
   type Compound,
@@ -21,6 +31,7 @@ export const MAX_COMPARE = 4;
 
 export const COMPARE_PATH = "/compare/";
 export const PEPTIDES_PATH = "/peptides/";
+export const SHOP_PATH = "/shop/";
 
 /** Jurisdictions offered in the segmented selector. "OTHER" is shown on detail tabs only. */
 export const SELECTABLE_JURISDICTIONS = ["UK", "US", "EU", "AU", "CA"] as const;
@@ -80,6 +91,14 @@ export function compareHref(slugs: readonly string[]): string {
 
 export function compoundHref(slug: string): string {
   return `${PEPTIDES_PATH}${slug}/`;
+}
+
+export function productHref(slug: string): string {
+  return `${SHOP_PATH}${slug}/`;
+}
+
+export function assessmentHref(slug?: string): string {
+  return slug ? `/assessment/?compound=${slug}` : "/assessment/";
 }
 
 export function sameSlugs(a: readonly string[], b: readonly string[]): boolean {
@@ -189,4 +208,112 @@ export function wadaLabel(status: Compound["wadaProhibited"]): string {
 
 export function formatNumber(n: number): string {
   return n.toLocaleString("en-GB");
+}
+
+/* ------------------------------------------------------------------ */
+/* Compound ↔ product linking                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * How a compound can be acted on in the shop.
+ * - `buy`          — a linked product is purchasable (in stock, low stock or pre-order)
+ * - `consultation` — prescription-only; supplied via the partner prescriber, never sold directly
+ * - `not_sold`     — listed but we decline to sell it (the product page explains why)
+ * - `unstocked`    — no linked product, or the linked product is out of stock
+ */
+export type CommerceState = "buy" | "consultation" | "not_sold" | "unstocked";
+
+export interface CompoundCommerce {
+  product?: Product;
+  /** Only set for `buy`: the variant "Add to cart" should use. */
+  variant?: ProductVariant;
+  state: CommerceState;
+  /** "from £34.95" · "£6.95" · "Consultation" · "Not sold" · "Out of stock" · "Not stocked" */
+  priceLabel: string;
+  /** Availability wording from the catalogue, or "Not stocked" when nothing is linked. */
+  availabilityLabel: string;
+  /** Sale-channel labelling for product lines, e.g. "Research use only". Empty when nothing is linked. */
+  channelLabel: string;
+  /** Where the commerce action points: the product page, or the shop index when nothing is linked. */
+  href: string;
+}
+
+const STATE_RANK: Record<CommerceState, number> = { buy: 0, consultation: 1, not_sold: 2, unstocked: 3 };
+
+/** Call-to-action wording per state (full and compact forms). */
+export const COMMERCE_STATE_LABELS: Record<CommerceState, string> = {
+  buy: "Add to cart",
+  consultation: "Start consultation",
+  not_sold: "Why we don't sell it",
+  unstocked: "Notify me",
+};
+
+export const COMMERCE_STATE_SHORT: Record<CommerceState, string> = {
+  buy: "Add to cart",
+  consultation: "Consultation",
+  not_sold: "Why not sold",
+  unstocked: "Notify me",
+};
+
+function stateForProduct(product: Product): CommerceState {
+  if (product.availability === "not_sold") return "not_sold";
+  // Prescription medicines are never sold directly, whatever the stock record says.
+  if (product.availability === "consultation" || product.channel === "prescription") return "consultation";
+  if (purchasable(product)) return "buy";
+  return "unstocked"; // out_of_stock
+}
+
+/** The default variant, unless it is sold out and another variant is not. */
+function variantToBuy(product: Product): ProductVariant {
+  const preferred = defaultVariant(product);
+  if (preferred.stock > 0 || product.availability === "preorder") return preferred;
+  return product.variants.find((v) => v.stock > 0 && v.price > 0) ?? preferred;
+}
+
+/** "£34.95" for a single price, "from £34.95" when variants differ. */
+export function productPriceLabel(product: Product): string {
+  const prices = product.variants.map((v) => v.price).filter((p) => p > 0);
+  if (prices.length === 0) return AVAILABILITY_LABELS[product.availability];
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max ? formatMoney(min, { trimZeros: true }) : formatFrom(prices);
+}
+
+/**
+ * Resolve the shop position for a compound. Pure; safe in server and client code.
+ * When several products link to one compound (e.g. a vial and a kit), the most
+ * actionable wins: buy → consultation → not sold → out of stock, with single
+ * products preferred over kits and catalogue order breaking remaining ties.
+ */
+export function commerceForCompound(slug: string): CompoundCommerce {
+  const products = getProductsForCompound(slug);
+  if (products.length === 0) {
+    return { state: "unstocked", priceLabel: "Not stocked", availabilityLabel: "Not stocked", channelLabel: "", href: SHOP_PATH };
+  }
+
+  const product = [...products].sort(
+    (a, b) =>
+      STATE_RANK[stateForProduct(a)] - STATE_RANK[stateForProduct(b)] ||
+      Number(a.category === "kit") - Number(b.category === "kit"),
+  )[0];
+  const state = stateForProduct(product);
+  const base = {
+    product,
+    state,
+    availabilityLabel: AVAILABILITY_LABELS[product.availability],
+    channelLabel: CHANNEL_LABELS[product.channel],
+    href: productHref(product.slug),
+  };
+
+  switch (state) {
+    case "buy":
+      return { ...base, variant: variantToBuy(product), priceLabel: productPriceLabel(product) };
+    case "consultation":
+      return { ...base, priceLabel: "Consultation" };
+    case "not_sold":
+      // The channel label would imply a sale ("Research use only"); "Not sold" is the whole message.
+      return { ...base, channelLabel: "", priceLabel: "Not sold" };
+    default:
+      return { ...base, priceLabel: AVAILABILITY_LABELS[product.availability] };
+  }
 }

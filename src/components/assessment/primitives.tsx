@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { RadioGroup } from "radix-ui";
-import { Check, ChevronDown, CircleAlert, Info, Plus, X } from "lucide-react";
+import { ChevronDown, CircleAlert, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Small form primitives shared by the question components. Everything here
- * follows the design system: inputs `rounded-xl h-12`, pills for chips,
- * brand teal for selection states, ≥ 44px tap targets.
+ * Form primitives shared by the question components. Design system v2
+ * ("Lab Grotesk"): square corners, 1px ink borders, mono labels, colour
+ * inversion for selection and hover, ≥ 44px tap targets, no shadows.
  */
 
 export const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -36,10 +36,10 @@ export function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-3 text-sm font-medium text-ink-2">
-        <span>{label}</span>
-        {optional && <span className="text-xs font-normal text-muted-2">Optional</span>}
+    <div className={cn("flex flex-col gap-2", className)}>
+      <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-3">
+        <span className="label-mono text-ink">{label}</span>
+        {optional && <span className="label-mono text-muted-2">Optional</span>}
       </label>
       {children}
       {hint && !error && <p className="text-xs leading-relaxed text-muted">{hint}</p>}
@@ -50,7 +50,7 @@ export function Field({
 
 export function FieldError({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <p role="alert" className={cn("flex items-start gap-1.5 text-sm text-concern", className)}>
+    <p role="alert" className={cn("flex items-start gap-1.5 text-sm text-accent-600", className)}>
       <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
       <span>{children}</span>
     </p>
@@ -62,7 +62,7 @@ export function FieldError({ children, className }: { children: React.ReactNode;
 /* ------------------------------------------------------------------ */
 
 export const inputClass =
-  "h-12 w-full rounded-xl border border-line-strong bg-white px-4 text-base text-ink shadow-inset placeholder:text-muted-2 transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-60 aria-[invalid=true]:border-concern";
+  "h-12 w-full rounded-none border border-ink bg-white px-3 text-[15px] text-ink placeholder:text-muted-2 transition-colors focus:border-brand-600 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-40 aria-[invalid=true]:border-accent-500";
 
 export const TextInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => <input ref={ref} className={cn(inputClass, className)} {...props} />,
@@ -71,11 +71,7 @@ TextInput.displayName = "TextInput";
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   ({ className, ...props }, ref) => (
-    <textarea
-      ref={ref}
-      className={cn(inputClass, "h-auto min-h-[7.5rem] resize-y py-3 leading-relaxed", className)}
-      {...props}
-    />
+    <textarea ref={ref} className={cn(inputClass, "h-auto min-h-[7.5rem] resize-y py-3 leading-relaxed", className)} {...props} />
   ),
 );
 Textarea.displayName = "Textarea";
@@ -87,16 +83,16 @@ export function Select({
 }: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
   return (
     <div className="relative">
-      <select className={cn(inputClass, "appearance-none pr-10", className)} {...props}>
+      <select className={cn(inputClass, "appearance-none pr-9", className)} {...props}>
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink" aria-hidden />
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Chips (toggle pills)                                                */
+/* Chips (square mono tags)                                            */
 /* ------------------------------------------------------------------ */
 
 export function Chip({
@@ -118,16 +114,14 @@ export function Chip({
       aria-checked={Boolean(selected)}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border bg-white font-medium transition-all duration-200 ease-out-expo active:scale-[0.98]",
-        size === "md" ? "min-h-11 px-4 py-2 text-sm" : "min-h-9 px-3 py-1.5 text-xs",
-        selected
-          ? "border-brand-500 bg-brand-50 text-brand-800 ring-1 ring-brand-500"
-          : "border-line-strong text-ink-2 hover:border-ink/30 hover:bg-paper-2",
+        "inline-flex items-center gap-2 rounded-none border border-ink font-mono font-medium uppercase tracking-[0.1em] transition-colors duration-150",
+        size === "md" ? "min-h-11 px-3.5 text-[11px]" : "min-h-9 px-3 text-[10.5px]",
+        selected ? "bg-ink text-white" : "bg-white text-ink hover:bg-ink hover:text-white",
         className,
       )}
       {...props}
     >
-      {selected && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+      <span className={cn("h-2 w-2 shrink-0 border border-current", selected && "border-brand-400 bg-brand-400")} aria-hidden />
       {children}
     </button>
   );
@@ -135,13 +129,13 @@ export function Chip({
 
 export function RemovableChip({ children, onRemove, label }: { children: React.ReactNode; onRemove: () => void; label: string }) {
   return (
-    <span className="inline-flex min-h-11 items-center gap-1 rounded-full border border-brand-200 bg-brand-50 pl-3 pr-0.5 text-sm font-medium text-brand-800">
-      <span className="py-1.5">{children}</span>
+    <span className="inline-flex min-h-11 items-center gap-1 rounded-none border border-ink bg-ink pl-3 text-white">
+      <span className="py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em]">{children}</span>
       <button
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${label}`}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-700 transition-colors hover:bg-brand-100 hover:text-brand-900"
+        className="inline-flex h-11 w-11 items-center justify-center text-white/70 transition-colors hover:bg-brand-600 hover:text-white"
       >
         <X className="h-3.5 w-3.5" aria-hidden />
       </button>
@@ -173,19 +167,20 @@ export function Segmented<T extends string>({
       value={value ?? ""}
       onValueChange={(v) => onChange(v as T)}
       aria-label={label}
-      className={cn("grid w-full rounded-xl border border-line-strong bg-paper-2 p-1", className)}
+      className={cn("grid w-full rounded-none border border-ink bg-white", className)}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
-      {options.map((o) => {
+      {options.map((o, i) => {
         const active = o.value === value;
         return (
           <RadioGroup.Item
             key={o.value}
             value={o.value}
             className={cn(
-              "truncate rounded-lg px-2 font-medium transition-all duration-200 ease-out-expo",
-              size === "md" ? "h-11 text-sm" : "h-11 text-xs",
-              active ? "bg-white text-brand-800 shadow-soft ring-1 ring-brand-500" : "text-ink-3 hover:text-ink",
+              "h-11 truncate px-2 font-mono font-medium uppercase tracking-[0.08em] transition-colors duration-150",
+              size === "md" ? "text-[11px]" : "text-[10.5px]",
+              i > 0 && "border-l border-ink",
+              active ? "bg-ink text-white" : "text-ink hover:bg-paper-2",
             )}
           >
             {o.label}
@@ -211,53 +206,27 @@ export function InlineNotice({
   children: React.ReactNode;
   className?: string;
 }) {
-  const Icon = tone === "caution" ? CircleAlert : Info;
   return (
     <div
       role="status"
       className={cn(
-        "flex gap-3 rounded-2xl border p-4 text-sm leading-relaxed",
-        tone === "info" && "border-info/20 bg-info-soft text-ink-2",
-        tone === "caution" && "border-caution/30 bg-caution-soft text-ink-2",
-        tone === "brand" && "border-brand-200 bg-brand-50 text-brand-900",
+        "rounded-none border border-ink border-l-[3px] p-4 text-sm leading-relaxed text-ink-2",
+        tone === "info" && "border-l-brand-600 bg-white",
+        tone === "brand" && "border-l-brand-600 bg-paper-2",
+        tone === "caution" && "border-l-caution bg-caution-soft",
         className,
       )}
     >
-      <Icon
-        className={cn(
-          "mt-0.5 h-4 w-4 shrink-0",
-          tone === "info" && "text-info",
-          tone === "caution" && "text-caution",
-          tone === "brand" && "text-brand-600",
-        )}
-        aria-hidden
-      />
-      <div>
-        {title && <p className="font-medium text-ink">{title}</p>}
-        <div className={cn(title && "mt-1")}>{children}</div>
-      </div>
+      {title && <p className="label-mono mb-1.5 text-ink">{title}</p>}
+      <div>{children}</div>
     </div>
   );
 }
 
-/** Animated reveal for follow-up inputs and notices. */
+/** Conditional wrapper for follow-up inputs and notices. No motion — content simply appears. */
 export function Reveal({ show, children, className }: { show: boolean; children: React.ReactNode; className?: string }) {
-  const reduced = useReducedMotion();
-  return (
-    <AnimatePresence initial={false}>
-      {show && (
-        <motion.div
-          initial={reduced ? false : { opacity: 0, height: 0, y: -4 }}
-          animate={{ opacity: 1, height: "auto", y: 0 }}
-          exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
-          transition={{ duration: 0.28, ease: EASE }}
-          className={cn("overflow-hidden", className)}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  if (!show) return null;
+  return <div className={className}>{children}</div>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -282,30 +251,26 @@ export function EntryCard({
   const reduced = useReducedMotion();
   return (
     <motion.div
-      layout={!reduced}
-      initial={reduced ? false : { opacity: 0, y: 8, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0, marginBottom: 0, scale: 0.98 }}
-      transition={{ duration: 0.28, ease: EASE }}
-      className={cn(
-        "rounded-2xl border bg-white p-4 shadow-soft sm:p-5",
-        invalid ? "border-concern/50" : "border-line",
-      )}
+      initial={reduced ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className={cn("rounded-none border bg-white", invalid ? "border-accent-500" : "border-ink")}
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] text-brand-700">
-          {title} {index + 1}
+      <div className="flex items-center justify-between gap-3 border-b border-ink pl-4">
+        <p className="label-mono text-ink">
+          {title} · {String(index + 1).padStart(2, "0")}
         </p>
         <button
           type="button"
           onClick={onRemove}
           aria-label={removeLabel}
-          className="-mr-2 -mt-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-ink/6 hover:text-ink"
+          className="inline-flex h-11 w-11 items-center justify-center border-l border-ink text-ink transition-colors hover:bg-ink hover:text-white"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
       </div>
-      <div className="grid gap-4">{children}</div>
+      <div className="grid gap-4 p-4 sm:p-5">{children}</div>
     </motion.div>
   );
 }
@@ -315,7 +280,7 @@ export function AddButton({ onClick, children }: { onClick: () => void; children
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-line-strong bg-transparent px-4 text-sm font-medium text-brand-700 transition-colors hover:border-brand-400 hover:bg-brand-50"
+      className="hover-invert flex h-12 w-full items-center justify-center gap-2 rounded-none border border-ink px-4 font-mono text-[11px] font-medium uppercase tracking-[0.1em]"
     >
       <Plus className="h-4 w-4" aria-hidden />
       {children}
@@ -419,7 +384,7 @@ export function Combobox<T>({
         <ul
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+0.375rem)] z-30 max-h-64 overflow-y-auto rounded-2xl border border-line bg-white p-1.5 shadow-lift"
+          className="absolute left-0 right-0 top-full z-30 -mt-px max-h-64 overflow-y-auto rounded-none border border-ink bg-white"
           onMouseDown={(e) => e.preventDefault()}
         >
           {items.map((item, i) => (
@@ -434,8 +399,8 @@ export function Combobox<T>({
                 setOpen(false);
               }}
               className={cn(
-                "cursor-pointer rounded-xl px-3 py-2.5 text-sm transition-colors",
-                i === activeIndex ? "bg-brand-50 text-brand-900" : "text-ink-2",
+                "cursor-pointer border-b border-line px-3 py-2.5 text-sm last:border-b-0",
+                i === activeIndex ? "bg-ink text-white [&_*]:text-inherit" : "text-ink",
               )}
             >
               {renderItem(item)}
@@ -452,16 +417,12 @@ export function Combobox<T>({
 /* ------------------------------------------------------------------ */
 
 export function MonoLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <p className={cn("font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] text-brand-700", className)}>
-      {children}
-    </p>
-  );
+  return <p className={cn("label-mono text-ink", className)}>{children}</p>;
 }
 
 export function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-line-strong bg-paper px-1 font-mono text-[0.65rem] text-muted">
+    <kbd className="inline-flex h-5 min-w-5 items-center justify-center rounded-none border border-ink bg-white px-1 font-mono text-[10px] text-ink">
       {children}
     </kbd>
   );

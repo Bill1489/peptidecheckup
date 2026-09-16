@@ -1,46 +1,56 @@
-import { ExternalLink, FlaskConical, Info } from "lucide-react";
+import type * as React from "react";
+import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ROUTE_LABELS, type DosingStudy } from "@/data/types";
 import { formatNumber } from "@/lib/compare";
 import { cn } from "@/lib/utils";
+import { Marker } from "./primitives";
 
-function Fact({ label, value }: { label: string; value: React.ReactNode }) {
+interface Fact {
+  label: string;
+  value: React.ReactNode;
+}
+
+/**
+ * Label/value grid that reads as a table from `md` (mono header row, columns
+ * divided by hairlines) and stacks into label-over-value rows below it.
+ */
+function FactTable({ facts, cols, className }: { facts: Fact[]; cols: string; className?: string }) {
   return (
-    <div className="min-w-0">
-      <dt className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2">{label}</dt>
-      <dd className="mt-1 text-sm leading-relaxed text-ink">{value}</dd>
-    </div>
+    <dl className={cn("grid md:divide-x md:divide-line", cols, className)}>
+      {facts.map((f) => (
+        <div key={f.label} className="flex min-w-0 flex-col border-b border-line last:border-b-0 md:border-b-0">
+          <dt className="label-mono border-b border-line bg-paper-2 px-4 py-2">{f.label}</dt>
+          <dd className="px-4 py-3 text-[14px] leading-relaxed text-ink">{f.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
 export function ResearchBanner({ className }: { className?: string }) {
   return (
-    <div
-      role="note"
-      className={cn(
-        "flex gap-3 rounded-xl border border-caution/25 bg-caution-soft px-4 py-3.5 text-sm leading-relaxed text-amber-900",
-        className,
-      )}
-    >
-      <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+    <div role="note" className={cn("flex gap-3 border border-ink bg-paper-2 px-4 py-3.5 text-[13.5px] leading-relaxed text-ink-3", className)}>
+      <Marker className="mt-1.5 bg-caution" />
       <p>
-        <strong className="font-semibold">Research information — not a recommendation.</strong> These are the exposures used in
-        published human studies, reported so you can see what has actually been tested. They are not dosing instructions and do not
-        apply to any individual.
+        <strong className="font-semibold text-ink">Research information — not a recommendation.</strong> These are the exposures used in
+        published human studies, reported so you can see what has been tested. They are not dosing instructions and do not apply to any
+        individual.
       </p>
     </div>
   );
 }
 
-function StudyCard({ study, index }: { study: DosingStudy; index: number }) {
+function StudyTable({ study, index }: { study: DosingStudy; index: number }) {
   return (
-    <article className="rounded-2xl border border-line bg-white p-5 shadow-soft sm:p-6" aria-labelledby={`study-${index}`}>
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <article className="border border-ink" aria-labelledby={`study-${index}`}>
+      <header className="flex flex-col gap-3 border-b border-ink p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
         <div className="min-w-0">
-          <h3 id={`study-${index}`} className="font-display text-xl leading-snug text-ink">
+          <p className="label-mono tnum">Study {String(index + 1).padStart(2, "0")}</p>
+          <h3 id={`study-${index}`} className="mt-1.5 text-[15px] font-semibold leading-snug tracking-normal text-ink">
             {study.title}
           </h3>
-          <p className="mt-1.5 text-sm text-muted">
+          <p className="mt-1.5 font-mono text-[11.5px] leading-relaxed text-muted">
             {study.citation}
             {study.url && (
               <>
@@ -49,10 +59,10 @@ function StudyCard({ study, index }: { study: DosingStudy; index: number }) {
                   href={study.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-4 hover:underline"
+                  className="link-rule inline-flex items-center gap-0.5 text-ink"
                 >
                   Source
-                  <ExternalLink className="h-3 w-3" aria-hidden />
+                  <ArrowUpRight className="h-3 w-3" aria-hidden />
                 </a>
               </>
             )}
@@ -60,39 +70,42 @@ function StudyCard({ study, index }: { study: DosingStudy; index: number }) {
         </div>
         <div className="flex shrink-0 flex-wrap gap-1.5">
           {study.phase && (
-            <Badge tone="info" size="xs">
+            <Badge tone="neutral" size="xs">
               {study.phase}
             </Badge>
           )}
-          <Badge tone="neutral" size="xs">
+          <Badge tone="outline" size="xs" className="tnum">
             {study.year}
           </Badge>
         </div>
       </header>
 
-      <dl className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Fact label="Design" value={study.design} />
-        <Fact label="Population" value={study.population} />
-        <Fact label="Participants" value={study.n !== undefined ? `n = ${formatNumber(study.n)}` : "Not reported"} />
-        <Fact label="Duration" value={study.duration} />
-      </dl>
-
-      <dl className="mt-4 grid gap-4 rounded-xl bg-paper-2 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-        <Fact label="Doses studied" value={study.doses} />
-        <Fact label="Route" value={ROUTE_LABELS[study.route]} />
-      </dl>
-
-      <dl className="mt-4 grid gap-4 md:grid-cols-2">
-        <Fact label="Outcome at this exposure" value={study.outcome} />
-        <Fact label="Adverse events observed" value={study.adverseEvents} />
-      </dl>
+      <FactTable
+        cols="md:grid-cols-5"
+        facts={[
+          { label: "Design", value: study.design },
+          { label: "Population", value: study.population },
+          { label: "Participants", value: study.n !== undefined ? <span className="tnum">n = {formatNumber(study.n)}</span> : "Not reported" },
+          { label: "Duration", value: study.duration },
+          { label: "Route", value: ROUTE_LABELS[study.route] },
+        ]}
+      />
+      <FactTable
+        className="border-t border-ink"
+        cols="md:grid-cols-3"
+        facts={[
+          { label: "Doses studied", value: study.doses },
+          { label: "Outcome at this exposure", value: study.outcome },
+          { label: "Adverse events observed", value: study.adverseEvents },
+        ]}
+      />
     </article>
   );
 }
 
 /**
- * "What the evidence says about dosing": published human studies as structured
- * cards, or the record's note when no comparable studies exist.
+ * "What the evidence says about dosing": published human studies as bordered
+ * tables, or the record's note when no comparable studies exist.
  */
 export function DosingResearch({
   studies,
@@ -108,31 +121,20 @@ export function DosingResearch({
       <ResearchBanner />
 
       {studies.length === 0 ? (
-        <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-line-strong bg-paper-2/70 p-5 sm:flex-row sm:items-start sm:p-6">
-          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-muted shadow-soft">
-            <FlaskConical className="h-5 w-5" aria-hidden />
-          </span>
-          <div>
-            <h3 className="font-display text-xl text-ink">No published human dosing studies recorded</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              {note ??
-                `Our database holds no published human study of ${compoundName} with comparable exposure data. Any dose quoted elsewhere is not supported by human trial evidence.`}
-            </p>
-          </div>
+        <div className="border border-ink p-5 sm:p-6">
+          <p className="label-mono">No studies recorded</p>
+          <h3 className="font-display mt-2 text-[1.4rem] uppercase leading-none text-ink">No published human dosing studies</h3>
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">
+            {note ??
+              `Our database holds no published human study of ${compoundName} with comparable exposure data. Any dose quoted elsewhere is not supported by human trial evidence.`}
+          </p>
         </div>
       ) : (
         <>
-          <div className="space-y-4">
-            {studies.map((study, i) => (
-              <StudyCard key={`${study.citation}-${i}`} study={study} index={i} />
-            ))}
-          </div>
-          {note && (
-            <p className="flex gap-2 text-sm leading-relaxed text-muted">
-              <FlaskConical className="mt-0.5 h-4 w-4 shrink-0 text-muted-2" aria-hidden />
-              <span>{note}</span>
-            </p>
-          )}
+          {studies.map((study, i) => (
+            <StudyTable key={`${study.citation}-${i}`} study={study} index={i} />
+          ))}
+          {note && <p className="text-[13.5px] leading-relaxed text-muted">{note}</p>}
         </>
       )}
     </div>

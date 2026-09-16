@@ -5,7 +5,7 @@ import type { ChipGroup, TextFollowUp, TextStep } from "@/lib/assessment/flow";
 import type { AssessmentAnswers } from "@/lib/assessment/types";
 import { cn } from "@/lib/utils";
 import { useAnswers, useDebouncedField, useSetAnswer } from "../hooks";
-import { Chip, Field, FieldError, MonoLabel, Textarea, TextInput } from "../primitives";
+import { Chip, Field, FieldError, Kbd, MonoLabel, Textarea, TextInput } from "../primitives";
 
 /**
  * Free-text question (Q2, Q9, risk details, final). Local-first with a 150 ms
@@ -39,21 +39,20 @@ export function TextArea({ step }: { step: TextStep }) {
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) flush();
           }}
-          className="text-[1.05rem]"
+          className="text-[16px]"
         />
-        <div className="flex items-center justify-between gap-3 text-xs text-muted-2">
-          <span>
-            {step.optional ? "Optional. " : ""}
-            <span className="hidden sm:inline">
-              <kbd className="font-mono">⌘</kbd> or <kbd className="font-mono">Ctrl</kbd> + <kbd className="font-mono">Enter</kbd> to
-              continue.
+        <div className="flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-2">
+          <span className="inline-flex items-center gap-1.5">
+            {step.optional && <span>Optional</span>}
+            <span className="hidden items-center gap-1.5 sm:inline-flex">
+              {step.optional && <span aria-hidden>·</span>}
+              <Kbd>⌘ / Ctrl</Kbd>
+              <Kbd>↵</Kbd>
+              <span>to continue</span>
             </span>
           </span>
           {max !== undefined && remaining !== undefined && (
-            <span
-              className={cn("font-mono tabular-nums", remaining < 40 && "text-caution")}
-              aria-live={remaining < 40 ? "polite" : "off"}
-            >
+            <span className={cn("tnum", remaining < 40 && "text-caution")} aria-live={remaining < 40 ? "polite" : "off"}>
               {value.length} / {max}
             </span>
           )}
@@ -116,7 +115,7 @@ export function FollowUpText({
   } as const;
 
   return (
-    <div className="mt-4 rounded-2xl border border-brand-200 bg-brand-50/60 p-4 sm:p-5">
+    <div className="border border-ink border-l-[3px] border-l-brand-600 bg-white p-4 sm:p-5">
       <Field label={followUp.label} htmlFor={id} optional={!followUp.required}>
         {followUp.multiline ? (
           <Textarea

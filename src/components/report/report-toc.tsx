@@ -11,9 +11,7 @@ export function useActiveSection(ids: string[]): string | undefined {
 
   React.useEffect(() => {
     const sectionIds = key.split("|").filter(Boolean);
-    const elements = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
+    const elements = sectionIds.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null);
     if (elements.length === 0) return;
 
     const positions = new Map<string, number>();
@@ -44,19 +42,19 @@ export function useActiveSection(ids: string[]): string | undefined {
   return active;
 }
 
-function scrollTo(id: string) {
+export function scrollToSection(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "start" });
   history.replaceState(null, "", `#${id}`);
 }
 
-/** Sticky desktop table of contents. */
+/** Sticky desktop table of contents: mono numbered list, cobalt bar on the active item. */
 export function ReportToc({ sections, active }: { sections: ReportSectionDef[]; active?: string }) {
   return (
     <nav aria-label="Report contents" className="no-print">
-      <p className="mb-4 font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-muted">Contents</p>
-      <ol className="relative space-y-0.5 border-l border-line">
+      <p className="label-mono mb-3 text-ink">Contents</p>
+      <ol className="border-l border-line">
         {sections.map((s) => {
           const isActive = active === s.id;
           return (
@@ -65,18 +63,17 @@ export function ReportToc({ sections, active }: { sections: ReportSectionDef[]; 
                 href={`#${s.id}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  scrollTo(s.id);
+                  scrollToSection(s.id);
                 }}
                 aria-current={isActive ? "location" : undefined}
                 className={cn(
-                  "-ml-px flex items-baseline gap-2.5 border-l-2 py-1.5 pl-4 pr-2 text-[0.82rem] leading-snug transition-colors",
-                  isActive
-                    ? "border-brand-600 text-ink"
-                    : "border-transparent text-muted hover:border-line-strong hover:text-ink",
+                  "relative flex items-baseline gap-2.5 py-1.5 pl-4 pr-2 font-mono text-[11px] uppercase leading-snug tracking-[0.08em] transition-colors",
+                  isActive ? "text-ink" : "text-muted hover:text-ink",
                 )}
               >
-                <span className="w-5 shrink-0 font-mono text-[0.65rem] tabular-nums text-muted-2">{s.number || "—"}</span>
-                <span className="text-balance">{s.label}</span>
+                {isActive && <span className="absolute -left-px top-0 h-full w-[3px] bg-brand-600" aria-hidden />}
+                <span className="w-5 shrink-0 tnum text-muted-2">{s.number || "—"}</span>
+                <span>{s.label}</span>
               </a>
             </li>
           );
@@ -86,7 +83,7 @@ export function ReportToc({ sections, active }: { sections: ReportSectionDef[]; 
   );
 }
 
-/** Horizontal chip TOC for mobile / tablet, sticky under the header. */
+/** Horizontal mono-tag TOC for mobile / tablet, sticky under the header. */
 export function ReportTocMobile({ sections, active }: { sections: ReportSectionDef[]; active?: string }) {
   const listRef = React.useRef<HTMLOListElement>(null);
 
@@ -97,8 +94,8 @@ export function ReportTocMobile({ sections, active }: { sections: ReportSectionD
   }, [active]);
 
   return (
-    <nav aria-label="Report contents" className="no-print sticky top-16 z-30 border-b border-line bg-paper/90 backdrop-blur lg:hidden">
-      <ol ref={listRef} className="no-scrollbar flex gap-1.5 overflow-x-auto px-5 py-2.5 sm:px-8">
+    <nav aria-label="Report contents" className="no-print rule-b sticky top-14 z-30 bg-white sm:top-16 lg:hidden">
+      <ol ref={listRef} className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 py-2.5 sm:px-6">
         {sections.map((s) => {
           const isActive = active === s.id;
           return (
@@ -107,15 +104,15 @@ export function ReportTocMobile({ sections, active }: { sections: ReportSectionD
                 href={`#${s.id}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  scrollTo(s.id);
+                  scrollToSection(s.id);
                 }}
                 aria-current={isActive ? "location" : undefined}
                 className={cn(
-                  "inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-medium transition-colors",
-                  isActive ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-3 hover:border-line-strong",
+                  "inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-none border px-2.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] transition-colors",
+                  isActive ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-3 hover:border-ink hover:text-ink",
                 )}
               >
-                {s.number && <span className="font-mono text-[0.62rem] tabular-nums opacity-70">{s.number}</span>}
+                {s.number && <span className={cn("tnum", isActive ? "text-brand-300" : "text-muted-2")}>{s.number}</span>}
                 {s.label}
               </a>
             </li>

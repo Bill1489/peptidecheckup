@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import type { NumberStep } from "@/lib/assessment/flow";
-import { cn } from "@/lib/utils";
 import { useAnswers, useSetAnswer } from "../hooks";
 import { FieldError, TextInput } from "../primitives";
 
@@ -19,8 +18,7 @@ export function NumberField({ step, showErrors }: { step: NumberStep; showErrors
   const id = `q-${step.id}`;
 
   const parsed = text.trim() === "" ? undefined : Number(text);
-  const outOfRange =
-    parsed !== undefined && !Number.isNaN(parsed) && parsed >= 18 && parsed > step.max;
+  const outOfRange = parsed !== undefined && !Number.isNaN(parsed) && parsed >= 18 && parsed > step.max;
   const invalid = Boolean(showErrors && !step.valid(answers));
 
   return (
@@ -28,7 +26,7 @@ export function NumberField({ step, showErrors }: { step: NumberStep; showErrors
       <label htmlFor={id} className="sr-only">
         {step.title}
       </label>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <TextInput
           id={id}
           type="text"
@@ -46,18 +44,14 @@ export function NumberField({ step, showErrors }: { step: NumberStep; showErrors
             const n = raw === "" ? undefined : Number(raw);
             setAnswer(step.field, n === undefined || Number.isNaN(n) ? undefined : n);
           }}
-          className={cn("h-16 w-36 text-center font-display text-3xl tabular-nums")}
+          className="h-16 w-36 text-center font-mono text-[2rem] font-medium tnum"
         />
-        {step.suffix && <span className="text-lg text-muted">{step.suffix}</span>}
+        {step.suffix && <span className="label-mono">{step.suffix}</span>}
       </div>
-      <p id={`${id}-hint`} className="text-xs text-muted-2">
+      <p id={`${id}-hint`} className="text-xs text-muted">
         Whole years. We don&apos;t store your date of birth.
       </p>
-      {invalid && (
-        <FieldError>
-          {outOfRange ? `Enter an age up to ${step.max}.` : "Enter your age in years to continue."}
-        </FieldError>
-      )}
+      {invalid && <FieldError>{outOfRange ? `Enter an age up to ${step.max}.` : "Enter your age in years to continue."}</FieldError>}
     </div>
   );
 }

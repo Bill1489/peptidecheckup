@@ -27,10 +27,11 @@ export function ConfirmDialog({
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm data-[state=open]:animate-fade-in" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-line bg-white p-6 shadow-lift focus:outline-none data-[state=open]:animate-fade-up sm:p-8">
-          <AlertDialog.Title className="font-display text-2xl leading-tight tracking-tight text-ink">{title}</AlertDialog.Title>
-          <AlertDialog.Description className="mt-3 text-sm leading-relaxed text-muted">{description}</AlertDialog.Description>
+        <AlertDialog.Overlay className="fixed inset-0 z-50 bg-ink/60 data-[state=open]:animate-fade-in" />
+        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-none border border-ink bg-white p-6 focus:outline-none data-[state=open]:animate-fade-in sm:p-8">
+          <p className="label-mono text-ink">Confirm</p>
+          <AlertDialog.Title className="mt-3 font-display text-[1.6rem] uppercase leading-[0.98] text-ink">{title}</AlertDialog.Title>
+          <AlertDialog.Description className="mt-4 text-sm leading-relaxed text-muted">{description}</AlertDialog.Description>
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <AlertDialog.Cancel asChild>
               <Button variant="secondary" size="md">

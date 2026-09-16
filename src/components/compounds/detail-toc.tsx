@@ -9,12 +9,13 @@ export interface TocSection {
 }
 
 /**
- * In-page table of contents. Horizontal, sticky pill strip under the nav on
- * small screens; vertical sticky list in the sidebar from `lg` upwards.
+ * In-page table of contents. A sticky, horizontally scrolling rule of mono
+ * labels under the nav on small screens; a numbered vertical list in the
+ * sidebar from `lg` upwards. Active item carries a 2px cobalt rule.
  */
 export function DetailToc({ sections }: { sections: TocSection[] }) {
   const [active, setActive] = React.useState<string | undefined>(sections[0]?.id);
-  const listRef = React.useRef<HTMLUListElement>(null);
+  const listRef = React.useRef<HTMLOListElement>(null);
 
   React.useEffect(() => {
     const elements = sections
@@ -35,27 +36,27 @@ export function DetailToc({ sections }: { sections: TocSection[] }) {
     return () => observer.disconnect();
   }, [sections]);
 
-  // Keep the active pill in view on the horizontal strip.
+  // Keep the active label in view on the horizontal strip.
   React.useEffect(() => {
     const list = listRef.current;
     if (!list || !active) return;
-    const pill = list.querySelector<HTMLElement>(`[data-section="${active}"]`);
-    if (!pill || list.scrollWidth <= list.clientWidth) return;
-    const target = pill.offsetLeft - list.clientWidth / 2 + pill.clientWidth / 2;
+    const item = list.querySelector<HTMLElement>(`[data-section="${active}"]`);
+    if (!item || list.scrollWidth <= list.clientWidth) return;
+    const target = item.offsetLeft - list.clientWidth / 2 + item.clientWidth / 2;
     list.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
   }, [active]);
 
   return (
     <nav
       aria-label="On this page"
-      className="no-print sticky top-16 z-30 -mx-5 border-b border-line bg-paper/90 backdrop-blur-md sm:top-[4.5rem] sm:-mx-8 lg:top-28 lg:mx-0 lg:self-start lg:border-0 lg:bg-transparent lg:backdrop-blur-none"
+      className="no-print sticky top-[6.1rem] z-30 -mx-4 border-b border-ink bg-white sm:-mx-6 lg:top-[7.1rem] lg:mx-0 lg:self-start lg:border-0"
     >
-      <p className="hidden font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-2 lg:block">On this page</p>
-      <ul
+      <p className="label-mono hidden lg:block">On this page</p>
+      <ol
         ref={listRef}
-        className="no-scrollbar flex gap-1 overflow-x-auto px-5 py-2.5 sm:px-8 lg:mt-3 lg:flex-col lg:gap-0 lg:overflow-visible lg:border-l lg:border-line lg:px-0 lg:py-0"
+        className="no-scrollbar flex overflow-x-auto px-4 sm:px-6 lg:mt-3 lg:flex-col lg:overflow-visible lg:border-l lg:border-line lg:px-0"
       >
-        {sections.map((s) => {
+        {sections.map((s, i) => {
           const isActive = s.id === active;
           return (
             <li key={s.id} className="shrink-0">
@@ -65,18 +66,19 @@ export function DetailToc({ sections }: { sections: TocSection[] }) {
                 aria-current={isActive ? "location" : undefined}
                 onClick={() => setActive(s.id)}
                 className={cn(
-                  "inline-flex h-9 items-center whitespace-nowrap rounded-full px-3 text-xs font-medium transition-colors lg:-ml-px lg:h-auto lg:rounded-none lg:border-l-2 lg:py-1.5 lg:pl-4 lg:pr-0 lg:text-[0.82rem]",
-                  isActive
-                    ? "bg-ink text-white lg:border-brand-600 lg:bg-transparent lg:text-ink"
-                    : "text-muted hover:bg-paper-2 hover:text-ink lg:border-transparent lg:hover:bg-transparent",
+                  "relative flex h-11 items-center gap-2 whitespace-nowrap px-3 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors duration-150",
+                  "lg:-ml-px lg:h-auto lg:border-l-2 lg:py-1.5 lg:pl-4 lg:pr-0",
+                  isActive ? "text-ink lg:border-brand-600" : "text-muted hover:text-ink lg:border-transparent",
                 )}
               >
+                <span className={cn("tnum", isActive ? "text-brand-600" : "text-muted-2")}>{String(i + 1).padStart(2, "0")}</span>
                 {s.label}
+                {isActive && <span aria-hidden className="absolute inset-x-3 bottom-0 h-[2px] bg-brand-600 lg:hidden" />}
               </a>
             </li>
           );
         })}
-      </ul>
+      </ol>
     </nav>
   );
 }

@@ -1,42 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { motion, useReducedMotion } from "motion/react";
-import {
-  Bandage,
-  Check,
-  Dumbbell,
-  Ellipsis,
-  Flame,
-  Heart,
-  Hourglass,
-  Moon,
-  Scale,
-  Scissors,
-  Sparkles,
-  Sun,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
-import type { OptionIcon, StepOption } from "@/lib/assessment/flow";
+import type { StepOption } from "@/lib/assessment/flow";
 import { cn } from "@/lib/utils";
 import { useLatest } from "../hooks";
-import { EASE } from "../primitives";
-
-const ICONS: Record<OptionIcon, LucideIcon> = {
-  Scale,
-  Flame,
-  Dumbbell,
-  Zap,
-  Bandage,
-  Sparkles,
-  Scissors,
-  Heart,
-  Moon,
-  Sun,
-  Hourglass,
-  MoreHorizontal: Ellipsis,
-};
 
 export const AUTO_ADVANCE_MS = 350;
 
@@ -53,11 +20,16 @@ export interface OptionCardsProps {
   size?: "md" | "lg";
   /** Group label for assistive tech */
   label: string;
-  /** Show 1–9 keyboard hints (desktop) */
+  /** Show 1–9 index markers (doubles as the radio / checkbox marker) */
   numbered?: boolean;
   className?: string;
 }
 
+/**
+ * Option cells in a shared-border grid. The square marker on the left carries
+ * the keyboard index and fills cobalt when selected; the whole cell inverts to
+ * ink when selected or hovered.
+ */
 export function OptionCards({
   options,
   value,
@@ -70,7 +42,6 @@ export function OptionCards({
   numbered = true,
   className,
 }: OptionCardsProps) {
-  const reduced = useReducedMotion();
   const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const advanceRef = useLatest(onAdvance);
 
@@ -98,18 +69,18 @@ export function OptionCards({
     <div
       role={multi ? "group" : "radiogroup"}
       aria-label={label}
-      className={cn("grid gap-2.5", columns === 2 && "sm:grid-cols-2", size === "lg" && "grid-cols-2", className)}
+      className={cn(
+        "cell-grid",
+        // An odd last cell spans the row so the grid never shows an empty (ink) area.
+        columns === 2 && "sm:grid-cols-2 sm:[&>*:nth-child(odd):last-child]:col-span-2",
+        size === "lg" && "grid-cols-2",
+        className,
+      )}
     >
       {options.map((option, i) => {
         const selected = isSelected(option.value);
-        const Icon = option.icon ? ICONS[option.icon] : undefined;
         return (
-          <motion.div
-            key={option.value}
-            initial={reduced ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: EASE, delay: reduced ? 0 : Math.min(i, 12) * 0.03 }}
-          >
+          <div key={option.value} className="flex">
             <button
               type="button"
               role={multi ? "checkbox" : "radio"}
@@ -117,60 +88,44 @@ export function OptionCards({
               data-option
               onClick={() => select(option)}
               className={cn(
-                "group relative flex w-full items-center gap-4 rounded-2xl border bg-white text-left shadow-soft transition-all duration-200 ease-out-expo hover:border-ink/20 hover:shadow-card active:scale-[0.99]",
+                "relative flex w-full items-center gap-3 rounded-none text-left transition-colors duration-150 focus-visible:z-10",
                 size === "lg" ? "min-h-[5.5rem] justify-center px-4 py-5 sm:min-h-[6.5rem]" : "min-h-14 px-4 py-3.5",
-                selected ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500" : "border-line",
+                // Unselected cells carry no bg/text utilities so the (components-layer) hover-invert rule can win.
+                selected ? "bg-ink text-white" : "hover-invert",
               )}
             >
-              {numbered && i < 9 && size !== "lg" && (
-                <span
-                  aria-hidden
-                  className={cn(
-                    "hidden h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[0.65rem] sm:flex",
-                    selected ? "border-brand-300 bg-white text-brand-700" : "border-line-strong bg-paper text-muted-2",
-                  )}
-                >
-                  {i + 1}
-                </span>
-              )}
-              {Icon && (
-                <span
-                  className={cn(
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors",
-                    selected ? "bg-brand-100 text-brand-700" : "bg-paper-2 text-ink-3 group-hover:bg-paper-3",
-                  )}
-                >
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-              )}
+              <Marker index={numbered && i < 9 ? i + 1 : undefined} selected={selected} floating={size === "lg"} />
               <span className={cn("min-w-0 flex-1", size === "lg" && "flex-none text-center")}>
                 <span
                   className={cn(
-                    "block font-medium text-ink",
-                    size === "lg" ? "font-display text-xl sm:text-2xl" : "text-[0.95rem]",
+                    "block",
+                    size === "lg" ? "font-display text-[1.35rem] uppercase sm:text-[1.6rem]" : "text-[15px] font-medium",
                   )}
                 >
                   {option.label}
                 </span>
-                {option.hint && <span className="mt-0.5 block text-sm leading-snug text-muted">{option.hint}</span>}
-              </span>
-              <span
-                aria-hidden
-                className={cn(
-                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
-                  size === "lg" && "absolute right-3 top-3",
-                  selected
-                    ? "scale-100 border-brand-500 bg-brand-500 text-white"
-                    : "scale-90 border-line-strong bg-white text-transparent group-hover:border-ink/30",
-                  multi && "rounded-md",
-                )}
-              >
-                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                {option.hint && <span className="mt-0.5 block text-[13px] leading-snug opacity-70">{option.hint}</span>}
               </span>
             </button>
-          </motion.div>
+          </div>
         );
       })}
     </div>
+  );
+}
+
+/** Square index / state marker. Cobalt when selected; follows the text colour otherwise. */
+export function Marker({ index, selected, floating }: { index?: number; selected: boolean; floating?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "flex h-6 w-6 shrink-0 items-center justify-center border font-mono text-[10px] leading-none tnum transition-colors duration-150",
+        floating && "absolute left-3 top-3",
+        selected ? "border-brand-600 bg-brand-600 text-white" : "border-current bg-transparent",
+      )}
+    >
+      {index ?? (selected ? "■" : "")}
+    </span>
   );
 }

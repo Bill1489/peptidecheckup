@@ -8,8 +8,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Personal reports are generated client-side from local storage — nothing to index.
-      disallow: ["/report/"],
+      // Personal, client-side state — reports, checkout, order confirmations and order history — has nothing to index.
+      disallow: ["/report/", "/checkout/", "/order/", "/account/"],
     },
     sitemap: `${BRAND.url}/sitemap.xml`,
     host: BRAND.url,

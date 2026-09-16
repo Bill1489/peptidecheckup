@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cmToImperial, imperialToCm, kgToLb, lbToKg, lbToStoneLb } from "@/lib/assessment/derived";
 import { bmi } from "@/lib/utils";
 import { useAnswers, useSetAnswer } from "../hooks";
-import { EASE, Field, FieldError, Segmented, TextInput } from "../primitives";
+import { Field, FieldError, Segmented, TextInput } from "../primitives";
 
 type UnitSystem = "metric" | "imperial";
 
@@ -22,12 +21,11 @@ function clean(s: string, decimals: boolean) {
 
 /**
  * Q12 + Q13 — height & weight with a metric / imperial toggle and a live,
- * neutrally-worded BMI chip. Store values are always metric (cm / kg).
+ * neutrally-worded BMI readout. Store values are always metric (cm / kg).
  */
 export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
   const answers = useAnswers();
   const setAnswer = useSetAnswer();
-  const reduced = useReducedMotion();
   const system: UnitSystem = answers.unitSystem;
 
   const initialImperial = answers.heightCm ? cmToImperial(answers.heightCm) : undefined;
@@ -94,7 +92,7 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
                   setCm(v);
                   setAnswer("heightCm", num(v));
                 }}
-                className="pr-12 tabular-nums"
+                className="pr-12 font-mono tnum"
               />
               <Unit>cm</Unit>
             </div>
@@ -117,7 +115,7 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
                     setFeet(v);
                     commitImperialHeight(v, inches);
                   }}
-                  className="pr-10 tabular-nums"
+                  className="pr-10 font-mono tnum"
                 />
                 <Unit>ft</Unit>
               </div>
@@ -136,7 +134,7 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
                     setInches(v);
                     commitImperialHeight(feet, v);
                   }}
-                  className="pr-10 tabular-nums"
+                  className="pr-10 font-mono tnum"
                 />
                 <Unit>in</Unit>
               </div>
@@ -160,7 +158,7 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
                   const n = num(v);
                   setAnswer("weightKg", n === undefined ? undefined : Math.round(n * 10) / 10);
                 }}
-                className="pr-12 tabular-nums"
+                className="pr-12 font-mono tnum"
               />
               <Unit>kg</Unit>
             </div>
@@ -186,7 +184,7 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
                   const n = num(v);
                   setAnswer("weightKg", n === undefined ? undefined : lbToKg(n));
                 }}
-                className="pr-12 tabular-nums"
+                className="pr-12 font-mono tnum"
               />
               <Unit>lb</Unit>
             </div>
@@ -194,28 +192,19 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
         )}
       </div>
 
-      <AnimatePresence initial={false}>
-        {value !== undefined && (
-          <motion.div
-            key="bmi"
-            initial={reduced ? false : { opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: EASE }}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-paper-2/70 px-4 py-3"
-          >
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-mono text-xs text-ink-2 shadow-soft">
-              <span className="text-muted-2">BMI</span>
-              <span className="tabular-nums text-ink" aria-live="polite">
-                {value.toFixed(1)}
-              </span>
+      {value !== undefined && (
+        <div className="flex flex-wrap items-center gap-4 border border-ink bg-paper-2 px-4 py-3">
+          <span className="inline-flex items-baseline gap-2 font-mono">
+            <span className="label-mono">BMI</span>
+            <span className="text-[1.35rem] font-medium leading-none tnum text-ink" aria-live="polite">
+              {value.toFixed(1)}
             </span>
-            <span className="text-xs leading-relaxed text-muted">
-              Shown for reference only. BMI is one input among many and is used to interpret licensing criteria and study populations.
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </span>
+          <span className="text-xs leading-relaxed text-muted">
+            Shown for reference only. BMI is one input among many and is used to interpret licensing criteria and study populations.
+          </span>
+        </div>
+      )}
 
       {showErrors && !heightInvalid && !weightInvalid && value === undefined && (
         <FieldError>Enter a height and weight so we can calculate your BMI.</FieldError>
@@ -226,8 +215,6 @@ export function BodyMetrics({ showErrors }: { showErrors?: boolean }) {
 
 function Unit({ children }: { children: React.ReactNode }) {
   return (
-    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs text-muted-2">
-      {children}
-    </span>
+    <span className="label-mono pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">{children}</span>
   );
 }

@@ -89,7 +89,7 @@ function SingleSelect({ step, showErrors, onAdvance }: { step: SingleStep; showE
         value={value}
         onChange={(v) => setAnswer(step.field, v)}
         onAdvance={onAdvance}
-        columns={step.columns ?? 1}
+        columns={step.columns ?? (options.length >= 4 ? 2 : 1)}
       />
       <Reveal show={Boolean(notice)}>{notice && <InlineNotice tone="brand">{notice}</InlineNotice>}</Reveal>
       <Reveal show={showFollowUp}>{step.followUp && <FollowUpText followUp={step.followUp} showErrors={showErrors} />}</Reveal>

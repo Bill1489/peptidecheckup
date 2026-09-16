@@ -151,7 +151,7 @@ function rowsFor(section: SectionId, a: AssessmentAnswers): ReviewRow[] {
         row(
           "country",
           "Country",
-          country ? `${country.flag} ${country.name} · Regulatory view: ${jurisdictionLabel(country.code)}` : undefined,
+          country ? `${country.name} · Regulatory view: ${jurisdictionLabel(country.code)}` : undefined,
         ),
         row("pregnancy", "Pregnant, trying or breastfeeding", yn(a.pregnancy)),
       ]);

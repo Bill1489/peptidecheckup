@@ -7,6 +7,7 @@ export type ReportSectionId =
   | "evidence"
   | "regulatory"
   | "suitability"
+  | "matches"
   | "dosing"
   | "stack"
   | "not-recommended"
@@ -17,9 +18,9 @@ export type ReportSectionId =
 
 export interface ReportSectionDef {
   id: ReportSectionId;
-  /** Short label used in the eyebrow and the table of contents */
+  /** Short label used in the mono section label and the table of contents */
   label: string;
-  /** Display-serif heading */
+  /** Uppercase display heading */
   heading: string;
   /** Two-digit number ("01"); empty for the overview */
   number: string;
@@ -33,15 +34,12 @@ const ORDERED: Omit<ReportSectionDef, "number">[] = [
   { id: "considering", label: "What you are considering", heading: "The compounds you have in mind" },
   { id: "evidence", label: "Evidence assessment", heading: "What the research shows for your goal" },
   { id: "regulatory", label: "Regulatory status", heading: "Where each compound stands where you live" },
-  {
-    id: "suitability",
-    label: "Personal suitability assessment",
-    heading: "How your responses map onto each compound",
-  },
+  { id: "suitability", label: "Personal suitability", heading: "How your responses map onto each compound" },
+  { id: "matches", label: "Your matches", heading: "What goes in your cart, and what does not" },
   {
     id: "dosing",
     label: "Dosing — three layers",
-    heading: "What the evidence says about dosing, and how your considered dose compares",
+    heading: "Published exposures against the dose you are considering",
     printBreak: true,
   },
   { id: "stack", label: "Stack intelligence", heading: "What is known about combining these compounds" },
@@ -50,14 +48,14 @@ const ORDERED: Omit<ReportSectionDef, "number">[] = [
     label: "Review required",
     heading: "What we would not recommend proceeding with without professional review",
   },
-  { id: "options", label: "Other options researched for your goal", heading: "Other options and potential alternatives" },
+  { id: "options", label: "Other options", heading: "Other options researched for your goal" },
   {
     id: "questions",
     label: "Questions to ask a clinician",
     heading: "Take these questions to your appointment",
     printBreak: true,
   },
-  { id: "source", label: "Product & source considerations", heading: "Where the product would come from" },
+  { id: "source", label: "Product & source", heading: "Where the product would come from" },
   { id: "next-steps", label: "Next steps", heading: "What to do with this report" },
 ];
 
