@@ -241,10 +241,18 @@ export interface EntryContext {
 export interface AssessmentAnswers {
   /* 1. Goals */
   primaryGoal?: GoalId;
+  /** Up to two further goals (quiz) */
+  secondaryGoals: GoalId[];
+  /** Specific problem statements chosen in the quiz (ids defined in flow.ts, e.g. "belly_fat", "tendon") */
+  focusAreas: string[];
   otherGoalText?: string;
   successDescription?: string;
   importance?: Importance;
   timeframe?: Timeframe;
+  /** Have they used peptides / injectables before? Drives pen-format and guidance copy */
+  experienceLevel?: "none" | "some" | "experienced";
+  /** Competes in drug-tested sport — WADA relevance */
+  testedAthlete?: YesNo;
 
   /* 2. Considering */
   consideredCompounds: ConsideredCompound[];
@@ -326,6 +334,8 @@ export interface AssessmentAnswers {
 }
 
 export const EMPTY_ANSWERS: AssessmentAnswers = {
+  secondaryGoals: [],
+  focusAreas: [],
   consideredCompounds: [],
   combinations: [],
   unitSystem: "metric",

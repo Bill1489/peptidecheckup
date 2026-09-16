@@ -1,6 +1,29 @@
-# PeptideCheckup — Build Brief v2 (store + assessment funnel)
+# AERVYN — Build Brief v3 (client range + product-matching quiz)
 
 Read this before touching code. It is the single shared contract for every contributor.
+
+## 0. v3 — what changed (read first)
+
+**The client is AERVYN · Performance Science.** The store is their brand; the assessment keeps its product name **"Peptide Checkup"** (`BRAND.assessmentName`). Never hard-code either — use `BRAND.name` ("AERVYN"), `BRAND.displayName` ("Aervyn"), `BRAND.descriptor` ("Performance Science"), `BRAND.assessmentName`. The wordmark is AERV + helix glyph + N (`Logo`/`Wordmark`/`HelixGlyph`/`LogoMark` in `src/components/ui/logo.tsx`).
+
+**The range is exactly six pre-filled 3 mL dose-dial peptide pens** (`src/data/products/catalog.ts`, all `channel: "research"`, real photos in `/public/products`, per-product packaging colour in `visual.color`):
+
+| Product | Contents | Colour | For |
+| --- | --- | --- | --- |
+| Tesamorelin | 20 mg / 3 mL | red `#c8202f` | abdominal/visceral fat, body composition (strongest human evidence in range) |
+| MOTS-C | 60 mg / 3 mL | sky blue `#1fa0d8` | metabolic energy, endurance, healthy ageing (early evidence; WADA-listed) |
+| GHK-Cu | 100 mg / 3 mL | orange `#d97a2e` | skin, hair, surface repair |
+| NAD+ | 500 mg / 3 mL | royal blue `#1f3fbf` | tiredness, recovery, healthy ageing (a coenzyme, not a peptide) |
+| Wolverine | BPC-157 + TB-500, 40 mg / 3 mL | green `#2e8b6e` | tendon/ligament/muscle injury, repair |
+| Klow | GHK-Cu + BPC-157 + TB-500 + KPV, 80 mg / 3 mL | teal `#1d8fbf` | skin + repair with inflammation |
+
+Blends carry `blend: string[]` (compound slugs); single-compound pens carry `compoundSlug`. Two compounds were added to the evidence database for this: `nad` and `kpv`. **Everything on the site is specific to these six** — no other products, no supplies, no kits, no consultation products, no vial illustrations where a photo exists.
+
+**Photos, not illustrations.** Use `ProductImage` (`src/components/commerce/product-image.tsx`; `prefer: "pack" | "hand"`, `frame: "square" | "portrait" | "fill"`) everywhere a product is shown. `ProductVisual` is now only the fallback inside `ProductImage`. Photos are 4:5 on pure white — place them on white or `bg-paper-2`, never crop the pen, keep the whole range at one scale. `ProductSwatch` renders the packaging colour.
+
+**The quiz must end at a product.** Every question and answer feeds a deterministic matcher (`src/lib/match/engine.ts` → `MatchResult`, types in `src/lib/match/types.ts`, stored as `lastMatch` in the assessment store). The result routes the user to `/shop/{slug}/?match=1`, where `MatchPanel` (`src/components/commerce/match-panel.tsx`) explains **why it is the right fit** (goal + focus + evidence + format), what to review, and adds to cart — unless the rules engine raised a high flag / Higher concern, in which case the verdict is `not_recommended`, nothing is added, and the panel says so and links to a clinician. Transparency is the brand: show the evidence grade for the goal on the result, say when evidence is early, and never claim an outcome.
+
+**Pricing is placeholder** (pending the client's list) — keep prices from the catalogue, do not invent new products.
 
 ## 1. What we are building (v2)
 

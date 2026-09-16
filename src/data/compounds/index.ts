@@ -13,6 +13,7 @@ import { NEURO_LONGEVITY_IMMUNE_COMPOUNDS } from "./neuro-longevity-immune";
  *   gh-axis:    tesamorelin, sermorelin, cjc-1295, ipamorelin, somatropin, igf-1-lr3
  *   repair/cosmetic/sexual: bpc-157, tb-500, ghk-cu, collagen-peptides, pt-141, kisspeptin, melanotan-ii
  *   neuro/longevity/immune: selank, semax, dsip, epitalon, mots-c, elamipretide, thymosin-alpha-1, ll-37
+ *   aervyn range additions: nad (coenzyme, not a peptide), kpv (α-MSH fragment)
  */
 export const COMPOUNDS: Compound[] = [
   semaglutide,
@@ -28,6 +29,7 @@ export const ALL_SLUGS = [
   "tesamorelin", "sermorelin", "cjc-1295", "ipamorelin", "somatropin", "igf-1-lr3",
   "bpc-157", "tb-500", "ghk-cu", "collagen-peptides", "pt-141", "kisspeptin", "melanotan-ii",
   "selank", "semax", "dsip", "epitalon", "mots-c", "elamipretide", "thymosin-alpha-1", "ll-37",
+  "nad", "kpv",
 ] as const;
 
 export const COMPOUND_MAP: Record<string, Compound> = Object.fromEntries(

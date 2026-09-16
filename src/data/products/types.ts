@@ -67,6 +67,30 @@ export interface BundleItem {
   qty: number;
 }
 
+/** Real product photography (served from /public/products). */
+export interface ProductImage {
+  /** Path under /public, e.g. "/products/klow-box.jpg" — pass through asset() for basePath hosting. */
+  src: string;
+  alt: string;
+  /** pack = box + pen on white; hand = pen held in hand; detail = close-up */
+  kind: "pack" | "hand" | "detail";
+  width: number;
+  height: number;
+}
+
+/** Pre-filled dose-dial pen specifics. */
+export interface PenSpec {
+  volumeMl: number;
+  totalMg: number;
+  /** e.g. "6.7 mg/mL" */
+  concentration: string;
+  /** Component breakdown for blends, e.g. "GHK-Cu 50 mg · BPC-157 10 mg · TB-500 10 mg · KPV 10 mg" */
+  composition: string;
+  storage: string;
+  /** e.g. "Dial-a-dose · 0.01 mL increments" */
+  dialing: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -93,7 +117,17 @@ export interface Product {
   regulatoryLabel: string;
   goals: GoalId[];
   tags: string[];
-  visual: { format: ProductFormat; tone: ProductTone; accentText?: string };
+  /** Fallback illustration + per-product accent colour (hex) taken from the packaging. */
+  visual: { format: ProductFormat; tone: ProductTone; accentText?: string; color?: string };
+  /** Real photography — preferred over the illustration wherever present. */
+  images: ProductImage[];
+  /** For blends: the compound slugs inside the pen (single-compound products use compoundSlug). */
+  blend?: string[];
+  pen?: PenSpec;
+  /** One-line answer to "who is this for" used by the matcher and product cards. */
+  bestFor: string;
+  /** The problem statements this product is matched against (plain English, used by the quiz result). */
+  matchFor: string[];
   bundleOf?: BundleItem[];
   featured?: boolean;
   bestseller?: boolean;

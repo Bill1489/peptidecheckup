@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Report } from "@/lib/engine/types";
+import type { MatchResult } from "@/lib/match/types";
 import { EMPTY_ANSWERS, type AssessmentAnswers, type EntryContext, type SectionId } from "./types";
 
 /**
@@ -15,6 +16,8 @@ export interface AssessmentState {
   /** Wizard position — section id + step index within the section */
   position: { section: SectionId; step: number };
   lastReport: Report | null;
+  /** Product match derived from the last report (quiz result) */
+  lastMatch: MatchResult | null;
   hydrated: boolean;
 
   setAnswers: (patch: Partial<AssessmentAnswers>) => void;
@@ -26,6 +29,7 @@ export interface AssessmentState {
   start: (entry?: EntryContext) => void;
   complete: () => void;
   setLastReport: (report: Report | null) => void;
+  setLastMatch: (match: MatchResult | null) => void;
   reset: () => void;
   setHydrated: (v: boolean) => void;
 }
@@ -38,6 +42,7 @@ export const useAssessmentStore = create<AssessmentState>()(
       answers: { ...EMPTY_ANSWERS },
       position: { section: "goals", step: 0 },
       lastReport: null,
+      lastMatch: null,
       hydrated: false,
 
       setAnswers: (patch) => set({ answers: { ...get().answers, ...patch } }),
@@ -76,18 +81,26 @@ export const useAssessmentStore = create<AssessmentState>()(
         })),
       complete: () => set((s) => ({ answers: { ...s.answers, completedAt: new Date().toISOString() } })),
       setLastReport: (report) => set({ lastReport: report }),
+      setLastMatch: (match) => set({ lastMatch: match }),
       reset: () =>
         set({
           answers: { ...EMPTY_ANSWERS },
           position: { section: "goals", step: 0 },
           lastReport: null,
+          lastMatch: null,
         }),
       setHydrated: (v) => set({ hydrated: v }),
     }),
     {
       name: "peptidecheckup.assessment.v1",
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ answers: s.answers, position: s.position, lastReport: s.lastReport }),
+      partialize: (s) => ({ answers: s.answers, position: s.position, lastReport: s.lastReport, lastMatch: s.lastMatch }),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AssessmentState>;
+        // Backfill fields added after v1 so older saved answers keep working.
+        const answers = { ...EMPTY_ANSWERS, ...(p.answers ?? {}) } as AssessmentAnswers;
+        return { ...current, ...p, answers };
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },
