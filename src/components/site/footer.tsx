@@ -5,19 +5,22 @@ import { BRAND, DISCLAIMER_SHORT, RESEARCH_USE_LABEL } from "@/lib/brand";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: "Shop",
+    title: "The range",
     links: [
-      { href: "/shop", label: "All products" },
-      { href: "/shop?category=peptide", label: "Peptides" },
-      { href: "/shop?category=kit", label: "Kits" },
-      { href: "/shop?category=supplies", label: "Supplies" },
+      { href: "/shop", label: "The range" },
+      { href: "/shop/tesamorelin", label: "Tesamorelin" },
+      { href: "/shop/mots-c", label: "MOTS-C" },
+      { href: "/shop/ghk-cu", label: "GHK-Cu" },
+      { href: "/shop/nad", label: "NAD+" },
+      { href: "/shop/wolverine", label: "Wolverine" },
+      { href: "/shop/klow", label: "Klow" },
       { href: "/lab-testing", label: "Lab testing & CoAs" },
     ],
   },
   {
     title: "Assess",
     links: [
-      { href: "/assessment", label: "Take the assessment" },
+      { href: "/assessment", label: "Take the Peptide Checkup" },
       { href: "/start/weight", label: "Weight" },
       { href: "/start/recovery", label: "Injury & recovery" },
       { href: "/start/tired", label: "Energy" },
@@ -54,7 +57,7 @@ export function Footer() {
       <div className="rule-b">
         <div className="container-x grid gap-8 py-12 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
-            <p className="label-mono text-brand-600">Batch alerts &amp; evidence updates</p>
+            <p className="label-mono text-brand-600">Lot alerts &amp; evidence updates</p>
             <h2 className="mt-3 text-[2rem] uppercase sm:text-[2.75rem]">
               New lots. New trials.
               <br />
@@ -88,10 +91,10 @@ export function Footer() {
         <div className="container-x grid gap-6 py-8 text-[12px] leading-relaxed text-muted md:grid-cols-2">
           <p>
             <strong className="font-semibold text-ink">Research products. </strong>
-            {RESEARCH_USE_LABEL} Prescription-only medicines are never sold directly: they are supplied by a registered pharmacy after an online consultation with a prescriber.
+            {RESEARCH_USE_LABEL} Aervyn pens are pre-filled for laboratory research and shipped chilled with the lot certificate.
           </p>
           <p>
-            <strong className="font-semibold text-ink">Assessment. </strong>
+            <strong className="font-semibold text-ink">{BRAND.assessmentName}. </strong>
             {DISCLAIMER_SHORT} Regulatory status is maintained manually per jurisdiction and may change.
           </p>
         </div>

@@ -2,13 +2,80 @@ import { getCompounds } from "@/data/compounds";
 import { BASE_CONDITIONS, CONDITION_MAP } from "@/data/conditions";
 import { COUNTRY_MAP, jurisdictionForCountry } from "@/data/countries";
 import { MEDICATION_CLASS_MAP } from "@/data/medications";
+import { PRODUCTS, type Product } from "@/data/products";
 import { JURISDICTION_LABELS, type Compound, type ConditionDef, type ConditionId } from "@/data/types";
+import { BRAND } from "@/lib/brand";
 import type { AssessmentAnswers } from "./types";
 
 /**
- * Pure helpers that derive UI facts from the current answers and the
- * compound database. Nothing here writes state or renders.
+ * Pure helpers that derive UI facts from the current answers, the product
+ * range and the compound database. Nothing here writes state or renders.
  */
+
+/* ------------------------------------------------------------------ */
+/* The range                                                           */
+/* ------------------------------------------------------------------ */
+
+/** Compound slugs inside a pen: the blend for multi-compound pens, otherwise the single compound. */
+export function productCompoundSlugs(product: Product): string[] {
+  return product.blend ?? (product.compoundSlug ? [product.compoundSlug] : []);
+}
+
+/** Every compound slug that appears in the range, in catalogue order. */
+export const RANGE_COMPOUND_SLUGS: string[] = uniq(PRODUCTS.flatMap(productCompoundSlugs));
+
+/** Range compounds that resolve in the evidence database (records still being added are skipped). */
+export function rangeCompounds(): Compound[] {
+  return getCompounds(RANGE_COMPOUND_SLUGS);
+}
+
+/** Range compounds named on the WADA Prohibited List (at all times or in competition). */
+export function wadaCompoundsInRange(): Compound[] {
+  return rangeCompounds().filter((c) => Boolean(c.wadaProhibited));
+}
+
+/* ------------------------------------------------------------------ */
+/* Pen selection                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The quiz records a picked pen as one entry in `combinations` holding that
+ * pen's compound slugs (a single slug for single-compound pens), and keeps
+ * `consideredCompounds` as the union — so the rules engine assesses every
+ * component and models each blend pen as its own combination.
+ */
+function sameSet(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((x) => b.includes(x));
+}
+
+export function isProductSelected(a: AssessmentAnswers, product: Product): boolean {
+  const slugs = productCompoundSlugs(product);
+  return slugs.length > 0 && a.combinations.some((combo) => sameSet(combo, slugs));
+}
+
+export function selectedProducts(a: AssessmentAnswers): Product[] {
+  return PRODUCTS.filter((p) => isProductSelected(a, p));
+}
+
+export function toggleProductSelection(
+  a: AssessmentAnswers,
+  product: Product,
+): Pick<AssessmentAnswers, "consideredCompounds" | "combinations"> {
+  const slugs = productCompoundSlugs(product);
+  const combinations = isProductSelected(a, product)
+    ? a.combinations.filter((combo) => !sameSet(combo, slugs))
+    : [...a.combinations, slugs];
+  return { combinations, consideredCompounds: uniq(combinations.flat()).map((slug) => ({ slug })) };
+}
+
+export function clearProductSelection(): Pick<AssessmentAnswers, "consideredCompounds" | "combinations"> {
+  return { consideredCompounds: [], combinations: [] };
+}
+
+/** Pens that contain a given compound, in catalogue order. */
+export function productsContaining(slug: string): Product[] {
+  return PRODUCTS.filter((p) => productCompoundSlugs(p).includes(slug));
+}
 
 /* ------------------------------------------------------------------ */
 /* Compounds                                                           */
@@ -16,6 +83,12 @@ import type { AssessmentAnswers } from "./types";
 
 export function selectedCompounds(a: AssessmentAnswers): Compound[] {
   return getCompounds(a.consideredCompounds.map((c) => c.slug));
+}
+
+/** Compounds the safety questions should be tailored to: the picked pens, or the whole range when none is picked. */
+export function relevantCompounds(a: AssessmentAnswers): Compound[] {
+  const selected = selectedCompounds(a);
+  return selected.length > 0 ? selected : rangeCompounds();
 }
 
 /** "A", "A and B", "A, B and C" */
@@ -35,18 +108,21 @@ function uniq<T>(arr: T[]): T[] {
 
 export interface ExtendedConditionRow {
   condition: ConditionDef;
-  /** Names of the selected compounds whose contraindications reference it */
+  /** Names of the compounds whose contraindications reference it */
   compounds: string[];
 }
 
 /**
- * Extended (non-base) conditions referenced by the selected compounds'
- * contraindications, de-duplicated and ordered by how many compounds cite
- * them, then alphabetically.
+ * Extended (non-base) conditions referenced by the contraindications of every
+ * compound in the range (plus anything else the user picked), de-duplicated
+ * and ordered by how many compounds cite them, then alphabetically. The whole
+ * range is screened because the matcher assesses every pen, not just the ones
+ * the user had in mind.
  */
 export function extendedConditionsFor(a: AssessmentAnswers): ExtendedConditionRow[] {
   const map = new Map<ConditionId, string[]>();
-  for (const compound of selectedCompounds(a)) {
+  const compounds = uniq([...rangeCompounds(), ...selectedCompounds(a)]);
+  for (const compound of compounds) {
     for (const ci of compound.contraindications) {
       const def = CONDITION_MAP[ci.conditionId];
       if (!def || def.base) continue;
@@ -67,14 +143,16 @@ export function conditionRows(a: AssessmentAnswers): { base: ConditionDef[]; ext
 }
 
 /* ------------------------------------------------------------------ */
-/* Risk-screening hints (Q36–Q42), tailored to the selection           */
+/* Safety-screen hints, tailored to the picked pens (or the range)     */
 /* ------------------------------------------------------------------ */
 
 const MAX_HINT_COMPOUNDS = 2;
 
 export function riskHint(stepId: string, a: AssessmentAnswers): string | undefined {
-  const compounds = selectedCompounds(a);
+  const picked = selectedCompounds(a).length > 0;
+  const compounds = relevantCompounds(a);
   const names = compounds.map((c) => c.name);
+  const scope = picked ? "The pens you picked contain" : "The six pens contain";
 
   switch (stepId) {
     case "serious-allergy":
@@ -82,13 +160,13 @@ export function riskHint(stepId: string, a: AssessmentAnswers): string | undefin
 
     case "component-allergy":
       return names.length
-        ? `This covers the active compound and any excipients listed on the product leaflet. You are considering ${joinNatural(names)}.`
+        ? `This covers the active compound and any excipients listed on the product leaflet. ${scope} ${joinNatural(names)}.`
         : "This covers the active compound and any excipients listed on the product leaflet.";
 
     case "previous-reaction": {
-      const classes = uniq(compounds.map((c) => c.classLabel));
+      const classes = uniq(compounds.map((c) => c.classLabel)).slice(0, 4);
       return classes.length
-        ? `Similar treatments include anything in the same class as what you are considering: ${joinNatural(classes.map(lowerFirst))}.`
+        ? `Similar treatments include anything in the same class as the compounds in the range: ${joinNatural(classes.map(lowerFirst))}.`
         : "Similar treatments include other peptides, injectable medicines or products with the same mechanism.";
     }
 
@@ -127,7 +205,7 @@ export function riskHint(stepId: string, a: AssessmentAnswers): string | undefin
       }
       const labels = uniq([...absolute, ...caution]).slice(0, 6);
       return labels.length
-        ? `Relevant conditions for your selection include ${joinNatural(labels.map(lowerFirst))}.`
+        ? `Relevant conditions for ${picked ? "your selection" : "the range"} include ${joinNatural(labels.map(lowerFirst))}.`
         : "For example tests, scans or referrals that have not yet produced a diagnosis.";
     }
 
@@ -154,6 +232,15 @@ export function riskHint(stepId: string, a: AssessmentAnswers): string | undefin
     default:
       return undefined;
   }
+}
+
+/** Hint under "Do you compete in drug-tested sport?" — names the WADA-listed compounds in the range. */
+export function wadaHint(): string {
+  const names = wadaCompoundsInRange().map((c) => c.name);
+  const listed = names.length
+    ? `${joinNatural(names)} ${names.length === 1 ? "is" : "are"} named on the WADA Prohibited List, and unapproved substances are prohibited under category S0.`
+    : "Unapproved substances are prohibited under WADA category S0.";
+  return `${listed} If you are tested, we mark those pens down and flag them in your result.`;
 }
 
 function lowerFirst(s: string) {
@@ -258,5 +345,4 @@ export function filled(value?: string): boolean {
 /* Copy                                                                */
 /* ------------------------------------------------------------------ */
 
-export const PREGNANCY_NOTICE =
-  "Thank you for telling us. Because you're pregnant, trying to conceive or breastfeeding, most compounds in our database are not recommended and your report will reflect that. Please discuss any plans with your midwife, GP or specialist.";
+export const PREGNANCY_NOTICE = `Thank you for telling us. Because you're pregnant, trying to conceive or breastfeeding, nothing in the range is recommended and the ${BRAND.assessmentName} will not match you to a pen — your report will explain why. Please discuss any plans with your midwife, GP or specialist.`;

@@ -216,6 +216,11 @@ export const tb500: Compound = {
       evidence: "none",
       note: "No human data. Both are promoted for repair and both show angiogenic activity in laboratory models.",
     },
+    {
+      with: "kpv",
+      evidence: "none",
+      note: "Blended together in the Klow pen. No human data on the combination; TB-500 has no human data at all and KPV has none by any route.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Synthetic 7-amino-acid fragment of thymosin β4" },

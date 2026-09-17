@@ -14,30 +14,40 @@ import { LogoMark } from "@/components/ui/logo";
 import { FieldError, TextInput } from "./primitives";
 
 export const EMAIL_CONSENT_LABEL = "Email me my report and occasional evidence updates. Unsubscribe any time.";
+export const REVIEW_CONSENT_LABEL =
+  "Also ask a registered clinician to review my report and contact me at this address. My details are used for that purpose only.";
 
 /**
- * Optional lead-capture step shown once the report has been generated and
- * before the user is taken to it (BRIEF §6a). Skippable; consent is explicit.
+ * Optional lead-capture step shown once the match has been found and before
+ * the user is taken to it (BRIEF §6a). Skippable; consent is explicit. The
+ * clinician-review request (formerly its own step) lives here as a second,
+ * separate tick box.
  */
 export function EmailCaptureScreen({
   initialEmail,
+  initialReview,
   goal,
   compounds,
   countryCode,
+  resultLabel,
   onSent,
   onSkip,
 }: {
   initialEmail?: string;
+  initialReview?: boolean;
   goal?: GoalId;
   compounds: string[];
   countryCode?: string;
-  /** Called after the lead has been submitted (or attempted) with the validated email. */
-  onSent: (email: string) => void;
+  /** "my match" or "my report" — what the button leads to */
+  resultLabel: string;
+  /** Called after the lead has been submitted (or attempted) with the validated email and whether a clinician review was requested. */
+  onSent: (email: string, reviewRequested: boolean) => void;
   onSkip: () => void;
 }) {
   const reduced = useReducedMotion();
   const [email, setEmail] = React.useState(initialEmail ?? "");
   const [consent, setConsent] = React.useState(false);
+  const [review, setReview] = React.useState(Boolean(initialReview));
   const [error, setError] = React.useState<string | undefined>(undefined);
   const [sending, setSending] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -69,13 +79,17 @@ export function EmailCaptureScreen({
       compounds,
       countryCode,
       source: "generating",
+      notes: review ? "clinician review requested" : undefined,
     });
-    if (result.ok) {
-      toast("Report on its way", { description: `We'll email a copy to ${trimmed}.` });
-    } else {
-      toast("Couldn't send the email", { description: "Your report is still available here. Try again from the report page." });
+    if (review) {
+      await submitLead({ kind: "report", email: trimmed, consent: true, goal, compounds, countryCode, source: "generating" });
     }
-    onSent(trimmed);
+    if (result.ok) {
+      toast(review ? "Report on its way — review requested" : "Report on its way", { description: `We'll email a copy to ${trimmed}.` });
+    } else {
+      toast("Couldn't send the email", { description: "Your result is still available here. Try again from the report page." });
+    }
+    onSent(trimmed, review);
   };
 
   return (
@@ -89,7 +103,7 @@ export function EmailCaptureScreen({
       <div className="border-b border-white/20">
         <div className="container-x flex h-14 items-center justify-between sm:h-16">
           <LogoMark tone="light" className="h-7 w-7" />
-          <p className="label-mono text-white/60">Report ready</p>
+          <p className="label-mono text-white/60">Result ready</p>
         </div>
       </div>
 
@@ -99,7 +113,8 @@ export function EmailCaptureScreen({
           Where should we send your report?
         </h1>
         <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-white/70">
-          We can email you a copy to keep and to share with a clinician. Your answers stay on this device either way.
+          Your match comes with a full evidence report. We can email you a copy to keep and to share with a clinician. Your
+          answers stay on this device either way.
         </p>
 
         <form onSubmit={submit} noValidate className="mt-8 border border-white bg-white p-5 text-ink sm:p-6">
@@ -149,6 +164,29 @@ export function EmailCaptureScreen({
             <span className="text-ink">{EMAIL_CONSENT_LABEL}</span>
           </label>
 
+          <label
+            htmlFor="report-review-consent"
+            className={cn(
+              "mt-2 flex cursor-pointer items-start gap-3 border p-3.5 text-sm leading-relaxed transition-colors",
+              review ? "border-ink bg-paper-2" : "border-line hover:border-ink",
+            )}
+          >
+            <Checkbox.Root
+              id="report-review-consent"
+              checked={review}
+              onCheckedChange={(v) => setReview(v === true)}
+              className={cn(
+                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-none border bg-white transition-colors",
+                review ? "border-brand-600 bg-brand-600 text-white" : "border-ink",
+              )}
+            >
+              <Checkbox.Indicator>
+                <Check className="h-4 w-4" strokeWidth={3} aria-hidden />
+              </Checkbox.Indicator>
+            </Checkbox.Root>
+            <span className="text-ink">{REVIEW_CONSENT_LABEL}</span>
+          </label>
+
           {error && (
             <div id="report-email-error" className="mt-3">
               <FieldError>{error}</FieldError>
@@ -156,7 +194,7 @@ export function EmailCaptureScreen({
           )}
 
           <Button type="submit" size="lg" loading={sending} className="mt-5 w-full">
-            Send &amp; view report
+            Send &amp; see {resultLabel}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
           <button
@@ -165,12 +203,13 @@ export function EmailCaptureScreen({
             disabled={sending}
             className="link-rule mt-4 inline-flex min-h-11 w-full items-center justify-center text-sm text-ink-3 hover:text-ink disabled:opacity-40"
           >
-            Skip — just show my report
+            Skip — just show {resultLabel}
           </button>
         </form>
 
         <p className="mt-5 text-xs leading-relaxed text-white/50">
-          Your email is used to send the report and occasional evidence updates. It is never shared or sold.
+          Your email is used to send the report and occasional evidence updates — and, only if you tick the second box, to
+          arrange a clinician review. It is never shared or sold.
         </p>
       </div>
     </motion.div>

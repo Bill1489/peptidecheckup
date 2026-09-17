@@ -6,19 +6,19 @@ import type { SectionId } from "@/lib/assessment/types";
 import { useAnswers, useSetAnswer } from "./hooks";
 import { InlineNotice, Reveal } from "./primitives";
 import { BodyMetrics } from "./questions/body-metrics";
-import { CombinationBuilder } from "./questions/combination-builder";
-import { CompoundPicker } from "./questions/compound-picker";
 import { ConditionGrid } from "./questions/condition-grid";
-import { ContactConsent } from "./questions/contact-consent";
 import { CountryPicker } from "./questions/country-picker";
-import { DoseInput } from "./questions/dose-input";
+import { FocusCards } from "./questions/focus-cards";
+import { GoalCards } from "./questions/goal-cards";
+import { LifestyleStep } from "./questions/lifestyle";
 import { MedicationList } from "./questions/medication-list";
 import { NumberField } from "./questions/number-field";
 import { OptionCards } from "./questions/option-cards";
 import { OtcChips } from "./questions/otc-chips";
-import { PreviousUseList } from "./questions/previous-use-list";
-import { ReportWants } from "./questions/report-wants";
+import { ProductPicker } from "./questions/product-picker";
 import { Review } from "./questions/review";
+import { SafetyGrid } from "./questions/safety-grid";
+import { SecondaryGoals } from "./questions/secondary-goals";
 import { SupplementList } from "./questions/supplement-list";
 import { FollowUpText, TextArea } from "./questions/text-area";
 import { YesNoCards } from "./questions/yes-no-cards";
@@ -42,12 +42,14 @@ export function StepRenderer({ step, showErrors, onAdvance, onEdit, onAddSection
       return <TextArea step={step} />;
     case "number":
       return <NumberField step={step} showErrors={showErrors} />;
-    case "compounds":
-      return <CompoundPicker showErrors={showErrors} />;
-    case "dose":
-      return <DoseInput showErrors={showErrors} />;
-    case "combinations":
-      return <CombinationBuilder showErrors={showErrors} />;
+    case "goal":
+      return <GoalCards onAdvance={onAdvance} />;
+    case "focus":
+      return <FocusCards showErrors={showErrors} />;
+    case "secondary-goals":
+      return <SecondaryGoals />;
+    case "products":
+      return <ProductPicker />;
     case "body":
       return <BodyMetrics showErrors={showErrors} />;
     case "country":
@@ -60,12 +62,10 @@ export function StepRenderer({ step, showErrors, onAdvance, onEdit, onAddSection
       return <OtcChips />;
     case "supplements":
       return <SupplementList showErrors={showErrors} />;
-    case "previous-uses":
-      return <PreviousUseList showErrors={showErrors} />;
-    case "wants":
-      return <ReportWants showErrors={showErrors} />;
-    case "contact":
-      return <ContactConsent showErrors={showErrors} />;
+    case "lifestyle":
+      return <LifestyleStep showErrors={showErrors} />;
+    case "safety":
+      return <SafetyGrid showErrors={showErrors} />;
     case "review":
       return <Review onEdit={onEdit} onAddSection={onAddSection} />;
     default:

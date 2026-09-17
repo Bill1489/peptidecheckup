@@ -12,10 +12,10 @@ import { pluralise } from "./copy";
 
 export const EVIDENCE_ORDER: EvidenceQuality[] = ["strong", "moderate", "limited", "preliminary", "insufficient"];
 export const REGULATORY_ORDER: RegulatoryStatus[] = ["authorised", "investigational", "not_authorised", "unclear"];
-export const SUITABILITY_ORDER: Suitability[] = ["potentially_relevant", "higher_concern", "insufficient_information"];
+const SUITABILITY_ORDER: Suitability[] = ["potentially_relevant", "higher_concern", "insufficient_information"];
 
 /** Plain-English meaning of each regulatory status, as used on compound pages and in reports. */
-export const REGULATORY_DESCRIPTIONS: Record<RegulatoryStatus, string> = {
+const REGULATORY_DESCRIPTIONS: Record<RegulatoryStatus, string> = {
   authorised:
     "Licensed as a medicine for at least one indication by that jurisdiction’s regulator. Usually prescription-only, and only for the licensed use.",
   investigational:

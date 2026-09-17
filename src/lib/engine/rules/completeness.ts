@@ -34,13 +34,9 @@ export function completenessRules(ctx: EngineContext): Completeness {
   if (a.age === undefined) missing.push("Age not entered");
   if (!a.countryCode) missing.push("Country not selected — regulatory status defaults to 'Other jurisdictions'");
   if (ctx.bmi === undefined) missing.push("Height and weight not entered (needed for BMI-based eligibility criteria)");
-  for (const c of ctx.compounds) {
-    const dose = ctx.doses[c.slug];
-    if (!dose || dose.amount === undefined) missing.push(`No dose entered for ${c.name}`);
-  }
-  if (ctx.compounds.length === 0 && ctx.unresolvedSlugs.length === 0 && !a.otherCompoundText?.trim()) {
-    missing.push("No compounds selected");
-  }
+  if (!a.primaryGoal) missing.push("Goal not chosen — nothing to match the range against");
+  if (a.primaryGoal && a.focusAreas.length === 0) missing.push("No focus areas chosen — the match rests on the goal alone");
+  // Pens are pre-filled and dose-dial, so no considered dose is asked for; the dosing section reports research exposures only.
 
   return {
     score,

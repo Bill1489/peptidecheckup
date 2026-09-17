@@ -1,10 +1,21 @@
 import { COMPOUNDS } from "@/data/compounds";
+import { PRODUCTS } from "@/data/products";
 import { JURISDICTION_LABELS } from "@/data/types";
 import { BRAND } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney } from "@/lib/commerce/money";
 import { SUITABILITY_DESCRIPTIONS } from "@/lib/engine/types";
-import { ASSESSMENT_MINUTES, NAMED_JURISDICTIONS } from "./copy";
+import { titleCase } from "@/lib/utils";
+import {
+  ASSESSMENT_MINUTES,
+  blendProducts,
+  CHECKUP,
+  CHECKUP_SHORT,
+  NAMED_JURISDICTIONS,
+  numberWord,
+  penComponents,
+  wadaListedProducts,
+} from "./copy";
 
 export interface FaqItem {
   id: string;
@@ -20,63 +31,61 @@ const express = COMMERCE.shippingOptions[1];
 const international = COMMERCE.shippingOptions[2];
 const freeFrom = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 const checkupPromo = COMMERCE.promoCodes.CHECKUP10;
+const blends = blendProducts();
+const wada = wadaListedProducts();
+const nonPeptide = PRODUCTS.find((p) => p.slug === "nad");
 
 /** Eight store + assessment questions shown on the home page (and first on /faq). */
 export const HOME_FAQ: FaqItem[] = [
   {
     id: "research-use",
     question: "What does “research use only” mean?",
-    answer:
-      "Most peptides we sell are not authorised as medicines anywhere. UK law lets them be supplied as laboratory reagents for research, not for human use, so the label says exactly that: not a medicine, not for human consumption. Purchasers must be 18 or over and confirm the intended use at checkout. Batch testing tells you what is in the vial; it does not change the legal status of the compound or make it a medicine.",
+    answer: `None of the compounds in the ${BRAND.displayName} range is authorised as a medicine in the United Kingdom. UK law lets them be supplied as laboratory reagents for research, not for human use, so the label says exactly that: not a medicine, not for human consumption. Purchasers must be 18 or over and confirm the intended use at checkout. Lot testing tells you what is in the pen; it does not change the legal status of the compound or make it a medicine.`,
     link: { href: "/safety", label: "Safety and labelling" },
   },
   {
-    id: "semaglutide",
-    question: "Do you sell semaglutide?",
-    answer:
-      `No. Semaglutide, tirzepatide and the other licensed medicines in our directory are prescription-only and are never sold directly. Their product pages start an online consultation with ${COMMERCE.prescriberPartner}. If it is appropriate for you, a registered pharmacy dispenses the licensed product with clinical follow-up. We do not sell compounded or “research” versions of licensed medicines.`,
-    link: { href: "/shop/?category=peptide", label: "Peptides in the shop" },
+    id: "pre-filled",
+    question: "Is the pen pre-filled?",
+    answer: `Yes. Every pen in the range holds 3 mL of solution in a multi-dose pen with a numbered dial window; the dial sets the volume delivered per actuation. There is no powder, no diluent and no drawing up. The amount of compound in the pen is stated on the carton, on the product page and on the certificate for the lot. ${titleCase(numberWord(blends.length))} of the ${numberWord(PRODUCTS.length)} pens — ${blends.map((b) => b.name).join(" and ")} — are blends, with the component split stated on the certificate.`,
+    link: { href: "/shop", label: "See the range" },
   },
   {
-    id: "coa",
-    question: "How do I read a certificate of analysis?",
+    id: "needles",
+    question: "Do I need needles?",
     answer:
-      "Every lyophilised vial carries a lot number. Enter it on the lab-testing page to open the certificate for that lot. Check three things: purity by HPLC, given as the percentage of the main peak; identity by LC-MS, where the measured mass is compared with the expected mass of the sequence and reported as confirmed or not; and endotoxin by LAL, in endotoxin units per milligram. The certificate also names the laboratory and the test date. If the lot number on your vial does not match, tell us before you use it.",
-    link: { href: "/lab-testing", label: "Look up a lot number" },
+      "The pens take standard pen needles. Needles are not included unless the box contents for that product say so, so check the “In the box” line on the product page before you order. We do not advise on gauge or length, and we do not sell needles.",
+    link: { href: "/shop", label: "Check the box contents" },
+  },
+  {
+    id: "storage",
+    question: "How do I store the pen?",
+    answer:
+      "Refrigerate at 2–8 °C and do not freeze. Keep the cap on and the pen out of direct light between uses. Pens ship in insulated packaging; put the pen in the fridge as soon as the parcel arrives and check that the lot number on the carton matches the certificate in the box. If a pen arrives warm or the seal is broken, do not use it — email us with the order number and lot number.",
+    link: { href: "/shipping", label: "Shipping and cold chain" },
+  },
+  {
+    id: "not-a-fit",
+    question: `What does the ${CHECKUP_SHORT} do if I’m not a fit?`,
+    answer: `It says so. ${SUITABILITY_DESCRIPTIONS.higher_concern} When that happens the verdict is “not recommended”: the report names the answer that caused it, nothing is added to your cart, and you are pointed to a clinician instead. Where no pen in the range is researched for your goal — sleep or libido, for example — the ${CHECKUP_SHORT} tells you that too rather than landing on something adjacent.`,
+    link: { href: "/how-it-works", label: `How the ${CHECKUP_SHORT} works` },
   },
   {
     id: "shipping",
     question: "When will my order ship?",
-    answer:
-      `UK orders placed before 2 pm on a working day are dispatched the same day. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta}). ${international.label} is ${formatMoney(international.price)} (${international.eta}) to ${COMMERCE.shipTo.length - 1} countries. Lyophilised peptides are stable at room temperature in transit; store them as the label says on arrival.`,
+    answer: `UK orders placed before 2 pm on a working day are dispatched the same day. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta}). ${international.label} is ${formatMoney(international.price)} (${international.eta}) to ${COMMERCE.shipTo.length - 1} other countries. Pens travel in insulated packaging and go in the fridge on arrival.`,
     link: { href: "/shipping", label: "Shipping and returns" },
   },
   {
     id: "returns",
-    question: "Can I return an order?",
+    question: "Can I return a pen?",
     answer:
-      "Unopened items with the seal intact can be returned within 14 days of delivery for a refund — that applies to research vials and to supplies. Opened or reconstituted vials and sterile items with a broken seal cannot be returned, because sterility cannot be verified. If a product arrives damaged, is faulty, or does not match the certificate for its lot, we replace or refund it — email us with the order number and lot number.",
+      "Unopened pens with the seal intact can be returned within 14 days of delivery for a refund. Opened pens cannot be returned, because sterility and the cold chain cannot be verified once the seal is broken. If a pen arrives damaged, is faulty, or does not match the certificate for its lot, we replace or refund it — email us with the order number and lot number.",
     link: { href: "/shipping", label: "Full returns policy" },
-  },
-  {
-    id: "medical-advice",
-    question: "Is the assessment medical advice?",
-    answer:
-      `No. The ${ASSESSMENT_MINUTES}-minute checkup produces a structured summary of published research, regulatory status and the factors in your own history that a clinician would want to know about. It does not diagnose or treat anything and it does not tell you to take a compound. Suitability labels describe whether your answers identified something that warrants professional review; they are not a clinical determination.`,
-    link: { href: "/how-it-works", label: "How the checkup works" },
-  },
-  {
-    id: "told-not-to-buy",
-    question: "Why did the report tell me not to buy?",
-    answer:
-      `Because your answers matched a documented contraindication, interaction or other flag for that compound. ${SUITABILITY_DESCRIPTIONS.higher_concern} When a compound is marked Higher concern, the report explains which answer caused it, does not add the product to your cart, and points you to a clinician instead. You can still read the product page; the label there says the same thing.`,
-    link: { href: "/methodology", label: "How labels are decided" },
   },
   {
     id: "data",
     question: "What happens to my data?",
-    answer:
-      "Assessment answers and the report stay in your browser’s local storage; nothing is sent to us unless you ask for your report by email or request a consultation. The cart is stored in your browser too. Orders are kept on your device and, when the store is connected to a fulfilment system, sent to it to be shipped. Card details go directly to the payment provider and never touch our site. We set no cookies by default.",
+    answer: `${CHECKUP} answers and the report stay in your browser’s local storage; nothing is sent to us unless you ask for your report by email. The cart is stored in your browser too. Orders are kept on your device and, when the store is connected to a fulfilment system, sent to it to be shipped. Card details go directly to the payment provider and never touch our site. We set no cookies by default.`,
     link: { href: "/privacy", label: "Privacy notice" },
   },
 ];
@@ -84,70 +93,71 @@ export const HOME_FAQ: FaqItem[] = [
 /** Additional questions for /faq. */
 export const MORE_FAQ: FaqItem[] = [
   {
-    id: "consultation",
-    question: "How does the consultation for prescription medicines work?",
-    answer:
-      `Choose “Start consultation” on the product page and leave your details. ${COMMERCE.prescriberPartner.charAt(0).toUpperCase()}${COMMERCE.prescriberPartner.slice(1)} runs the clinical eligibility check under their own registration and terms; if a prescription is appropriate, a registered pharmacy dispenses the licensed medicine. We do not see your consultation answers, we do not set the prescriber’s fees, and we are not paid per prescription.`,
-  },
-  {
-    id: "not-sold",
-    question: "Why are some products listed as “Not sold”?",
-    answer:
-      "Because a regulator has issued a warning about the compound, or because its documented risks — hypoglycaemia with IGF-1 LR3, for example, or the safety alerts on melanotan II — mean we are not willing to supply it. The product page stays up so that people searching for it find the evidence and the warning rather than nothing.",
-    link: { href: "/peptides", label: "Compound directory" },
-  },
-  {
     id: "who-tests",
     question: "Who does the testing?",
     answer:
-      "An independent analytical laboratory, not us. Each lot is sent for HPLC purity, LC-MS identity and LAL endotoxin testing before it is listed; the laboratory’s name and the test date appear on every certificate. We publish the certificate as issued.",
+      "An independent analytical laboratory, not us. Each lot is sent for HPLC purity, LC-MS identity and LAL endotoxin testing before it is listed; blends are tested per component. The laboratory’s name and the test date appear on every certificate, and we publish the certificate as issued.",
     link: { href: "/lab-testing", label: "Lab testing" },
   },
   {
+    id: "blends",
+    question: "How are the blends graded?",
+    answer: `${blends.map((b) => `${b.name} (${penComponents(b)})`).join(" and ")} are graded per component: each compound inside the pen has its own evidence record, and the report shows each grade. The combinations themselves have not been studied in people, and the report says so rather than averaging the components into something that looks better.`,
+    link: { href: "/peptides", label: "Compound directory" },
+  },
+  ...(nonPeptide
+    ? [
+        {
+          id: "nad",
+          question: `Is ${nonPeptide.name} a peptide?`,
+          answer: `No. ${nonPeptide.name} is a coenzyme, and the product page says so. It is in the range because it is asked about alongside the peptides and because it fits the same pre-filled pen format; it is graded and labelled on exactly the same basis as everything else.`,
+          link: { href: `/shop/${nonPeptide.slug}/`, label: `${nonPeptide.name} pen` },
+        },
+      ]
+    : []),
+  {
+    id: "athletes",
+    question: "Can I use this if I compete in tested sport?",
+    answer: `${wada.length > 0 ? `${wada.map((p) => p.name).join(", ")} contain compounds named on the WADA Prohibited List. ` : ""}Every one of the ${COMPOUNDS.length} compound records carries its anti-doping status, and the ${CHECKUP_SHORT} will not land on a listed compound if you say you compete in tested sport. Strict liability means you are responsible for what is found in your sample — check with your national anti-doping organisation before using anything.`,
+    link: { href: "/safety", label: "Anti-doping" },
+  },
+  {
+    id: "medical-advice",
+    question: `Is the ${CHECKUP_SHORT} medical advice?`,
+    answer: `No. The ${ASSESSMENT_MINUTES}-minute ${CHECKUP} produces a structured summary of published research, regulatory status and the factors in your own history that a clinician would want to know about, and then a product match built on the same rules. It does not diagnose or treat anything and it does not tell you to take a compound. Suitability labels describe whether your answers identified something that warrants professional review; they are not a clinical determination.`,
+    link: { href: "/methodology", label: "Methodology" },
+  },
+  {
     id: "discount",
-    question: "Is there a discount for completing the assessment?",
+    question: `Is there a discount for completing the ${CHECKUP_SHORT}?`,
     answer: checkupPromo
-      ? `Yes. Completing the assessment unlocks the code CHECKUP10 — ${checkupPromo.label.replace(/ — .*$/, "").toLowerCase()} — which you can apply in the cart. It is the only discount attached to the assessment; the report itself is free and does not change based on what you might buy.`
+      ? `Yes. Completing the ${CHECKUP_SHORT} unlocks the code CHECKUP10 — ${checkupPromo.label.replace(/ — .*$/, "").toLowerCase()} — which you can apply in the cart. It is the only discount attached to the assessment; the report itself is free and does not change based on what you might buy.`
       : "The report is free and does not change based on what you might buy.",
   },
   {
     id: "account",
     question: "Do I need an account?",
     answer:
-      "No. There are no accounts. Your cart and order history live in your browser; the account page reads them from there. If you clear your browser data they are gone, so keep the order confirmation email.",
+      "No. There are no accounts. Your cart and order history live in your browser; the orders page reads them from there. If you clear your browser data they are gone, so keep the order confirmation email.",
     link: { href: "/account/orders", label: "Your orders" },
   },
   {
     id: "countries",
     question: "Which countries do you ship to?",
-    answer:
-      `The United Kingdom and ${COMMERCE.shipTo.length - 1} other countries, listed at checkout. It is your responsibility to check that the products you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
+    answer: `The United Kingdom and ${COMMERCE.shipTo.length - 1} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
     link: { href: "/shipping", label: "Shipping" },
   },
   {
     id: "regulatory-source",
     question: "Where does the regulatory status come from?",
-    answer:
-      `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”.`,
+    answer: `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”.`,
     link: { href: "/methodology", label: "Methodology" },
   },
   {
     id: "dosing",
-    question: "Does the report tell me what dose to take?",
+    question: "Does the report tell me what dose to dial?",
     answer:
-      "No. Dosing appears as research information: the doses, durations and routes used in published human studies, with their outcomes and adverse events. If you enter a dose you are considering, the report states how it compares with those study exposures — within, above or below — and whether the frequency or route differs. It never recommends a dose, and neither does a product page.",
-  },
-  {
-    id: "stacks",
-    question: "What about combinations (“stacks”)?",
-    answer:
-      "If you select two or more compounds, the report includes a stack analysis: whether the combination has been studied in humans, overlapping considerations such as two compounds acting on the same pathway, the number of evidence gaps and an overall uncertainty rating. Kits in the shop bundle a peptide with supplies, not with other peptides.",
-  },
-  {
-    id: "athletes",
-    question: "Can I use this if I compete in tested sport?",
-    answer:
-      `Many peptides are prohibited at all times or in competition under the World Anti-Doping Code, including some licensed medicines. Every one of the ${COMPOUNDS.length} compound records carries its anti-doping status, and the report flags prohibited substances when performance is your goal. Check with your national anti-doping organisation before using anything.`,
+      "No. Dosing appears as research information: the amounts, durations and routes used in published human studies, with their outcomes and adverse events. If you enter an amount you are considering, the report states how it compares with those study exposures — within, above or below — and whether the frequency or route differs. It never recommends a dose, and neither does a product page; the pen page states what is in the pen, not what to dial.",
   },
   {
     id: "print",
@@ -158,8 +168,7 @@ export const MORE_FAQ: FaqItem[] = [
   {
     id: "delete",
     question: "How do I delete my data?",
-    answer:
-      `Choose “Start over” on the assessment page to remove your answers and report, and clear this site’s data in your browser to remove the cart and local order history. If you sent us an email address — for a report, the newsletter or a consultation — email ${BRAND.supportEmail} and we will delete it.`,
+    answer: `Choose “Start over” on the assessment page to remove your answers, report and match, and clear this site’s data in your browser to remove the cart and local order history. If you sent us an email address — for a report, the newsletter or a restock alert — email ${BRAND.supportEmail} and we will delete it.`,
     link: { href: "/privacy", label: "Privacy notice" },
   },
 ];

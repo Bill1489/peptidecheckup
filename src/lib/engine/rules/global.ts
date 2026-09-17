@@ -1,4 +1,5 @@
 import { GOAL_MAP } from "@/data/goals";
+import { MEDICATION_CLASS_MAP } from "@/data/medications";
 import { SOURCE_LABELS } from "@/lib/assessment/types";
 import type { Flag } from "../types";
 import { type EngineContext, UNREGULATED_SOURCES, WEIGHT_GOALS } from "../context";
@@ -53,6 +54,8 @@ export function globalRules(ctx: EngineContext): Flag[] {
 
   /* ---------------- Body-mass index ---------------- */
   const weightGoal = ctx.goal !== undefined && WEIGHT_GOALS.includes(ctx.goal);
+  // The licensed BMI threshold belongs to incretin-based weight-management medicines; the flag attaches to those only.
+  const incretinSlugs = ctx.compounds.filter((c) => c.family === "incretin").map((c) => c.slug);
   if (ctx.bmi !== undefined) {
     if (ctx.bmi < 18.5) {
       flags.push({
@@ -65,7 +68,7 @@ export function globalRules(ctx: EngineContext): Flag[] {
         }. This is a neutral measurement, not a judgement — it simply means the published evidence was gathered in a different population.`,
         compounds: [],
       });
-    } else if (weightGoal && ctx.bmi < 27) {
+    } else if (weightGoal && ctx.bmi < 27 && incretinSlugs.length > 0) {
       flags.push({
         id: flagId("global", "body", "bmi-threshold"),
         severity: "caution",
@@ -73,7 +76,7 @@ export function globalRules(ctx: EngineContext): Flag[] {
         title:
           "Body-mass index below the licensed threshold for weight-management medicines (BMI ≥ 30, or ≥ 27 with a weight-related condition)",
         detail: `Your height and weight give a BMI of ${ctx.bmi}. The licences and trials behind weight-management medicines used BMI ≥ 30, or ≥ 27 with a weight-related condition, as entry criteria. This is not a judgement about your body — it means a clinician would need to consider whether that evidence applies to you.`,
-        compounds: [],
+        compounds: incretinSlugs,
       });
     }
   }
@@ -228,7 +231,6 @@ export function globalRules(ctx: EngineContext): Flag[] {
 
   /* ---------------- Lifestyle ---------------- */
   if (a.alcohol === "heavy") {
-    const incretins = ctx.compounds.filter((c) => c.family === "incretin").map((c) => c.slug);
     flags.push({
       id: flagId("global", "lifestyle", "alcohol"),
       severity: "caution",
@@ -236,7 +238,7 @@ export function globalRules(ctx: EngineContext): Flag[] {
       title: "Alcohol intake above 14 drinks a week",
       detail:
         "Heavy alcohol intake raises the risk of pancreatitis and liver disease — both directly relevant to incretin-based medicines, which carry pancreatitis warnings — and complicates the assessment of nausea, dehydration and low blood sugar.",
-      compounds: incretins,
+      compounds: incretinSlugs,
     });
   }
   if (a.nicotine === "daily") {
@@ -275,7 +277,9 @@ export function globalRules(ctx: EngineContext): Flag[] {
   }
 
   /* ---------------- Anti-doping ---------------- */
-  if (ctx.goal === "athletic_performance") {
+  const tested = a.testedAthlete === "yes";
+  if (tested || ctx.goal === "athletic_performance") {
+    const who = tested ? "You compete in drug-tested sport, so" : "Tested athletes should note that";
     for (const c of ctx.compounds) {
       if (!c.wadaProhibited) {
         // S0: any pharmacological substance with no current approval by a governmental
@@ -287,7 +291,7 @@ export function globalRules(ctx: EngineContext): Flag[] {
             severity: "caution",
             source: "anti_doping",
             title: "Likely prohibited under WADA category S0 (non-approved substances)",
-            detail: `${c.name} is not named on the Prohibited List, but it is not approved for human therapeutic use by any regulator in our database. The World Anti-Doping Code prohibits such substances at all times under category S0. Tested athletes should treat it as prohibited.`,
+            detail: `${c.name} is not named on the Prohibited List, but it is not approved for human therapeutic use by any regulator in our database. The World Anti-Doping Code prohibits such substances at all times under category S0. ${who} it should be treated as prohibited.`,
             compounds: [c.slug],
           });
         }
@@ -297,14 +301,35 @@ export function globalRules(ctx: EngineContext): Flag[] {
         id: flagId("anti-doping", c.slug),
         severity: "caution",
         source: "anti_doping",
-        title: "Prohibited under the WADA code — tested athletes risk sanction",
+        title: tested
+          ? "Prohibited under the WADA code — you compete in tested sport"
+          : "Prohibited under the WADA code — tested athletes risk sanction",
         detail:
           c.wadaProhibited === "in_competition"
             ? `${c.name} is prohibited in competition under the World Anti-Doping Code. Detection windows can be longer than the period of use.`
-            : `${c.name} is prohibited at all times (in and out of competition) under the World Anti-Doping Code. Use carries the risk of sanction for any tested athlete, and unlicensed products may contain undeclared prohibited substances.`,
+            : `${c.name} is prohibited at all times (in and out of competition) under the World Anti-Doping Code. ${who} use carries the risk of sanction, and unlicensed products may contain undeclared prohibited substances.`,
         compounds: [c.slug],
       });
     }
+  }
+
+  /* ---------------- Blood thinners with injected products ---------------- */
+  const bloodThinners = Array.from(
+    new Set(
+      a.prescriptions
+        .filter((p) => p.classId === "anticoagulant" || p.classId === "antiplatelet")
+        .map((p) => p.name.trim() || MEDICATION_CLASS_MAP[p.classId as "anticoagulant" | "antiplatelet"].label),
+    ),
+  );
+  if (bloodThinners.length > 0) {
+    flags.push({
+      id: flagId("global", "medication", "blood-thinner"),
+      severity: "caution",
+      source: "medication",
+      title: "Anticoagulant or antiplatelet medicine — injection-site bleeding and bruising risk",
+      detail: `You listed ${joinList(bloodThinners)}. Every product in the range is injected, and injecting while on a blood thinner carries a higher risk of bruising and bleeding at the site. Compound-specific interaction data, where our database holds any, are flagged separately. Your prescriber should know before anything is started.`,
+      compounds: [],
+    });
   }
 
   /* ---------------- Medicines that could not be assessed ---------------- */

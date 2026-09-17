@@ -4,8 +4,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { toast } from "sonner";
-import { countryName } from "@/lib/assessment/derived";
+import { countryName, RANGE_COMPOUND_SLUGS } from "@/lib/assessment/derived";
 import {
+  AUTO_COMPLETE_SECTIONS,
   STEPS,
   firstStepOfSection,
   getStep,
@@ -26,7 +27,9 @@ import {
 } from "@/lib/assessment/flow";
 import { useAssessmentStore } from "@/lib/assessment/store";
 import type { SectionId } from "@/lib/assessment/types";
+import { BRAND } from "@/lib/brand";
 import { useCartStore } from "@/lib/commerce/cart-store";
+import { buildQuizResult, resultHref } from "@/lib/match";
 import { formatDate } from "@/lib/utils";
 import { ActionBar } from "./action-bar";
 import { EmailCaptureScreen } from "./email-capture";
@@ -70,6 +73,7 @@ export function AssessmentWizard() {
   const hydrated = useAssessmentStore((s) => s.hydrated);
   const answers = useAnswers();
   const position = useAssessmentStore((s) => s.position);
+  const lastMatch = useAssessmentStore((s) => s.lastMatch);
   const setPosition = useAssessmentStore((s) => s.setPosition);
   const setAnswers = useAssessmentStore((s) => s.setAnswers);
   const setAnswer = useAssessmentStore((s) => s.setAnswer);
@@ -134,9 +138,6 @@ export function AssessmentWizard() {
       } else if (leaving.kind === "supplements") {
         const pruned = a.supplements.filter((s) => s.name.trim());
         if (pruned.length !== a.supplements.length) setAnswers({ supplements: pruned });
-      } else if (leaving.kind === "previous-uses") {
-        const pruned = a.previousUses.filter((u) => u.name.trim());
-        if (pruned.length !== a.previousUses.length) setAnswers({ previousUses: pruned });
       }
     },
     [setAnswers],
@@ -214,23 +215,46 @@ export function AssessmentWizard() {
     [go],
   );
 
-  /** "Generate my report": mark complete, unlock the assessment promo, run the generating sequence. */
+  /**
+   * "Find my match": complete the sections the flow no longer asks about, run
+   * the rules engine and the matcher on this device, store both, unlock the
+   * assessment promo, then show the generating sequence and the email step.
+   */
   const generate = React.useCallback(() => {
     const state = useAssessmentStore.getState();
     if (!state.answers.skippedSections.includes("final")) state.markSectionComplete("final");
+    for (const section of AUTO_COMPLETE_SECTIONS) state.markSectionComplete(section);
     complete();
+    const { report, match } = buildQuizResult(useAssessmentStore.getState().answers);
+    state.setLastReport(report);
+    state.setLastMatch(match);
     useCartStore.getState().setAssessmentCompleted(true);
+    router.prefetch(resultHref(match));
     setPhase("generating");
-  }, [complete]);
+  }, [complete, router]);
 
-  const openReport = React.useCallback(() => router.push("/report/"), [router]);
+  /** Route to the matched pen's page, or to the report when nothing matched. */
+  const openResult = React.useCallback(() => {
+    const match = useAssessmentStore.getState().lastMatch;
+    router.push(match ? resultHref(match) : "/report/");
+  }, [router]);
 
+  /** Email captured (and, optionally, a clinician review requested) — keep the stored report in step with the answers. */
   const onEmailSent = React.useCallback(
-    (email: string) => {
-      setAnswers({ contactEmail: email });
-      openReport();
+    (email: string, reviewRequested: boolean) => {
+      const state = useAssessmentStore.getState();
+      const contactConsent = reviewRequested || Boolean(state.answers.contactConsent);
+      setAnswers({ contactEmail: email, contactConsent });
+      if (state.lastReport) {
+        state.setLastReport({
+          ...state.lastReport,
+          contactRequested: contactConsent,
+          answers: { ...state.lastReport.answers, contactEmail: email, contactConsent },
+        });
+      }
+      openResult();
     },
-    [setAnswers, openReport],
+    [setAnswers, openResult],
   );
 
   const saveAndExit = React.useCallback(() => {
@@ -307,12 +331,12 @@ export function AssessmentWizard() {
   if (!ready) return <WizardSkeleton />;
 
   const isReview = step.kind === "review";
-  const nextLabel = isReview ? "Generate my report" : step.optional && step.isEmpty?.(answers) ? "Skip" : "Continue";
+  const nextLabel = isReview ? "Find my match" : step.optional && step.isEmpty?.(answers) ? "Skip" : "Continue";
   const canBack = Boolean(prevStep(answers, position));
   const eyebrow = sectionEyebrow(step);
   const compoundSlugs = answers.consideredCompounds.map((c) => c.slug);
-  const compoundCount = compoundSlugs.length + (answers.otherCompoundText?.trim() ? 1 : 0);
   const country = countryName(answers.countryCode) ?? "your country";
+  const hasPrimary = Boolean(lastMatch?.primary);
 
   return (
     <div className="flex min-h-dvh flex-col bg-white">
@@ -365,11 +389,11 @@ export function AssessmentWizard() {
           <GeneratingScreen
             key="generating"
             lines={[
-              "Mapping your goal to the evidence base",
+              "Mapping your goal and focus areas to the six pens",
               `Checking regulatory status for ${country}`,
-              `Screening ${compoundCount} ${compoundCount === 1 ? "compound" : "compounds"} against your history`,
-              "Matching products to your suitability labels",
-              "Compiling clinician questions",
+              `Screening ${RANGE_COMPOUND_SLUGS.length} compounds in the range against your history`,
+              "Scoring each pen 0–100 for fit",
+              "Applying your safety screen to the result",
             ]}
             onDone={() => setPhase("email")}
           />
@@ -378,11 +402,13 @@ export function AssessmentWizard() {
           <EmailCaptureScreen
             key="email"
             initialEmail={answers.contactEmail}
+            initialReview={Boolean(answers.contactConsent)}
             goal={answers.primaryGoal}
             compounds={compoundSlugs}
             countryCode={answers.countryCode}
+            resultLabel={hasPrimary ? "my match" : "my report"}
             onSent={onEmailSent}
-            onSkip={openReport}
+            onSkip={openResult}
           />
         )}
       </AnimatePresence>
@@ -426,7 +452,8 @@ function StepBody({
       {step.help && <p className="mt-4 max-w-prose text-pretty text-[15px] leading-relaxed text-muted">{step.help}</p>}
       {completedAt && (
         <p className="mt-4 inline-flex items-start gap-2 border border-ink border-l-[3px] border-l-brand-600 bg-white px-3 py-2 text-[13px] leading-snug text-ink-2">
-          You generated a report on {formatDate(completedAt)}. Generating again replaces it.
+          You completed the {BRAND.assessmentName} on {formatDate(completedAt)}. Finding your match again replaces that result and its
+          report.
         </p>
       )}
       <div className="mt-8">{children}</div>

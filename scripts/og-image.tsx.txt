@@ -36,30 +36,29 @@ export default async function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-            <div style={{ display: "flex", width: 56, height: 56 }}>
-              <svg width="56" height="56" viewBox="0 0 32 32" fill="none">
-                <path d="M5 17.5 L12.5 25 L27 7" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="square" />
-                <rect x="2.2" y="14.7" width="5.6" height="5.6" fill="#ffffff" />
-                <rect x="9.7" y="22.2" width="5.6" height="5.6" fill="#ffffff" />
-                <rect x="17" y="13" width="4.6" height="4.6" fill="#ffffff" />
-                <rect x="24.2" y="4.2" width="5.6" height="5.6" fill="#1d3bff" />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "center", fontSize: 40, letterSpacing: 6 }}>
+              <span>{BRAND.wordmark.a}</span>
+              <svg width="30" height="40" viewBox="0 0 24 32" fill="none" style={{ margin: "0 2px" }}>
+                <path d="M5 2 C5 9 19 11 19 16 C19 21 5 23 5 30" stroke="#5d76ff" strokeWidth="2.4" strokeLinecap="round" />
+                <path d="M19 2 C19 9 5 11 5 16 C5 21 19 23 19 30" stroke="#5d76ff" strokeWidth="2.4" strokeLinecap="round" />
+                <path d="M7.5 6.5 H16.5 M7 25.5 H17 M9.5 12 H14.5 M9.5 20 H14.5" stroke="#5d76ff" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
+              <span>{BRAND.wordmark.b}</span>
             </div>
-            <div style={{ display: "flex", fontSize: 30, letterSpacing: -0.5 }}>
-              <span>{BRAND.wordmark.a.toUpperCase()}</span>
-              <span style={{ color: "#5d76ff", marginLeft: 10 }}>{BRAND.wordmark.b.toUpperCase()}</span>
+            <div style={{ fontFamily: "IBM Plex Mono", fontSize: 14, letterSpacing: 7, color: "rgba(255,255,255,0.6)", marginTop: 6 }}>
+              {BRAND.descriptor.toUpperCase()}
             </div>
           </div>
           <div style={{ fontFamily: "IBM Plex Mono", fontSize: 18, letterSpacing: 3, color: "rgba(255,255,255,0.55)" }}>
-            BATCH-TESTED · COA PER LOT · UK
+            SIX PENS · COA PER LOT · UK
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", fontSize: 128, lineHeight: 0.92, letterSpacing: -6 }}>
-          <div>TESTED.</div>
-          <div>MATCHED.</div>
-          <div style={{ color: "#1d3bff" }}>SHIPPED.</div>
+          <div>SIX PENS.</div>
+          <div>ONE HONEST</div>
+          <div style={{ color: "#5d76ff" }}>ANSWER.</div>
         </div>
 
         <div
@@ -74,7 +73,7 @@ export default async function OpenGraphImage() {
             letterSpacing: 2,
           }}
         >
-          <div style={{ color: "rgba(255,255,255,0.75)" }}>PEPTIDES WITH THE PAPERWORK · THE ASSESSMENT THAT SAYS NO</div>
+          <div style={{ color: "rgba(255,255,255,0.75)" }}>PRE-FILLED PEPTIDE PENS · THE 7-MINUTE CHECKUP THAT SAYS NO</div>
           <div>{BRAND.domain.toUpperCase()}</div>
         </div>
       </div>

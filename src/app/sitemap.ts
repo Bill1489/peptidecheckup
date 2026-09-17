@@ -6,8 +6,8 @@ import { SYMPTOMS } from "@/lib/funnel";
 
 export const dynamic = "force-static";
 
-/** Content pages last changed on this date; compounds and products carry their own dates. */
-const CONTENT_UPDATED = "2026-09-15";
+/** Content pages last changed on this date; compounds and pens carry their own dates. */
+const CONTENT_UPDATED = "2026-09-16";
 
 /** Absolute URL with the trailing slash the static export emits. */
 function url(path: string) {
@@ -19,7 +19,9 @@ type Entry = MetadataRoute.Sitemap[number];
 
 /**
  * Public, indexable routes. Deliberately absent: /checkout, /order, /account
- * and /report — personal, client-side state with nothing to index.
+ * and /report — personal, client-side state with nothing to index. The six
+ * pens (/shop/{slug}), the compound records and the ad landing pages are
+ * appended from their data below.
  */
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "weekly" },

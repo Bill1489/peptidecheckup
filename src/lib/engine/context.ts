@@ -41,6 +41,20 @@ export const REGULATED_SOURCES: NonNullable<AssessmentAnswers["source"]>[] = [
   "uk_pharmacy",
 ];
 
+/**
+ * The quiz runs from the store and no longer asks where the product
+ * would come from: an undefined `source` means the store's own batch-tested,
+ * certificate-backed pens. Older saved answers may still carry a source.
+ */
+export function suppliedByStore(answers: AssessmentAnswers): boolean {
+  return !answers.source;
+}
+
+/** True when the answers describe a supply route that cannot be quality-assured (or none at all, in legacy answers). */
+export function unregulatedSupply(answers: AssessmentAnswers): boolean {
+  return Boolean(answers.source && (UNREGULATED_SOURCES.includes(answers.source) || answers.source === "undecided"));
+}
+
 export function buildContext(answers: AssessmentAnswers): EngineContext {
   const jurisdiction = jurisdictionForCountry(answers.countryCode);
   const countryName = answers.countryCode ? COUNTRY_MAP[answers.countryCode]?.name : undefined;

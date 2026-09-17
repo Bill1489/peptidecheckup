@@ -35,7 +35,7 @@ export function TopBar({
             <LogoMark className="h-7 w-7" />
           </Link>
           <p className="label-mono truncate text-ink" aria-live="off">
-            <span className="hidden sm:inline">Assessment · </span>
+            <span className="hidden sm:inline">{BRAND.assessmentName} · </span>
             <span className="tnum">
               {pad(index)}/{pad(total)}
             </span>

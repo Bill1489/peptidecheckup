@@ -9,10 +9,31 @@ import {
 import { CONDITION_MAP } from "@/data/conditions";
 import { MEDICATION_CLASS_MAP } from "@/data/medications";
 import { OTC_LABELS, type OtcCategory } from "@/lib/assessment/types";
-import { SUITABILITY_DESCRIPTIONS, type CompoundReport, type Flag, type FlagSeverity, type GoalAlignment, type Suitability } from "../types";
-import { type EngineContext, REGULATED_SOURCES, UNREGULATED_SOURCES } from "../context";
+import {
+  SUITABILITY_DESCRIPTIONS,
+  type CompoundReport,
+  type Flag,
+  type FlagSeverity,
+  type FlagSource,
+  type GoalAlignment,
+  type Suitability,
+} from "../types";
+import { type EngineContext, REGULATED_SOURCES, unregulatedSupply } from "../context";
 import { GOAL_ALIGNMENT_LABELS, flagId, joinList, lc } from "../labels";
 import type { DoseEvaluation } from "./dose";
+
+/**
+ * Flag sources that describe the compound itself — its regulatory status and
+ * the state of its evidence base — rather than anything the person answered.
+ * They are always shown, but they do not by themselves push a compound to
+ * "Higher concern": that label is reserved for factors *your responses*
+ * identified, as its own description says.
+ */
+export const COMPOUND_INHERENT_SOURCES: readonly FlagSource[] = ["regulatory", "information"];
+
+export function isPersonSpecific(flag: Pick<Flag, "source">): boolean {
+  return !COMPOUND_INHERENT_SOURCES.includes(flag.source);
+}
 
 /* ------------------------------------------------------------------ */
 /* Goal alignment                                                      */
@@ -258,9 +279,15 @@ function topFlagTitles(flags: Flag[], n = 2): string[] {
  * Order of precedence:
  *  1. any "high" flag → higher_concern (a safety signal is never hidden behind missing information)
  *  2. medical or medicines section missing, or age/country missing → insufficient_information
- *  3. ≥ 2 caution flags, or (not authorised + preclinical only + unregulated/undecided source) → higher_concern
+ *  3. ≥ 2 person-specific caution flags, or (not authorised + preclinical only + a supply route the
+ *     user described as unregulated/undecided) → higher_concern
  *  4. goal alignment other than not_aligned → potentially_relevant
  *  5. otherwise → insufficient_information ("not typically researched for your goal")
+ *
+ * Compound-inherent cautions (regulatory status, evidence base) are still
+ * listed on the compound, but only the person's own factors count towards
+ * rule 3 — otherwise every unlicensed, preclinical compound would be "Higher
+ * concern" for everyone, which would empty the label of meaning.
  */
 export function decideSuitability(
   ctx: EngineContext,
@@ -270,7 +297,7 @@ export function decideSuitability(
 ): SuitabilityDecision {
   const { answers: a, jurisdiction } = ctx;
   const highs = flags.filter((f) => f.severity === "high");
-  const cautions = flags.filter((f) => f.severity === "caution");
+  const cautions = flags.filter((f) => f.severity === "caution" && isPersonSpecific(f));
 
   if (highs.length > 0) {
     return {
@@ -295,11 +322,11 @@ export function decideSuitability(
     };
   }
 
-  const unregulatedOrUndecided = !a.source || UNREGULATED_SOURCES.includes(a.source) || a.source === "undecided";
+  // The store's own batch-tested pens (no source described) are not an unregulated route.
   const triad =
     compound.regulatory[jurisdiction].status === "not_authorised" &&
     compound.humanEvidenceLevel === "preclinical_only" &&
-    unregulatedOrUndecided;
+    unregulatedSupply(a);
 
   if (cautions.length >= 2 || triad) {
     return {

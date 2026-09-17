@@ -59,14 +59,15 @@ export function CommerceCta({
   compact?: boolean;
   className?: string;
 }) {
-  const { state, product, href } = commerce;
+  const { state, product, href, inBlend } = commerce;
   const labels = compact ? COMMERCE_STATE_SHORT : COMMERCE_STATE_LABELS;
   const chosen = variant ?? commerce.variant;
 
   if (state === "buy" && product && chosen) {
+    // A compound carried in a blend adds the blend pen — say which one.
     return (
       <AddToCartButton product={product} variant={chosen} size={size} className={className}>
-        {labels.buy}
+        {inBlend ? `Add ${product.name}` : labels.buy}
       </AddToCartButton>
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DISCLAIMER_SHORT } from "@/lib/brand";
+import { BRAND, DISCLAIMER_SHORT } from "@/lib/brand";
 import type { SectionId } from "@/lib/assessment/types";
 import { buildReview, type ReviewStatus } from "@/lib/assessment/summary";
 import { Badge } from "@/components/ui/badge";
@@ -35,8 +35,8 @@ export function Review({
     <div className="grid gap-5">
       {skipped > 0 && (
         <InlineNotice tone="caution" title={`${skipped} optional ${skipped === 1 ? "section" : "sections"} skipped`}>
-          Your report will still be generated and will note what is missing. You can add details below if you&apos;d like
-          a more complete picture — and more complete assessments unlock more product matches.
+          Your match and report will still be produced and will note what is missing. You can add details below if
+          you&apos;d like a more complete picture.
         </InlineNotice>
       )}
 
@@ -94,9 +94,9 @@ export function Review({
 
       <div className="grid gap-3 border border-ink bg-paper-2 p-4 text-xs leading-relaxed text-muted sm:p-5">
         <p className="text-ink-2">
-          Your report is produced by a deterministic, clinician-reviewable rules engine on this device. It compares your
-          answers against our maintained evidence and regulatory database — nothing is guessed — and only then matches
-          products to your suitability labels.
+          Your match is produced on this device by a deterministic, clinician-reviewable rules engine. It screens every
+          compound in the six {BRAND.name} pens against your answers and our maintained evidence and regulatory database —
+          nothing is guessed — then scores each pen for fit. A safety flag can rule a pen out entirely.
         </p>
         <p>{DISCLAIMER_SHORT}</p>
       </div>

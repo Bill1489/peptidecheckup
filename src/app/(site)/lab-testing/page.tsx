@@ -3,101 +3,128 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpecRow } from "@/components/ui/card";
-import { productPath, productsWithCoa } from "@/components/commerce/product-utils";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
+import { componentSlugs, isBlend, productComponents, productPath, productsWithCoa } from "@/components/commerce/product-utils";
 import { JsonLd } from "@/components/marketing/json-ld";
+import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { formatDate } from "@/lib/utils";
 
 const certified = productsWithCoa();
 const labs = Array.from(new Set(certified.map((p) => p.coa!.lab))).sort();
-const peptideCerts = certified.filter((p) => p.category === "peptide");
-const purities = peptideCerts.map((p) => Number.parseFloat(p.coa!.purity)).filter((n) => Number.isFinite(n));
-const meanPurity = purities.length ? (purities.reduce((a, b) => a + b, 0) / purities.length).toFixed(1) : "—";
+const blends = PRODUCTS.filter(isBlend);
+const componentCount = certified.reduce((n, p) => n + Math.max(1, componentSlugs(p).length), 0);
+const purities = certified.map((p) => Number.parseFloat(p.coa!.purity.replace(/^[^\d]*/, ""))).filter((n) => Number.isFinite(n));
 const minPurity = purities.length ? Math.min(...purities).toFixed(1) : "—";
 const latest = certified[0]?.coa?.testedOn;
+const blendNames = blends.map((p) => p.name).join(" and ");
 
 export const metadata: Metadata = {
-  title: `Lab testing — ${certified.length} published certificates of analysis`,
-  description: `How every batch is tested (HPLC purity, LC-MS identity, LAL endotoxin), which independent laboratories we use, how to read a certificate of analysis and batch number, and the full list of ${certified.length} current certificates. Mean peptide purity ${meanPurity}%.`,
+  title: `Lab testing — ${certified.length} pens, ${certified.length} published certificates of analysis`,
+  description: `How every ${BRAND.name} pen lot is tested (HPLC purity, LC-MS identity, LAL endotoxin), how blends are tested per component, which independent laboratory we use, how to read a certificate and batch number, and the certificate for each of the ${certified.length} pens in the range.`,
   alternates: { canonical: "/lab-testing/" },
   openGraph: {
     images: OG_IMAGES,
     title: "Lab testing & certificates of analysis",
-    description: `Every lot tested by an independent laboratory before it ships. ${certified.length} certificates published; mean purity ${meanPurity}% (HPLC).`,
+    description: `Every pen lot tested by an independent laboratory before it ships. ${certified.length} certificates published; ${componentCount} components identity-confirmed.`,
     url: "/lab-testing/",
     siteName: BRAND.displayName,
   },
 };
 
 const STATS: { label: string; value: string }[] = [
+  { label: "Pens in the range", value: String(certified.length) },
   { label: "Certificates published", value: String(certified.length) },
-  { label: "Independent labs", value: String(labs.length) },
-  { label: "Mean peptide purity", value: `${meanPurity}%` },
-  { label: "Lowest accepted lot", value: `${minPurity}%` },
+  { label: "Components identity-confirmed", value: String(componentCount) },
+  { label: "Lowest accepted purity", value: `${minPurity}%` },
 ];
 
 const TESTS: { code: string; title: string; what: string; rows: { label: string; value: string }[] }[] = [
   {
     code: "01",
     title: "Purity · HPLC",
-    what: "Reverse-phase high-performance liquid chromatography separates the target peptide from truncated, deletion and oxidised by-products and reports the target as a percentage of total peak area at 214–220 nm.",
+    what: "Reverse-phase high-performance liquid chromatography separates the target compound from truncated, deletion and oxidised by-products and reports the target as a percentage of total peak area at 214–220 nm. In a blend, each component is resolved and reported separately.",
     rows: [
-      { label: "Reports", value: "Target peak area %" },
-      { label: "Release limit", value: "≥ 98.5% peptides · ≥ 99% where stated on the product" },
+      { label: "Reports", value: "Target peak area % · per component in blends" },
+      { label: "Release limit", value: "≥ 99% for every component" },
       { label: "Catches", value: "Truncations, deletions, oxidation, dimerisation" },
-      { label: "Does not catch", value: "Identity — a pure vial of the wrong peptide still scores high" },
+      { label: "Does not catch", value: "Identity — a pure pen of the wrong compound still scores high" },
     ],
   },
   {
     code: "02",
     title: "Identity · LC-MS",
-    what: "Liquid chromatography–mass spectrometry measures the molecular mass of the main peak and compares it with the theoretical mass of the labelled sequence. A match within instrument tolerance confirms the vial contains what the label says.",
+    what: "Liquid chromatography–mass spectrometry measures the molecular mass of each main peak and compares it with the theoretical mass of the labelled compound. A match within instrument tolerance confirms the pen contains what the carton says — every component of a blend, not just the largest.",
     rows: [
-      { label: "Reports", value: "Observed vs theoretical mass" },
+      { label: "Reports", value: "Observed vs theoretical mass, per component" },
       { label: "Release limit", value: "Within ± 0.1% of theoretical (± 1 Da at 1 kDa)" },
-      { label: "Catches", value: "Wrong peptide, wrong salt form, wrong modification (e.g. DAC absent)" },
+      { label: "Catches", value: "Wrong compound, wrong salt form, missing component in a blend" },
       { label: "Does not catch", value: "Low-level impurities that co-elute with the main peak" },
     ],
   },
   {
     code: "03",
     title: "Endotoxin · LAL",
-    what: "Limulus amoebocyte lysate assay for bacterial endotoxin, the pyrogenic residue left when gram-negative bacteria contaminate a process. Reported in endotoxin units per milligram of peptide.",
+    what: "Limulus amoebocyte lysate assay for bacterial endotoxin, the pyrogenic residue left when gram-negative bacteria contaminate a process. Run on the finished solution in the pen and reported in endotoxin units per milligram of compound.",
     rows: [
       { label: "Reports", value: "EU / mg" },
-      { label: "Release limit", value: "< 1.0 EU/mg (most lots < 0.5)" },
+      { label: "Release limit", value: "< 1.0 EU/mg (current lots < 0.5)" },
       { label: "Catches", value: "Bacterial contamination during synthesis, fill or handling" },
-      { label: "Does not catch", value: "Sterility of the finished vial — research vials are not sterile-filled medicines" },
+      { label: "Does not catch", value: "Sterility of the finished pen — research pens are not medicines filled under GMP" },
     ],
   },
 ];
 
 const READING: { step: string; title: string; body: string }[] = [
-  { step: "A", title: "Match the batch", body: "The batch on the certificate must equal the batch printed on the vial label and on the product page. If they differ, the certificate is not for your vial." },
-  { step: "B", title: "Check the date", body: "Tested on is the date the laboratory issued the report — not the synthesis date and not the ship date. We retest a lot if it has been in stock for more than nine months." },
-  { step: "C", title: "Read the lab, not the logo", body: "The laboratory is named. Both labs we use accept samples from anyone, so a certificate can be re-run by a customer using the batch number." },
-  { step: "D", title: "Purity is one number", body: "99.4% means 0.6% of what was detected was not the target peptide. It says nothing about how much powder is in the vial, which the mass on the label describes." },
-  { step: "E", title: "Identity is yes or no", body: "Confirmed (LC-MS) means the observed mass matched the theoretical one. Anything else — 'consistent with', 'presumed' — should be read as unconfirmed." },
-  { step: "F", title: "Endotoxin is a ceiling", body: "< 0.5 EU/mg is a detection limit, not a measurement. Lower limits reflect a cleaner assay, not a purer peptide." },
+  {
+    step: "A",
+    title: "Match the batch",
+    body: "The batch on the certificate must equal the batch printed on the carton and the pen label, and on the product page. If they differ, the certificate is not for your pen.",
+  },
+  {
+    step: "B",
+    title: "Check the date",
+    body: "Tested on is the date the laboratory issued the report — not the fill date and not the ship date. We retest a lot if it has been in stock for more than nine months.",
+  },
+  {
+    step: "C",
+    title: "Read the lab, not the logo",
+    body: "The laboratory is named and accepts samples from anyone, so a certificate can be re-run by a customer using the batch number.",
+  },
+  {
+    step: "D",
+    title: "Purity is one number per component",
+    body: "99.3% means 0.7% of what was detected was not the target compound. Blends show one figure per component. Purity says nothing about how much is in the pen — the mass on the carton describes that.",
+  },
+  {
+    step: "E",
+    title: "Identity is yes or no",
+    body: "Confirmed (LC-MS) means the observed mass matched the theoretical one. Anything else — 'consistent with', 'presumed' — should be read as unconfirmed. A blend certificate names every component confirmed.",
+  },
+  {
+    step: "F",
+    title: "Endotoxin is a ceiling",
+    body: "< 0.5 EU/mg is a detection limit, not a measurement. Lower limits reflect a cleaner assay, not a purer compound.",
+  },
 ];
 
 const STORAGE: { label: string; value: string }[] = [
-  { label: "Unopened vials", value: "−20 °C in the dark; stable 24 months from the test date" },
-  { label: "Short-term", value: "2–8 °C for up to 30 days if freezing is impractical" },
-  { label: "After reconstitution", value: "2–8 °C, use within 28 days; do not refreeze" },
-  { label: "Copper peptide (GHK-Cu)", value: "2–8 °C sealed; protect from light" },
-  { label: "Diluent", value: "Room temperature; 28 days after first puncture" },
-  { label: "In transit", value: "Ambient, tracked; insulated pouch and gel pack June–September" },
-  { label: "Cold chain", value: "Prescription medicines only, dispatched by the dispensing pharmacy" },
-  { label: "Dispatch", value: "Same working day before 2 pm (UK); pre-order lots ship when the CoA is issued" },
+  { label: "Unopened pen", value: "2–8 °C in the carton; use by the date on the label" },
+  { label: "In use", value: "2–8 °C between uses; cap on, out of direct light" },
+  { label: "Freezing", value: "Do not freeze. A pen that has frozen should not be used" },
+  { label: "Room temperature", value: "Short excursions in transit only — not for storage" },
+  { label: "Copper peptide (GHK-Cu, Klow)", value: "As above; keep out of direct light between uses" },
+  { label: "In transit", value: "Insulated packaging with gel packs, tracked; shipped chilled" },
+  { label: "Dispatch", value: "Same working day before 2 pm (UK)" },
+  { label: "Pen needles", value: "Not included; a pen-needle compatibility note is in the box" },
 ];
 
 const LIMITS: string[] = [
-  "Testing confirms the identity and purity of the vial contents. It says nothing about safety or effectiveness in humans — that is what the evidence record is for.",
-  "A certificate describes a sample from the lot, not every vial in it. Fill-weight variation between vials is not measured.",
-  "Research vials are not manufactured as medicines. They are not sterile-filled under GMP, and no regulator has inspected the process.",
-  "We pay the laboratories. The results are independent of us in method and reporting, but the commercial relationship exists and you should know it.",
-  "Prescription medicines listed here are not tested by us; they carry the manufacturer's release testing and the dispensing pharmacy's controls.",
+  "Testing confirms the identity and purity of what is in the pen. It says nothing about safety or effectiveness in humans — that is what the evidence record is for.",
+  "A certificate describes a sample from the lot, not every pen in it. Fill-volume variation between pens is not measured.",
+  "For blends, each component is tested on its own. The combination is not tested as a combination, and nobody has studied these combinations in people.",
+  "Research pens are not manufactured as medicines. They are not filled under GMP, and no regulator has inspected the process.",
+  "We pay the laboratory. The results are independent of us in method and reporting, but the commercial relationship exists and you should know it.",
 ];
 
 const jsonLd = {
@@ -120,16 +147,16 @@ export default function LabTestingPage() {
       <section className="rule-b">
         <div className="container-x grid gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
-            <p className="label-mono">Lab testing · {certified.length} certificates</p>
+            <p className="label-mono">Lab testing · {certified.length} pens · {certified.length} certificates</p>
             <h1 className="mt-4 max-w-4xl text-balance text-[2.5rem] uppercase leading-[0.95] sm:text-[3.75rem] lg:text-[4.75rem]">
-              Every batch.
+              Every lot.
               <br />
               Third-party tested.
             </h1>
             <p className="mt-5 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[16px]">
-              A sample from every research lot goes to an independent laboratory before the lot is listed. Purity by HPLC, identity by LC-MS,
-              endotoxin by LAL. The certificate is published against the batch number printed on the vial. Below: what each test does, how to read
-              a certificate, and every certificate currently in force.
+              A sample from every pen lot goes to an independent laboratory before the lot is listed. Purity by HPLC, identity by LC-MS, endotoxin
+              by LAL — per component for the blends. The certificate is published against the batch number printed on the carton. Below: what each
+              test does, how to read a certificate, and the certificate for each of the {certified.length} pens.
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4 lg:grid-cols-2">
@@ -152,7 +179,8 @@ export default function LabTestingPage() {
               Three tests, one lot
             </h2>
             <p className="mt-4 text-[14px] leading-relaxed text-muted">
-              Laboratories: {labs.join(" and ")}. Both accept public submissions, so any certificate can be re-run against the same batch number.
+              {labs.length > 1 ? "Laboratories" : "Laboratory"}: {labs.join(" and ")}. {labs.length > 1 ? "Both accept" : "It accepts"} public
+              submissions, so any certificate can be re-run against the same batch number.
             </p>
           </div>
           <div className="cell-grid grid-cols-1 lg:grid-cols-3">
@@ -182,7 +210,7 @@ export default function LabTestingPage() {
                 Six lines that matter
               </h2>
               <p className="mt-4 text-[14px] leading-relaxed text-muted">
-                A specimen certificate for the current TB-500 lot, annotated. The same six fields appear on every product page.
+                A specimen certificate for the current Tesamorelin lot, annotated. The same six fields appear on every pen page.
               </p>
             </div>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -203,23 +231,80 @@ export default function LabTestingPage() {
         </div>
       </section>
 
+      {/* Blends — per-component testing */}
+      {blends.length > 0 && (
+        <section className="rule-t" aria-labelledby="blends-heading">
+          <div className="container-x grid gap-8 py-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:py-16">
+            <div>
+              <p className="label-mono">03 — Blends</p>
+              <h2 id="blends-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
+                Tested per component
+              </h2>
+              <p className="mt-4 text-[14px] leading-relaxed text-muted">
+                {blendNames} put more than one compound in one pen. The certificate treats each as its own analyte: identity confirmed and purity
+                reported for every component, endotoxin on the finished solution.
+              </p>
+            </div>
+            <div className="cell-grid grid-cols-1 lg:grid-cols-2">
+              {blends.map((p) => {
+                const components = productComponents(p);
+                return (
+                  <article key={p.id} className="flex flex-col p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <ProductSwatch product={p} />
+                        <h3 className="text-[1.1rem] uppercase">{p.name}</h3>
+                      </div>
+                      <span className="shrink-0 border border-ink px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em]">
+                        {components.length} components
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[12.5px] text-muted">{p.subtitle}</p>
+                    <ul className="mt-4 border border-ink">
+                      {components.map((c) => (
+                        <li key={c.slug} className="flex items-center justify-between gap-3 border-b border-line px-3 py-2.5 text-[13px] last:border-b-0">
+                          <span className="font-semibold text-ink">{c.name}</span>
+                          <span className="font-mono text-[11px] tnum text-muted">{c.amount ?? "Split on certificate"}</span>
+                          <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink">Identity · Purity</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {p.coa && (
+                      <div className="mt-3 border-t border-ink">
+                        <SpecRow label="Purity" value={<span className="font-mono text-[12.5px] tnum">{p.coa.purity}</span>} className="items-start" />
+                        <SpecRow label="Identity" value={p.coa.identity ?? "—"} className="items-start" />
+                      </div>
+                    )}
+                    <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+                      What testing cannot do is say anything about the combination: each component is graded on its own evidence record and the
+                      blend has not been studied in people.
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Batch numbering + storage */}
       <section className="rule-t" aria-labelledby="batch-heading">
         <div className="container-x grid gap-10 py-12 lg:grid-cols-2 lg:gap-12 lg:py-16">
           <div>
-            <p className="label-mono">03 — Batch numbering</p>
+            <p className="label-mono">04 — Batch numbering</p>
             <h2 id="batch-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
-              CCC-YYMM-L
+              AV-CCC-YYMM-L
             </h2>
             <p className="mt-4 text-[14px] leading-relaxed text-muted">
-              Every lot number has three parts. It is printed on the vial label, on the certificate and on the product page, and is what you quote
-              if you want a laboratory to re-run the test.
+              Every lot number has four parts. It is printed on the carton, on the pen label, on the certificate and on the product page, and is
+              what you quote if you want a laboratory to re-run the test.
             </p>
-            <div className="mt-6 grid grid-cols-3 gap-px border border-ink bg-ink">
+            <div className="mt-6 grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4">
               {[
-                { part: "TB5", label: "Compound code", body: "Three characters per compound. TB5 = TB-500, BPC = BPC-157, CJC = CJC-1295." },
+                { part: "AV", label: "Brand", body: `${BRAND.name} — every lot we release starts here.` },
+                { part: "TES", label: "Pen code", body: "Three characters per pen: TES Tesamorelin, MOT MOTS-C, GHK GHK-Cu, NAD NAD+, WOL Wolverine, KLW Klow." },
                 { part: "2609", label: "Release", body: "Year and month the lot was released: 26 = 2026, 09 = September." },
-                { part: "B", label: "Lot letter", body: "Sequential within the month. A is the first lot released, B the second." },
+                { part: "A", label: "Lot letter", body: "Sequential within the month. A is the first lot released, B the second." },
               ].map((b) => (
                 <div key={b.part} className="bg-white p-4">
                   <p className="font-mono text-[1.5rem] font-semibold tnum text-ink">{b.part}</p>
@@ -230,7 +315,7 @@ export default function LabTestingPage() {
             </div>
           </div>
           <div>
-            <p className="label-mono">04 — Storage & shipping</p>
+            <p className="label-mono">05 — Storage & shipping</p>
             <h2 className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">Cold, dark, tracked</h2>
             <div className="mt-6 border border-ink px-4 py-1">
               {STORAGE.map((s) => (
@@ -250,9 +335,9 @@ export default function LabTestingPage() {
         <div className="container-x py-12 lg:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="label-mono">05 — Certificates in force</p>
+              <p className="label-mono">06 — Certificates in force</p>
               <h2 id="certs-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
-                {certified.length} lots, {latest ? `latest ${formatDate(latest, { month: "short" })}` : "current"}
+                {certified.length} pens, {latest ? `latest ${formatDate(latest, { month: "short" })}` : "current"}
               </h2>
             </div>
             <p className="max-w-md text-[13px] leading-relaxed text-muted">
@@ -260,10 +345,10 @@ export default function LabTestingPage() {
             </p>
           </div>
           <div className="mt-6 overflow-x-auto border border-ink">
-            <table className="w-full min-w-[46rem] border-collapse text-left text-[13px]">
+            <table className="w-full min-w-[52rem] border-collapse text-left text-[13px]">
               <thead>
                 <tr className="border-b border-ink bg-paper-2">
-                  {["Product", "Batch", "Tested on", "Laboratory", "Purity", "Identity", "Endotoxin"].map((h) => (
+                  {["Pen", "Batch", "Tested on", "Laboratory", "Purity", "Identity", "Endotoxin"].map((h) => (
                     <th key={h} scope="col" className="label-mono px-4 py-3 font-medium">
                       {h}
                     </th>
@@ -273,11 +358,23 @@ export default function LabTestingPage() {
               <tbody>
                 {certified.map((p) => {
                   const coa = p.coa!;
+                  const n = componentSlugs(p).length;
                   return (
                     <tr key={p.id} className="border-b border-line last:border-b-0 hover:bg-paper-2">
                       <th scope="row" className="px-4 py-3 font-semibold text-ink">
-                        <Link href={productPath(p.slug)} className="link-rule decoration-transparent hover:decoration-current">
-                          {p.name}
+                        <Link href={productPath(p.slug)} className="group flex items-center gap-3">
+                          <span className="w-10 shrink-0 border border-line bg-white">
+                            <ProductImage product={p} prefer="pack" frame="square" sizes="40px" />
+                          </span>
+                          <span className="flex min-w-0 flex-col">
+                            <span className="flex items-center gap-2 group-hover:text-brand-600">
+                              <ProductSwatch product={p} />
+                              {p.name}
+                            </span>
+                            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.1em] text-muted">
+                              {n > 1 ? `${n} components` : "Single compound"}
+                            </span>
+                          </span>
                         </Link>
                       </th>
                       <td className="px-4 py-3 font-mono text-[12px] tnum">{coa.batch}</td>
@@ -299,7 +396,7 @@ export default function LabTestingPage() {
       <section className="rule-t bg-ink text-white" aria-labelledby="limits-heading">
         <div className="container-x grid gap-8 py-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:py-16">
           <div>
-            <p className="label-mono text-white/60">06 — What testing cannot tell you</p>
+            <p className="label-mono text-white/60">07 — What testing cannot tell you</p>
             <h2 id="limits-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
               The limits, stated
             </h2>
@@ -329,9 +426,9 @@ export default function LabTestingPage() {
   );
 }
 
-/** Annotated specimen certificate, built from the current TB-500 record so it never drifts from the catalogue. */
+/** Annotated specimen certificate, built from the current Tesamorelin record so it never drifts from the catalogue. */
 function SpecimenCoa() {
-  const specimen = certified.find((p) => p.slug === "tb-500") ?? certified[0];
+  const specimen = certified.find((p) => p.slug === "tesamorelin") ?? certified[0];
   if (!specimen?.coa) return null;
   const coa = specimen.coa;
   const rows: { step: string; label: string; value: string }[] = [
@@ -347,7 +444,10 @@ function SpecimenCoa() {
       <div className="flex items-start justify-between gap-4 border-b border-ink p-4">
         <div>
           <p className="label-mono">Certificate of analysis · specimen</p>
-          <p className="mt-2 font-display text-[1.25rem] uppercase">{specimen.name}</p>
+          <p className="mt-2 flex items-center gap-2 font-display text-[1.25rem] uppercase">
+            <ProductSwatch product={specimen} />
+            {specimen.name}
+          </p>
           <p className="text-[12.5px] text-muted">{specimen.subtitle}</p>
         </div>
         <span className="shrink-0 border border-ink px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em]">Lot {coa.batch}</span>
@@ -362,7 +462,7 @@ function SpecimenCoa() {
         ))}
       </dl>
       <div className="flex items-center justify-between gap-3 border-t border-ink px-4 py-3">
-        <p className="text-[12px] text-muted">The live certificate for this lot sits on the product page.</p>
+        <p className="text-[12px] text-muted">The live certificate for this lot sits on the pen page.</p>
         <Link href={productPath(specimen.slug)} className="link-rule inline-flex shrink-0 items-center gap-1 text-[13px] font-medium text-ink">
           View
           <ArrowRight className="h-3 w-3" aria-hidden />

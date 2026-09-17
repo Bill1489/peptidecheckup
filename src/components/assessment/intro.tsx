@@ -5,13 +5,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, X } from "lucide-react";
 import { GOAL_MAP } from "@/data/goals";
+import { PRODUCTS } from "@/data/products";
 import type { GoalId } from "@/data/types";
 import { BRAND, DISCLAIMER_SHORT } from "@/lib/brand";
 import { ESTIMATED_MINUTES, progressPercent, resolveStep } from "@/lib/assessment/flow";
 import { hasProgress, useAssessmentStore } from "@/lib/assessment/store";
 import { SECTION_META, type EntryContext } from "@/lib/assessment/types";
+import { resultHref } from "@/lib/match";
 import { cn, formatDate } from "@/lib/utils";
 import { COMPOUND_MAP } from "@/data/compounds";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -19,20 +22,20 @@ import { useMounted } from "./hooks";
 
 const BENEFITS = [
   {
-    title: "Evidence grades",
-    body: "Strong to insufficient — for your goal, and for each compound you're considering.",
+    title: "One pen, with a fit score",
+    body: "Each of the six pens is scored 0–100 against your goal, focus areas and evidence. You land on the one that fits, with the reasons spelled out.",
+  },
+  {
+    title: "Evidence grade for your goal",
+    body: "Strong to insufficient, from our maintained database. When the evidence is early or animal-only, the result says so.",
   },
   {
     title: "Regulatory status where you live",
-    body: "Authorised, investigational or not authorised, taken from our maintained database rather than inferred.",
+    body: "Authorised, investigational or not authorised — taken from the database, never inferred.",
   },
   {
-    title: "Personal suitability flags",
-    body: "Where your history, medicines or plans warrant professional review before going further.",
-  },
-  {
-    title: "Your matches",
-    body: "Batch-tested products that fit your report, with price and certificate of analysis. Higher-concern compounds are never added to your cart.",
+    title: "A no, when your history says no",
+    body: "A safety flag or a Higher concern label rules a pen out. Nothing goes in the cart; you get the reasons and a clinician link instead.",
   },
 ];
 
@@ -80,6 +83,7 @@ function IntroBody({ entry }: { entry: EntryContext }) {
   const answers = useAssessmentStore((s) => s.answers);
   const position = useAssessmentStore((s) => s.position);
   const lastReport = useAssessmentStore((s) => s.lastReport);
+  const lastMatch = useAssessmentStore((s) => s.lastMatch);
   const start = useAssessmentStore((s) => s.start);
   const reset = useAssessmentStore((s) => s.reset);
   const setAnswers = useAssessmentStore((s) => s.setAnswers);
@@ -144,14 +148,16 @@ function IntroBody({ entry }: { entry: EntryContext }) {
         <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           {/* Left: headline + action */}
           <div>
-            <p className="label-mono text-ink">{BRAND.displayName} · Assessment</p>
+            <p className="label-mono text-ink">
+              {BRAND.name} · {BRAND.assessmentName}
+            </p>
             <h1 className="mt-5 text-balance font-display text-[2.6rem] uppercase leading-[0.95] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
-              Seven minutes. One honest answer.
+              Seven minutes. Six pens. One honest answer.
             </h1>
             <p className="mt-6 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[17px]">
-              Structured questions about your goal, the compounds you&apos;re considering and your health. We map your
-              answers against the published evidence and regulatory status, then show you which products fit — and
-              which we would not sell you.
+              Tell us what you want to change, then a short screen of your history, medicines and safety questions. The{" "}
+              {BRAND.assessmentName} scores every {BRAND.name} pen against your answers and the published evidence, sends you
+              to the one that fits — and tells you when none of them should be bought.
             </p>
 
             {(preselected || goal) && (
@@ -175,7 +181,11 @@ function IntroBody({ entry }: { entry: EntryContext }) {
                   onRestart={() => setConfirm("restart")}
                 />
               ) : hasReport ? (
-                <ReportCard completedAt={answers.completedAt} onView={() => go("/report/")} onNew={() => setConfirm("new")} />
+                <ReportCard
+                  completedAt={answers.completedAt}
+                  onView={() => go(lastMatch ? resultHref(lastMatch) : "/report/")}
+                  onNew={() => setConfirm("new")}
+                />
               ) : (
                 <div className="grid gap-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -191,9 +201,27 @@ function IntroBody({ entry }: { entry: EntryContext }) {
             </div>
           </div>
 
-          {/* Right: what you'll get */}
+          {/* Right: the range + what you'll get */}
           <aside className="lg:pt-8">
-            <p className="label-mono mb-3 text-ink">What you&apos;ll get</p>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <p className="label-mono text-ink">The range · six pre-filled pens</p>
+              <Link href="/shop/" className="link-rule font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
+                Shop
+              </Link>
+            </div>
+            <ul className="cell-grid grid-cols-3" aria-label="The six pens">
+              {PRODUCTS.map((p) => (
+                <li key={p.id} className="flex flex-col p-3 sm:p-4">
+                  <ProductImage product={p} prefer="pack" frame="square" sizes="(min-width: 1024px) 12vw, 30vw" className="w-full" />
+                  <span className="mt-2 flex items-center gap-1.5">
+                    <ProductSwatch product={p} />
+                    <span className="truncate font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink">{p.name}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="label-mono mb-3 mt-8 text-ink">What you&apos;ll get</p>
             <ol className="cell-grid sm:grid-cols-2">
               {BENEFITS.map((b, i) => (
                 <li key={b.title} className="p-5">
@@ -206,12 +234,12 @@ function IntroBody({ entry }: { entry: EntryContext }) {
             <div className="mt-4 bg-ink p-6 text-white sm:p-7">
               <p className="label-mono text-brand-300">Brand promise</p>
               <p className="mt-3 font-display text-[1.5rem] uppercase leading-[0.98] sm:text-[1.75rem]">
-                The report can tell you not to buy. That&apos;s the point.
+                The {BRAND.assessmentName} can tell you not to buy. That&apos;s the point.
               </p>
               <p className="mt-4 text-[13.5px] leading-relaxed text-white/70">
-                A <span className="text-white">Higher concern</span> label links to a clinician, not a checkout. Reports are
-                produced by a deterministic, clinician-reviewable rules engine reading our maintained evidence and
-                regulatory database — nothing is generated freehand.
+                A <span className="text-white">Higher concern</span> label links to a clinician, not a checkout. Matching is
+                deterministic: a clinician-reviewable rules engine reads our maintained evidence and regulatory database —
+                nothing is generated freehand.
               </p>
             </div>
           </aside>
@@ -345,11 +373,11 @@ function ReportCard({ completedAt, onView, onNew }: { completedAt?: string; onVi
       <h2 className="mt-2 font-display text-[1.5rem] uppercase leading-[0.98] text-ink">Pick up your report</h2>
       <p className="mt-2 text-sm text-muted">
         {completedAt ? `Completed ${formatDate(completedAt)}. ` : ""}
-        It&apos;s saved on this device, with your product matches.
+        It&apos;s saved on this device, with your match.
       </p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
         <Button size="lg" onClick={onView}>
-          View your report
+          View your result
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Button>
         <Button size="lg" variant="secondary" onClick={onNew}>

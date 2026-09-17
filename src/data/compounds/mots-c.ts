@@ -188,6 +188,12 @@ export const motsC: Compound = {
       evidence: "none",
       note: "Marketed together in 'body composition' stacks; no human data on the combination.",
     },
+    {
+      with: "nad",
+      evidence: "none",
+      overlap: "Both are marketed for mitochondrial function and energy.",
+      note: "Sold together in 'mitochondrial' stacks. No human data on the combination; MOTS-c has no human efficacy data, and the human data for NAD+ are for oral precursors.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Mitochondrial-derived peptide (16 amino acids)" },

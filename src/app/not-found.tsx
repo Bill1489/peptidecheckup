@@ -2,13 +2,16 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
+import { PRODUCTS } from "@/data/products";
 import { BRAND } from "@/lib/brand";
+import { titleCase } from "@/lib/utils";
+import { ASSESSMENT_MINUTES, CHECKUP, numberWord } from "@/components/marketing/copy";
 
 const LINKS = [
-  { href: "/shop", label: "Shop", body: "Every product, every lot, every certificate." },
-  { href: "/assessment", label: "Assessment", body: "Seven minutes. Says what fits and what does not." },
+  { href: "/shop", label: "The range", body: `${titleCase(numberWord(PRODUCTS.length))} pens, one format, a certificate per lot.` },
+  { href: "/assessment", label: CHECKUP, body: `${ASSESSMENT_MINUTES} minutes. Ends at a pen — or says not to buy.` },
   { href: "/peptides", label: "Compound directory", body: "Evidence and regulatory status, graded the same way." },
-  { href: "/faq", label: "FAQ", body: "Labelling, certificates, shipping, returns, data." },
+  { href: "/faq", label: "FAQ", body: "Labelling, needles, storage, certificates, shipping, returns, data." },
 ];
 
 /**
@@ -38,8 +41,8 @@ export default function NotFound() {
                 this address.
               </h1>
               <p className="mt-6 max-w-xl text-pretty text-[15px] leading-relaxed text-ink-3 sm:text-[17px]">
-                The link may be out of date, or the address may have been typed differently. Nothing you entered has been lost — assessment progress
-                and your cart stay in your browser.
+                The link may be out of date, or the address may have been typed differently. Nothing you entered has been lost — {CHECKUP} progress,
+                your match and your cart stay in your browser.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button href="/" size="lg" variant="primary">
@@ -47,7 +50,7 @@ export default function NotFound() {
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
                 <Button href="/shop" size="lg" variant="secondary">
-                  Shop peptides
+                  Shop the range
                 </Button>
               </div>
             </div>
@@ -79,7 +82,9 @@ export default function NotFound() {
               {BRAND.supportEmail}
             </a>
           </p>
-          <p>{BRAND.domain}</p>
+          <p>
+            {BRAND.name} · {BRAND.descriptor} · {BRAND.domain}
+          </p>
         </div>
       </footer>
     </div>

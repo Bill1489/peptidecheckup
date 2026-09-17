@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
 import { REGULATORY_TONE, RegulatoryBadge } from "@/components/ui/badge";
 import { GOAL_MAP } from "@/data/goals";
 import { EVIDENCE_RANK, FAMILY_LABELS, type Compound, type Jurisdiction } from "@/data/types";
@@ -25,7 +26,9 @@ const SHOP_LINK: Record<CommerceState, string> = {
 /**
  * Directory cell. The whole card links to the compound via a stretched link on
  * the name; the compare checkbox and shop link sit above it so all three stay
- * reachable by pointer and keyboard. Hovering inverts the card to ink.
+ * reachable by pointer and keyboard. Hovering inverts the card to ink. The
+ * commerce line names the pen that carries the compound — its own pen or the
+ * blend it is part of — with the pen's photograph and packaging swatch.
  */
 export function CompoundCard({
   compound,
@@ -119,14 +122,29 @@ export function CompoundCard({
         </ul>
       </div>
 
-      {/* Commerce line */}
-      <div className={cn("mt-auto flex min-h-11 items-center justify-between gap-2 border-t pl-3 pr-1 sm:pl-4 sm:pr-2", RULE)}>
-        <div className="min-w-0 py-2">
+      {/* Commerce line: the pen that carries this compound, or "not in the range" */}
+      <div className={cn("mt-auto flex min-h-11 items-center gap-3 border-t pl-3 pr-1 sm:pl-4 sm:pr-2", RULE)}>
+        {commerce.product && (
+          <div className={cn("my-2 shrink-0 border bg-white", RULE)} aria-hidden>
+            <ProductImage product={commerce.product} prefer="pack" frame="square" className="h-12 w-12" sizes="48px" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1 py-2">
           <p className="font-mono text-[11px] uppercase leading-tight tracking-[0.08em] tnum">
-            {commerce.priceLabel}
+            {commerce.price ?? commerce.priceLabel}
             {commerce.state === "buy" && <span className={MUTED}> · {commerce.availabilityLabel}</span>}
           </p>
-          {commerce.channelLabel && <p className={cn("label-mono mt-0.5 truncate text-[10px]", MUTED)}>{commerce.channelLabel}</p>}
+          {commerce.product ? (
+            <p className={cn("label-mono mt-1 flex items-center gap-1.5 text-[10px]", MUTED)}>
+              <ProductSwatch product={commerce.product} className="h-2 w-2" />
+              <span className="truncate">
+                In the range · {commerce.product.name}
+                {commerce.inBlend && " (blend)"}
+              </span>
+            </p>
+          ) : (
+            commerce.channelLabel && <p className={cn("label-mono mt-0.5 truncate text-[10px]", MUTED)}>{commerce.channelLabel}</p>
+          )}
         </div>
         {commerce.product && (
           <Link

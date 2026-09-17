@@ -1,26 +1,21 @@
 import { GOALS, type GoalDef } from "@/data/goals";
-import { filled, isValidEmail, plausibleBody, PREGNANCY_NOTICE, riskHint } from "./derived";
-import {
-  ALCOHOL_LABELS,
-  IMPORTANCE_LABELS,
-  INFLUENCE_LABELS,
-  NICOTINE_LABELS,
-  RECREATIONAL_LABELS,
-  SECTION_META,
-  SECTION_ORDER,
-  SOURCE_LABELS,
-  TIMEFRAME_LABELS,
-  type AssessmentAnswers,
-  type SectionId,
-} from "./types";
+import type { GoalId } from "@/data/types";
+import { BRAND } from "@/lib/brand";
+import { filled, plausibleBody, PREGNANCY_NOTICE, selectedProducts, wadaHint } from "./derived";
+import { SECTION_META, SECTION_ORDER, TIMEFRAME_LABELS, type AssessmentAnswers, type SectionId } from "./types";
 
 /**
- * The questionnaire as data. The wizard is a state machine over this list:
+ * The quiz (BRAND.assessmentName) as data. The wizard is a state machine over this list:
  * `store.position` = { section, step } where `step` is the index into the
  * section's *static* step list (so stored positions stay meaningful when
  * conditional steps appear or disappear). Visibility is evaluated live.
  *
- * Implements BRIEF §6 faithfully — question wording lives here.
+ * v3: every question feeds the product matcher (`src/lib/match/engine.ts`) —
+ * the goal cards, focus areas and secondary goals score the six pens; the
+ * basics, history, medicines and safety screen feed the rules engine whose
+ * flags decide whether a pen may be matched at all. Sections that no longer
+ * ask anything (experience, source, wants) keep their ids for the store and
+ * the engine and are completed automatically on generate.
  */
 
 /* ------------------------------------------------------------------ */
@@ -75,7 +70,7 @@ export interface ChipGroup {
 interface BaseStep {
   id: string;
   section: SectionId;
-  /** Exact question wording (BRIEF §6) */
+  /** Exact question wording */
   title: string;
   help?: string;
   optional?: boolean;
@@ -103,7 +98,7 @@ export type YesNoStep = BaseStep & {
   /** Defaults to Yes / No */
   options?: StepOption[];
   followUp?: TextFollowUp;
-  /** Compound-tailored hint shown under the question */
+  /** Tailored hint shown under the question */
   hint?: (a: AssessmentAnswers) => string | undefined;
 };
 
@@ -124,18 +119,18 @@ export type NumberStep = BaseStep & {
 };
 
 export type CustomKind =
-  | "compounds"
-  | "dose"
-  | "combinations"
+  | "goal"
+  | "focus"
+  | "secondary-goals"
+  | "products"
   | "body"
   | "country"
   | "conditions"
   | "medications"
   | "otc"
   | "supplements"
-  | "previous-uses"
-  | "wants"
-  | "contact"
+  | "lifestyle"
+  | "safety"
   | "review";
 
 export type CustomStep = BaseStep & { kind: CustomKind };
@@ -144,7 +139,131 @@ export type Step = SingleStep | YesNoStep | TextStep | NumberStep | CustomStep;
 export type StepKind = Step["kind"];
 
 /* ------------------------------------------------------------------ */
-/* Option lists                                                        */
+/* Goals as problems (step 1)                                          */
+/* ------------------------------------------------------------------ */
+
+/** Goals the quiz offers — every one maps to at least one pen, except sleep, which the matcher answers honestly. */
+export const QUIZ_GOALS = [
+  "fat_loss",
+  "weight_management",
+  "general_wellbeing",
+  "athletic_performance",
+  "injury_recovery",
+  "muscle_recovery",
+  "skin_cosmetic",
+  "hair",
+  "longevity",
+  "sleep",
+] as const satisfies readonly GoalId[];
+
+export type QuizGoal = (typeof QUIZ_GOALS)[number];
+
+export function isQuizGoal(goal: GoalId | undefined): goal is QuizGoal {
+  return Boolean(goal) && (QUIZ_GOALS as readonly string[]).includes(goal as string);
+}
+
+/** The problem statement shown on each goal card, and the hint under it. */
+export const GOAL_PROBLEMS: Record<QuizGoal, { label: string; hint: string }> = {
+  fat_loss: { label: "Stubborn belly fat or body composition", hint: "Fat that does not move with diet and training" },
+  weight_management: { label: "My weight overall", hint: "Losing weight, or holding a healthier weight" },
+  general_wellbeing: { label: "Tired all the time", hint: "Low energy even when you sleep" },
+  athletic_performance: { label: "Slow recovery or flagging endurance", hint: "Stamina and bounce-back in training" },
+  injury_recovery: { label: "A tendon, ligament or joint injury", hint: "Something that will not settle" },
+  muscle_recovery: { label: "Muscle recovery between sessions", hint: "Sore for longer than you used to be" },
+  skin_cosmetic: { label: "Skin ageing, firmness or texture", hint: "Fine lines, tone, slow-healing marks" },
+  hair: { label: "Hair thinning", hint: "Thinning or shedding more than usual" },
+  longevity: { label: "Healthy ageing", hint: "Long-term energy, metabolic and skin health" },
+  sleep: { label: "Sleep", hint: "Falling asleep, staying asleep, waking rested" },
+};
+
+export function goalProblemLabel(goal: GoalId | undefined): string | undefined {
+  return isQuizGoal(goal) ? GOAL_PROBLEMS[goal].label : goal ? GOALS.find((g) => g.id === goal)?.label : undefined;
+}
+
+export const GOAL_OPTIONS: StepOption[] = QUIZ_GOALS.map((id) => ({
+  value: id,
+  label: GOAL_PROBLEMS[id].label,
+  hint: GOAL_PROBLEMS[id].hint,
+  icon: GOALS.find((g) => g.id === id)?.icon,
+}));
+
+/* ------------------------------------------------------------------ */
+/* Focus areas (step 2)                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Focus ids are shared across goals where the problem is the same (for
+ * example `low_stamina` under both "tired" and "performance"). The matcher
+ * weights each id against the pens in `src/lib/match/engine.ts`.
+ */
+const FOCUS_DEF_ENTRIES = {
+  belly_fat: { label: "Belly fat that will not move", hint: "Around the middle, whatever the scales say" },
+  overall_weight: { label: "Overall weight on the scales" },
+  muscle_preserve: { label: "Keeping muscle while losing fat" },
+  metabolic: { label: "Metabolic health", hint: "Blood sugar, energy after meals, waistline" },
+  tired_despite_sleep: { label: "Tired even after a full night's sleep" },
+  low_stamina: { label: "Stamina and endurance have dropped" },
+  brain_fog: { label: "Brain fog or poor focus" },
+  post_illness: { label: "Slow to recover after illness" },
+  recovery_between: { label: "Recovery between sessions is slow" },
+  soreness: { label: "Soreness lasts longer than it used to" },
+  recurring: { label: "Recurring strains or niggles" },
+  tendon: { label: "A tendon injury", hint: "Achilles, patellar, elbow, rotator cuff" },
+  ligament: { label: "A ligament injury", hint: "Knee, ankle, wrist" },
+  muscle_strain: { label: "A muscle tear or strain" },
+  joint: { label: "A joint problem", hint: "Pain, stiffness or swelling" },
+  scars_marks: { label: "Slow-healing marks or scars" },
+  firmness: { label: "Loss of firmness or fine lines" },
+  texture: { label: "Texture, tone or dullness" },
+  irritation: { label: "Redness or irritation-prone skin" },
+  hair_thinning: { label: "Hair thinning" },
+  shedding: { label: "Shedding more than usual" },
+  energy: { label: "Long-term energy" },
+  skin_ageing: { label: "Skin ageing" },
+  repair: { label: "Recovery and repair as I age" },
+  falling_asleep: { label: "Falling asleep" },
+  staying_asleep: { label: "Staying asleep" },
+  waking_unrefreshed: { label: "Waking unrefreshed" },
+} as const satisfies Record<string, { label: string; hint?: string }>;
+
+export type FocusId = keyof typeof FOCUS_DEF_ENTRIES;
+
+export const FOCUS_DEFS: Record<FocusId, { label: string; hint?: string }> = FOCUS_DEF_ENTRIES;
+
+/** "None of these" — recorded so the step counts as answered, weighted by nothing. */
+export const FOCUS_NONE = "none";
+
+export const FOCUS_BY_GOAL: Record<QuizGoal, FocusId[]> = {
+  fat_loss: ["belly_fat", "overall_weight", "muscle_preserve", "metabolic"],
+  weight_management: ["overall_weight", "belly_fat", "metabolic", "muscle_preserve"],
+  general_wellbeing: ["tired_despite_sleep", "low_stamina", "brain_fog", "post_illness"],
+  athletic_performance: ["low_stamina", "recovery_between", "recurring", "soreness"],
+  injury_recovery: ["tendon", "ligament", "muscle_strain", "joint", "recurring", "scars_marks"],
+  muscle_recovery: ["recovery_between", "soreness", "muscle_strain", "recurring"],
+  skin_cosmetic: ["firmness", "texture", "scars_marks", "irritation", "hair_thinning"],
+  hair: ["hair_thinning", "shedding"],
+  longevity: ["energy", "metabolic", "skin_ageing", "repair"],
+  sleep: ["falling_asleep", "staying_asleep", "waking_unrefreshed"],
+};
+
+export function isFocusId(id: string): id is FocusId {
+  return id in FOCUS_DEFS;
+}
+
+export function focusLabel(id: string): string {
+  return isFocusId(id) ? FOCUS_DEFS[id].label : id === FOCUS_NONE ? "None of these" : id;
+}
+
+export function focusOptionsFor(goal: GoalId | undefined): StepOption[] {
+  const ids = isQuizGoal(goal) ? FOCUS_BY_GOAL[goal] : [];
+  return [
+    ...ids.map((id) => ({ value: id, label: FOCUS_DEFS[id].label, hint: FOCUS_DEFS[id].hint })),
+    { value: FOCUS_NONE, label: "None of these", hint: "Nothing here fits — match me on the goal alone" },
+  ];
+}
+
+/* ------------------------------------------------------------------ */
+/* Other option lists                                                  */
 /* ------------------------------------------------------------------ */
 
 const has = (v: unknown) => v !== undefined && v !== null && v !== "";
@@ -153,13 +272,21 @@ function fromLabels<T extends string>(labels: Record<T, string>, hints?: Partial
   return (Object.keys(labels) as T[]).map((value) => ({ value, label: labels[value], hint: hints?.[value] }));
 }
 
-export const GOAL_OPTIONS: StepOption[] = GOALS.map((g) => ({
-  value: g.id,
-  label: g.label,
-  hint: g.description,
-  icon: g.icon,
-  followUp: g.id === "other",
-}));
+export type ExperienceLevel = NonNullable<AssessmentAnswers["experienceLevel"]>;
+
+export const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
+  none: "Never used a peptide",
+  some: "Used vials before",
+  experienced: "Experienced",
+};
+
+export const EXPERIENCE_OPTIONS: StepOption[] = [
+  { value: "none", label: EXPERIENCE_LABELS.none, hint: "This would be my first time" },
+  { value: "some", label: EXPERIENCE_LABELS.some, hint: "Reconstituting, drawing up, storing" },
+  { value: "experienced", label: EXPERIENCE_LABELS.experienced, hint: "Comfortable with peptides and pens" },
+];
+
+export const MAX_SECONDARY_GOALS = 2;
 
 export const YES_NO_OPTIONS: StepOption[] = [
   { value: "yes", label: "Yes" },
@@ -179,6 +306,39 @@ export const RISK_FIELDS = [
   "interactingTreatment",
 ] as const satisfies readonly StringKeys[];
 
+export type RiskField = (typeof RISK_FIELDS)[number];
+
+/** The seven safety questions, asked together on one screen. Ids match `riskHint`. */
+export const RISK_QUESTIONS: { id: string; field: RiskField; title: string }[] = [
+  { id: "serious-allergy", field: "seriousAllergy", title: "Have you ever had a serious allergic reaction to a medicine?" },
+  {
+    id: "component-allergy",
+    field: "componentAllergy",
+    title: "Do you have a known allergy to any component of the products in the range?",
+  },
+  {
+    id: "previous-reaction",
+    field: "previousSeriousReaction",
+    title: "Have you previously had a serious reaction to a similar treatment?",
+  },
+  { id: "severe-symptoms", field: "severeSymptoms", title: "Do you have any unexplained or severe symptoms at the moment?" },
+  {
+    id: "advised-against",
+    field: "advisedAgainst",
+    title: "Has a healthcare professional advised you not to use this type of treatment?",
+  },
+  { id: "under-investigation", field: "underInvestigation", title: "Are you currently under investigation for a relevant condition?" },
+  {
+    id: "interacting-treatment",
+    field: "interactingTreatment",
+    title: "Are you receiving any treatment that could interact with these compounds?",
+  },
+];
+
+export function anyRiskYes(a: AssessmentAnswers): boolean {
+  return RISK_FIELDS.some((f) => a[f] === "yes");
+}
+
 /* ------------------------------------------------------------------ */
 /* Steps per section                                                   */
 /* ------------------------------------------------------------------ */
@@ -187,49 +347,31 @@ const goals: Step[] = [
   {
     id: "goal",
     section: "goals",
-    kind: "single",
-    field: "primaryGoal",
-    title: "What is your primary goal?",
-    help: "Choose the one that matters most right now. You can mention others later.",
-    options: GOAL_OPTIONS,
-    columns: 2,
-    followUp: {
-      field: "otherGoalText",
-      when: ["other"],
-      label: "Tell us about your goal",
-      placeholder: "A sentence is plenty",
-      required: true,
-    },
-    valid: (a) => Boolean(a.primaryGoal) && (a.primaryGoal !== "other" || filled(a.otherGoalText)),
-    error: (a) => (a.primaryGoal === "other" ? "Tell us a little about your goal to continue." : "Choose a goal to continue."),
+    kind: "goal",
+    title: "What do you want to change?",
+    help: "Pick the one that matters most right now. Everything that follows is built around it.",
+    valid: (a) => Boolean(a.primaryGoal),
+    error: "Choose one to continue.",
   },
   {
-    id: "success",
+    id: "focus",
     section: "goals",
-    kind: "text",
-    field: "successDescription",
-    title: "What would success look like for you?",
-    help: "In your own words — a sentence or two is plenty.",
-    placeholder: "For example: losing a stone and keeping it off, or getting back to running without knee pain",
-    maxLength: 600,
+    kind: "focus",
+    title: "Which of these sound like you?",
+    help: "Choose everything that applies. This is what points the match at one pen rather than another.",
+    valid: (a) => a.focusAreas.length > 0,
+    error: "Choose at least one — or “None of these”.",
+  },
+  {
+    id: "secondary-goals",
+    section: "goals",
+    kind: "secondary-goals",
+    title: "Anything else you would like to work on?",
+    help: `Up to ${MAX_SECONDARY_GOALS}. Optional — they nudge the match; they do not decide it.`,
     optional: true,
-    valid: () => true,
-    isEmpty: (a) => !filled(a.successDescription),
-  },
-  {
-    id: "importance",
-    section: "goals",
-    kind: "single",
-    field: "importance",
-    title: "How important is this goal to you right now?",
-    options: fromLabels(IMPORTANCE_LABELS, {
-      curious: "I'm exploring what's out there",
-      moderate: "I'd like to make progress",
-      very: "It affects my day-to-day life",
-      extremely: "It's my top priority",
-    }),
-    valid: (a) => has(a.importance),
-    error: "Choose one option to continue.",
+    valid: (a) => a.secondaryGoals.length <= MAX_SECONDARY_GOALS,
+    isEmpty: (a) => a.secondaryGoals.length === 0,
+    error: `Choose up to ${MAX_SECONDARY_GOALS}.`,
   },
   {
     id: "timeframe",
@@ -237,87 +379,44 @@ const goals: Step[] = [
     kind: "single",
     field: "timeframe",
     title: "What timeframe do you have in mind?",
-    help: "An honest answer helps us set expectations against what the research shows.",
+    help: "An honest answer lets us set expectations against what the research shows — the trials behind every grade ran for months.",
     options: fromLabels(TIMEFRAME_LABELS),
     valid: (a) => has(a.timeframe),
+    error: "Choose one option to continue.",
+  },
+  {
+    id: "experience",
+    section: "goals",
+    kind: "single",
+    field: "experienceLevel",
+    title: "Have you used peptides before?",
+    help: `${BRAND.name} pens are pre-filled and dose-dial — no vials, no reconstitution — which matters more to some people than others.`,
+    options: EXPERIENCE_OPTIONS,
+    valid: (a) => has(a.experienceLevel),
     error: "Choose one option to continue.",
   },
 ];
 
 const considering: Step[] = [
   {
-    id: "compounds",
+    id: "products",
     section: "considering",
-    kind: "compounds",
-    title: "Which compounds are you considering?",
-    help: "Search by name or brand, or choose from the suggestions. Select as many as apply.",
-    valid: (a) => a.consideredCompounds.length > 0 || filled(a.otherCompoundText),
-    error: "Select at least one compound, or tell us what you have in mind.",
-  },
-  {
-    id: "doses",
-    section: "considering",
-    kind: "dose",
-    title: "Do you have a dose in mind?",
-    help: "Optional — this lets us compare what you're considering against published study exposures.",
+    kind: "products",
+    title: "Have you got a specific pen in mind?",
+    help: "Optional. Pick any of the six and every compound inside it is assessed against your history — whether or not it ends up as your match.",
     optional: true,
-    visible: (a) => a.consideredCompounds.length > 0,
-    valid: (a) => a.consideredCompounds.every((c) => c.dose?.amount === undefined || c.dose.amount > 0),
-    isEmpty: (a) => a.consideredCompounds.every((c) => !c.dose || c.dose.amount === undefined),
-    error: "Dose amounts need to be greater than zero, or left blank.",
+    valid: () => true,
+    isEmpty: (a) => selectedProducts(a).length === 0,
   },
   {
     id: "currently-taking",
     section: "considering",
     kind: "yesno",
     field: "currentlyTaking",
-    title: "Are you currently taking any of these?",
-    help: "Including anything you've started recently or use intermittently.",
+    title: "Are you currently using any peptide or similar product?",
+    help: "Including anything prescribed, anything bought online and anything you use intermittently.",
     valid: (a) => has(a.currentlyTaking),
     error: "Choose yes or no to continue.",
-  },
-  {
-    id: "multiple",
-    section: "considering",
-    kind: "single",
-    field: "consideringMultiple",
-    title: "Are you considering using more than one of these together?",
-    visible: (a) => a.consideredCompounds.length >= 2,
-    options: [
-      { value: "no", label: "No", hint: "One at a time" },
-      { value: "yes", label: "Yes", hint: "Together, or overlapping" },
-      { value: "not_sure", label: "Not sure yet" },
-    ],
-    valid: (a) => has(a.consideringMultiple),
-    error: "Choose one option to continue.",
-  },
-  {
-    id: "combinations",
-    section: "considering",
-    kind: "combinations",
-    title: "Which of these would you combine?",
-    help: "We assume all of them together unless you tell us otherwise. Untick any you'd use on its own.",
-    visible: (a) => a.consideredCompounds.length >= 2 && a.consideringMultiple === "yes",
-    valid: (a) => (a.combinations[0]?.length ?? 0) >= 2,
-    error: "Choose at least two compounds to describe a combination.",
-  },
-  {
-    id: "why",
-    section: "considering",
-    kind: "text",
-    field: "whyChosen",
-    title: "Why these compounds?",
-    help: "What drew you to them? Optional, but it helps us tailor the report.",
-    placeholder: "For example: a friend had good results, or I read about a trial",
-    maxLength: 600,
-    optional: true,
-    chips: {
-      field: "influence",
-      label: "Where did the idea come from?",
-      options: fromLabels(INFLUENCE_LABELS),
-    },
-    valid: () => true,
-    isEmpty: (a) => !filled(a.whyChosen) && !(a.influence && a.influence.length > 0),
   },
 ];
 
@@ -328,7 +427,7 @@ const basics: Step[] = [
     kind: "number",
     field: "age",
     title: "How old are you?",
-    help: "This assessment is for adults aged 18 and over.",
+    help: `The ${BRAND.assessmentName} is for adults aged 18 and over.`,
     min: 18,
     max: 120,
     suffix: "years",
@@ -355,7 +454,7 @@ const basics: Step[] = [
     section: "basics",
     kind: "body",
     title: "What are your height and weight?",
-    help: "Used to calculate BMI, which affects how some compounds are licensed and who they were studied in.",
+    help: "Used to calculate BMI. It matters for how fat- and weight-related compounds such as tesamorelin were studied, and in whom.",
     valid: (a) => plausibleBody(a.heightCm, a.weightKg),
     error: "Enter a height and weight so we can calculate your BMI.",
   },
@@ -364,7 +463,7 @@ const basics: Step[] = [
     section: "basics",
     kind: "country",
     title: "Which country do you live in?",
-    help: "We show the regulatory status that applies where you live.",
+    help: "We show the regulatory status of each compound where you live.",
     valid: (a) => Boolean(a.countryCode),
     error: "Choose a country to continue.",
   },
@@ -393,7 +492,7 @@ const medical: Step[] = [
     section: "medical",
     kind: "conditions",
     title: "Have you been diagnosed with any of the following?",
-    help: "Choose one answer per row. Leave a row as “None” if it doesn't apply.",
+    help: "Choose one answer per row. The rows below the line are there because a compound in one of the six pens references them.",
     valid: () => true,
   },
   {
@@ -418,7 +517,7 @@ const medical: Step[] = [
     kind: "yesno",
     field: "currentSymptoms",
     title: "Do you currently have any symptoms that concern you?",
-    help: "Anything new, unexplained, or that a clinician hasn't assessed.",
+    help: "Anything new, unexplained, or that a clinician has not assessed.",
     followUp: {
       field: "symptomsDetails",
       when: ["yes"],
@@ -481,203 +580,35 @@ const medications: Step[] = [
     error: "Add at least one supplement, with a name for each entry.",
   },
   {
-    id: "recreational",
+    id: "lifestyle",
     section: "medications",
-    kind: "single",
-    field: "recreational",
-    title: "Do you use any recreational substances?",
-    help: "Why we ask: some substances interact with the compounds in our database or change how safely they can be used. You can choose not to answer.",
-    optional: true,
-    options: fromLabels(RECREATIONAL_LABELS).map((o) => ({
-      ...o,
-      followUp: o.value === "occasional" || o.value === "regular",
-    })),
-    followUp: {
-      field: "recreationalDetails",
-      when: ["occasional", "regular"],
-      label: "Which substances? Optional",
-      placeholder: "For example: cannabis at weekends",
-    },
-    valid: () => true,
-    isEmpty: (a) => !a.recreational,
-  },
-  {
-    id: "alcohol",
-    section: "medications",
-    kind: "single",
-    field: "alcohol",
-    title: "How much alcohol do you drink?",
-    help: "In a typical week.",
-    options: fromLabels(ALCOHOL_LABELS),
-    valid: (a) => has(a.alcohol),
-    error: "Choose one option to continue.",
-  },
-  {
-    id: "nicotine",
-    section: "medications",
-    kind: "single",
-    field: "nicotine",
-    title: "Do you use nicotine?",
-    help: "Cigarettes, vapes, pouches, patches or gum.",
-    options: fromLabels(NICOTINE_LABELS),
-    valid: (a) => has(a.nicotine),
-    error: "Choose one option to continue.",
+    kind: "lifestyle",
+    title: "Alcohol and nicotine",
+    help: "In a typical week. Both change how safely some compounds can be used and how side effects are read.",
+    valid: (a) => has(a.alcohol) && has(a.nicotine),
+    error: "Answer both to continue.",
   },
 ];
-
-const experience: Step[] = [
-  {
-    id: "previous-use",
-    section: "experience",
-    kind: "yesno",
-    field: "previousPeptideUse",
-    title: "Have you used a peptide before?",
-    help: "Including prescribed medicines such as GLP-1 injections.",
-    valid: (a) => has(a.previousPeptideUse),
-    error: "Choose yes or no to continue.",
-  },
-  {
-    id: "previous-use-list",
-    section: "experience",
-    kind: "previous-uses",
-    title: "Tell us about what you've used",
-    help: "Add each compound separately. Only the name is required.",
-    visible: (a) => a.previousPeptideUse === "yes",
-    valid: (a) => a.previousUses.length > 0 && a.previousUses.every((u) => filled(u.name)),
-    error: "Add at least one compound, with a name for each entry.",
-  },
-  {
-    id: "stopped-ineffective",
-    section: "experience",
-    kind: "yesno",
-    field: "stoppedIneffective",
-    title: "Have you previously stopped a treatment because it wasn't effective?",
-    help: "Any treatment — not only peptides.",
-    valid: (a) => has(a.stoppedIneffective),
-    error: "Choose yes or no to continue.",
-  },
-];
-
-const source: Step[] = [
-  {
-    id: "source",
-    section: "source",
-    kind: "single",
-    field: "source",
-    title: "Where would you obtain the product?",
-    options: fromLabels(SOURCE_LABELS).map((o) => ({ ...o, followUp: o.value === "other" })),
-    followUp: {
-      field: "sourceOtherText",
-      when: ["other"],
-      label: "Where from?",
-      placeholder: "A few words is enough",
-    },
-    valid: (a) => has(a.source),
-    error: "Choose one option to continue.",
-  },
-  {
-    id: "prescribed",
-    section: "source",
-    kind: "yesno",
-    field: "prescribed",
-    title: "Has it been prescribed to you?",
-    options: YES_NO_NA_OPTIONS,
-    valid: (a) => has(a.prescribed),
-    error: "Choose one option to continue.",
-  },
-  {
-    id: "authorised",
-    section: "source",
-    kind: "yesno",
-    field: "authorisedKnown",
-    title: "Is it authorised for use in your country?",
-    help: "Answer as best you know. Your report shows the status from our database either way.",
-    options: YES_NO_UNSURE_OPTIONS,
-    valid: (a) => has(a.authorisedKnown),
-    error: "Choose one option to continue.",
-  },
-  {
-    id: "quality-docs",
-    section: "source",
-    kind: "yesno",
-    field: "qualityDocs",
-    title: "Does the supplier provide independent quality documentation?",
-    help: "For example a certificate of analysis from an independent laboratory, with batch numbers and expiry dates.",
-    options: YES_NO_UNSURE_OPTIONS,
-    valid: (a) => has(a.qualityDocs),
-    error: "Choose one option to continue.",
-  },
-];
-
-function riskStep(id: string, field: (typeof RISK_FIELDS)[number], title: string): YesNoStep {
-  return {
-    id,
-    section: "risk",
-    kind: "yesno",
-    field,
-    title,
-    hint: (a) => riskHint(id, a),
-    valid: (a) => has(a[field]),
-    error: "Choose yes or no to continue.",
-  };
-}
 
 const risk: Step[] = [
-  riskStep("serious-allergy", "seriousAllergy", "Have you ever had a serious allergic reaction to a medicine?"),
-  riskStep(
-    "component-allergy",
-    "componentAllergy",
-    "Do you have a known allergy to any component of the products you're considering?",
-  ),
-  riskStep("previous-reaction", "previousSeriousReaction", "Have you previously had a serious reaction to a similar treatment?"),
-  riskStep("severe-symptoms", "severeSymptoms", "Do you have any unexplained or severe symptoms at the moment?"),
-  riskStep(
-    "advised-against",
-    "advisedAgainst",
-    "Has a healthcare professional advised you not to use this type of treatment?",
-  ),
-  riskStep("under-investigation", "underInvestigation", "Are you currently under investigation for a relevant condition?"),
-  riskStep(
-    "interacting-treatment",
-    "interactingTreatment",
-    "Are you receiving any treatment that could interact with these compounds?",
-  ),
   {
-    id: "risk-details",
+    id: "safety",
     section: "risk",
-    kind: "text",
-    field: "riskDetails",
-    title: "Would you like to add any detail?",
-    help: "You answered yes to at least one safety question. Anything you add here is included in your report so you can share it with a clinician.",
-    placeholder: "For example: I was told not to use GLP-1 medicines after pancreatitis in 2021",
-    maxLength: 800,
-    optional: true,
-    visible: (a) => RISK_FIELDS.some((f) => a[f] === "yes"),
-    valid: () => true,
-    isEmpty: (a) => !filled(a.riskDetails),
-  },
-];
-
-const wants: Step[] = [
-  {
-    id: "report-wants",
-    section: "wants",
-    kind: "wants",
-    title: "What would you like your report to tell you?",
-    help: "Choose all that apply. Every report covers the essentials; this tells us what to bring forward.",
-    valid: (a) => a.reportWants.length > 0,
-    error: "Choose at least one to continue.",
+    kind: "safety",
+    title: "Seven quick safety checks",
+    help: "A yes on any of these is what lets us say no. Anything you add is included in your report so you can share it with a clinician.",
+    valid: (a) => RISK_FIELDS.every((f) => has(a[f])),
+    error: "Answer all seven to continue.",
   },
   {
-    id: "contact",
-    section: "wants",
-    kind: "contact",
-    title: "Would you like a professional review of your report?",
-    help: "Optional. Your report is generated on this device whether or not you ask for a review.",
-    optional: true,
-    valid: (a) => !a.contactConsent || isValidEmail(a.contactEmail),
-    isEmpty: (a) => !a.contactConsent,
-    error: "Enter a valid email address, or untick the box to continue without a review.",
+    id: "tested-athlete",
+    section: "risk",
+    kind: "yesno",
+    field: "testedAthlete",
+    title: "Do you compete in drug-tested sport?",
+    hint: () => wadaHint(),
+    valid: (a) => has(a.testedAthlete),
+    error: "Choose yes or no to continue.",
   },
 ];
 
@@ -700,7 +631,7 @@ const final: Step[] = [
     section: "final",
     kind: "review",
     title: "Review your answers",
-    help: "Check everything looks right. You can edit any section before we generate your report.",
+    help: "Check everything looks right. You can edit any section before we find your match.",
     valid: () => true,
   },
 ];
@@ -711,15 +642,21 @@ export const STEPS_BY_SECTION: Record<SectionId, Step[]> = {
   basics,
   medical,
   medications,
-  experience,
-  source,
+  experience: [],
+  source: [],
   risk,
-  wants,
+  wants: [],
   final,
 };
 
 /** Flat list in flow order. */
 export const STEPS: Step[] = SECTION_ORDER.flatMap((s) => STEPS_BY_SECTION[s]);
+
+/** Sections that actually ask something, in order — drives the stepper, eyebrow and review. */
+export const FLOW_SECTIONS: SectionId[] = SECTION_ORDER.filter((s) => STEPS_BY_SECTION[s].length > 0);
+
+/** Sections with no questions (experience is folded into the goals section; the source is the store; report wants were dropped). Marked complete on generate. */
+export const AUTO_COMPLETE_SECTIONS: SectionId[] = SECTION_ORDER.filter((s) => STEPS_BY_SECTION[s].length === 0);
 
 const FLAT_INDEX: Record<string, number> = Object.fromEntries(STEPS.map((s, i) => [s.id, i]));
 
@@ -790,7 +727,7 @@ export function sectionAfter(section: SectionId): SectionId | undefined {
 
 /**
  * Where "Skip this section" lands: the first visible step of the next
- * section — or the review screen when skipping the final section.
+ * section that asks something — or the review screen when nothing is left.
  */
 export function skipTarget(a: AssessmentAnswers, section: SectionId): Step {
   let next = sectionAfter(section);
@@ -835,8 +772,8 @@ export interface SectionProgressItem {
 }
 
 export function sectionProgress(a: AssessmentAnswers, pos: Position): SectionProgressItem[] {
-  const currentIdx = SECTION_ORDER.indexOf(resolveStep(a, pos).section);
-  return SECTION_ORDER.map((id, index) => {
+  const currentIdx = FLOW_SECTIONS.indexOf(resolveStep(a, pos).section);
+  return FLOW_SECTIONS.map((id, index) => {
     let status: SectionStatus;
     if (index === currentIdx) status = "current";
     else if (a.completedSections.includes(id)) status = "complete";
@@ -849,8 +786,8 @@ export function sectionProgress(a: AssessmentAnswers, pos: Position): SectionPro
 }
 
 export function sectionEyebrow(step: Step): string {
-  const n = SECTION_ORDER.indexOf(step.section) + 1;
-  return `Section ${n} of ${SECTION_ORDER.length} · ${SECTION_META[step.section].title}`;
+  const n = FLOW_SECTIONS.indexOf(step.section) + 1;
+  return `Section ${n} of ${FLOW_SECTIONS.length} · ${SECTION_META[step.section].title}`;
 }
 
 export function stepError(step: Step, a: AssessmentAnswers): string | undefined {
@@ -864,14 +801,14 @@ export function stepOptions(step: SingleStep | YesNoStep, a: AssessmentAnswers):
   return typeof step.options === "function" ? step.options(a) : step.options;
 }
 
-/** Headline estimate used in marketing copy ("the 7-minute Peptide Checkup"). */
+/** Headline estimate used in marketing copy (e.g. "the 7-minute ${BRAND.assessmentName}"). */
 export const ESTIMATED_MINUTES = 7;
 
-const TOTAL_EST = SECTION_ORDER.reduce((sum, id) => sum + SECTION_META[id].estMinutes, 0);
+const TOTAL_EST = FLOW_SECTIONS.reduce((sum, id) => sum + SECTION_META[id].estMinutes, 0);
 
 /** Estimated minutes remaining from the current position, scaled to the headline estimate. */
 export function minutesRemaining(a: AssessmentAnswers, pos: Position): number {
-  const currentIdx = SECTION_ORDER.indexOf(resolveStep(a, pos).section);
-  const remaining = SECTION_ORDER.slice(currentIdx).reduce((sum, id) => sum + SECTION_META[id].estMinutes, 0);
+  const currentIdx = FLOW_SECTIONS.indexOf(resolveStep(a, pos).section);
+  const remaining = FLOW_SECTIONS.slice(currentIdx).reduce((sum, id) => sum + SECTION_META[id].estMinutes, 0);
   return Math.max(1, Math.round((remaining / TOTAL_EST) * ESTIMATED_MINUTES));
 }

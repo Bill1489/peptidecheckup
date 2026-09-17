@@ -2,26 +2,27 @@
 
 import Link from "next/link";
 import { EvidenceBadge, RegulatoryBadge, SuitabilityBadge } from "@/components/ui/badge";
-import { ROUTE_LABELS } from "@/data/types";
+import { ProductSwatch } from "@/components/commerce/product-image";
+import { productsContaining, selectedProducts } from "@/lib/assessment/derived";
 import type { Report } from "@/lib/engine/types";
-import { formatUserDose } from "@/lib/engine/rules/dose";
 import { MonoLabel, ReportSection } from "../primitives";
 import type { ReportSectionDef } from "../sections";
 
 export function ConsideringSection({ report, def }: { report: Report; def: ReportSectionDef }) {
   const unresolved = report.unresolvedSlugs ?? [];
-  const other = report.answers.otherCompoundText?.trim();
-  const dosesBySlug = new Map(report.answers.consideredCompounds.map((c) => [c.slug, c.dose]));
-  const notAssessed = [...unresolved.map((slug) => ({ key: slug, label: slug })), ...(other ? [{ key: "other", label: other }] : [])];
+  const picked = selectedProducts(report.answers).map((p) => p.name);
+  const n = report.compounds.length;
 
   return (
     <ReportSection
       def={def}
-      description={`${report.compounds.length} compound${report.compounds.length === 1 ? "" : "s"} from our database, ordered by how your responses map onto each one. Badges show overall evidence, regulatory status where you live, and the suitability label this report assigns.`}
+      description={`${n} compound${n === 1 ? "" : "s"} from our database: everything inside ${
+        picked.length ? `the pen${picked.length === 1 ? "" : "s"} you picked (${picked.join(", ")}), ` : ""
+      }your match and its alternatives — or the whole range when nothing matched. Ordered by how your responses map onto each one; badges show overall evidence, regulatory status where you live, and the suitability label this report assigns.`}
     >
       <ul className="cell-grid sm:grid-cols-2 sm:[&>*:nth-child(odd):last-child]:col-span-2">
         {report.compounds.map((c, i) => {
-          const dose = dosesBySlug.get(c.slug);
+          const pens = productsContaining(c.slug);
           return (
             <li key={c.slug} className="flex flex-col p-5 break-inside-avoid">
               <div className="flex items-start justify-between gap-3">
@@ -40,11 +41,17 @@ export function ConsideringSection({ report, def }: { report: Report; def: Repor
               </div>
               <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
                 <div className="min-w-0">
-                  <MonoLabel>Dose you&apos;re considering</MonoLabel>
-                  <p className="mt-1 font-mono text-[13px] text-ink tnum">
-                    {dose?.amount !== undefined ? formatUserDose({ ...dose, route: undefined }) : "Not entered"}
-                  </p>
-                  {dose?.amount !== undefined && dose.route && <p className="text-xs text-muted">{ROUTE_LABELS[dose.route]}</p>}
+                  <MonoLabel>In the range</MonoLabel>
+                  <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                    {pens.map((p) => (
+                      <li key={p.id}>
+                        <Link href={`/shop/${p.slug}/`} className="link-rule inline-flex items-center gap-1.5 text-[13px] text-ink">
+                          <ProductSwatch product={p} />
+                          {p.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <Link href={`/peptides/${c.slug}/`} className="link-rule no-print font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
                   Evidence
@@ -54,15 +61,15 @@ export function ConsideringSection({ report, def }: { report: Report; def: Repor
           );
         })}
 
-        {notAssessed.map((item) => (
-          <li key={item.key} className="flex flex-col justify-between bg-paper-2! p-5 break-inside-avoid">
+        {unresolved.map((slug) => (
+          <li key={slug} className="flex flex-col justify-between bg-paper-2! p-5 break-inside-avoid">
             <div>
               <MonoLabel>Not assessed</MonoLabel>
-              <h3 className="mt-2 font-display text-[1.4rem] uppercase leading-none text-ink">{item.label}</h3>
+              <h3 className="mt-2 font-display text-[1.4rem] uppercase leading-none text-ink">{slug.toUpperCase()}</h3>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted">
-              Not in our database yet — we can&apos;t assess it. Nothing in this report applies to it, and a clinician would
-              need to review it separately.
+              No evidence record in our database yet — nothing in this report applies to it, and a clinician would need to
+              review it separately.
             </p>
           </li>
         ))}

@@ -18,7 +18,7 @@ export const COMMERCE = {
   ],
   /** Demo promo codes — replace with your platform's discount engine. */
   promoCodes: {
-    CHECKUP10: { type: "percent", value: 10, label: "10% off — assessment completed" },
+    CHECKUP10: { type: "percent", value: 10, label: "10% off — Peptide Checkup completed" },
     FIRST15: { type: "percent", value: 15, label: "15% off your first order" },
     FREESHIP: { type: "shipping", value: 0, label: "Free standard shipping" },
   } as Record<string, { type: "percent" | "fixed" | "shipping"; value: number; label: string }>,
@@ -42,11 +42,12 @@ export const COMMERCE = {
   supportEmail: BRAND.supportEmail,
   /** Trust facts shown in the ticker / footer. Keep true. */
   trustFacts: [
-    "Every batch third-party tested",
+    "Pre-filled dose-dial pens · no reconstitution",
+    "Every lot third-party tested",
     "Certificate of analysis published per lot",
-    "Ships same day before 2 pm (UK)",
+    "Ships chilled · same day before 2 pm (UK)",
     "18+ only · research use labelling",
-    "Assessment tells you when not to buy",
+    "The Peptide Checkup tells you when not to buy",
   ],
 } as const;
 

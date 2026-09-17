@@ -5,253 +5,39 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Check, Copy, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { Badge, EvidenceBadge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ProductVisual } from "@/components/commerce/product-visual";
-import {
-  AVAILABILITY_LABELS,
-  CHANNEL_LABELS,
-  defaultVariant,
-  getProduct,
-  getProductsForCompound,
-  priceRange,
-  productsForGoal,
-  purchasable,
-  type Product,
-} from "@/data/products";
-import { RESEARCH_USE_LABEL } from "@/lib/brand";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
+import { GOAL_MAP } from "@/data/goals";
+import { AVAILABILITY_LABELS, CHANNEL_LABELS, defaultVariant, getProductBySlug, priceRange, purchasable, type Product } from "@/data/products";
+import { BRAND, RESEARCH_USE_LABEL } from "@/lib/brand";
 import { useCartStore } from "@/lib/commerce/cart-store";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatFrom, formatMoney } from "@/lib/commerce/money";
-import { GOAL_ALIGNMENT_LABELS } from "@/lib/engine/labels";
-import { SUITABILITY_LABELS, type CompoundReport, type Flag, type Report } from "@/lib/engine/types";
-import { EVIDENCE_LABELS } from "@/data/types";
+import type { Report } from "@/lib/engine/types";
+import { VERDICT_LABELS, type MatchReason, type MatchReasonKind, type MatchResult, type ProductMatch } from "@/lib/match";
 import { cn } from "@/lib/utils";
 import { MonoLabel, ReportSection } from "../primitives";
 import { scrollToSection } from "../report-toc";
 import type { ReportSectionDef } from "../sections";
 
-/* ------------------------------------------------------------------ */
-/* Decision model                                                      */
-/* ------------------------------------------------------------------ */
-
-type MatchState =
-  | { kind: "concern"; compound: CompoundReport; product: Product; reasons: Flag[] }
-  | { kind: "not_sold"; compound: CompoundReport; product: Product }
-  | { kind: "insufficient"; compound: CompoundReport; product: Product }
-  | { kind: "consultation"; compound: CompoundReport; product: Product }
-  | { kind: "match"; compound: CompoundReport; product: Product };
-
-const SEVERITY_ORDER = { high: 0, caution: 1, info: 2 } as const;
 const PROMO_CODE = "CHECKUP10";
 const PROMO_MIN_COMPLETENESS = 60;
 
-/** The product that best represents a compound: purchasable first, then consultation-gated, then whatever is listed. */
-function primaryProduct(products: Product[]): Product {
-  return products.find(purchasable) ?? products.find((p) => p.availability === "consultation") ?? products[0];
-}
-
-/** Top flags behind a Higher concern label, compound-specific first, then person-level. */
-function concernReasons(compound: CompoundReport, globalFlags: Flag[]): Flag[] {
-  const seen = new Set<string>();
-  const unique: Flag[] = [];
-  for (const f of [...compound.flags, ...globalFlags]) {
-    if (f.severity === "info" || seen.has(f.id)) continue;
-    seen.add(f.id);
-    unique.push(f);
-  }
-  return unique.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]).slice(0, 2);
-}
-
-/**
- * Match states for every considered compound that has a linked product.
- * Precedence per compound: Higher concern (one card, never a price) → nothing
- * sellable (not-sold card, or an out-of-stock match without an Add button) →
- * Insufficient information (one unlock card) → one card per sellable product:
- * prescription products get a consultation card, everything else a match card.
- */
-export function matchStates(report: Report): MatchState[] {
-  const states: MatchState[] = [];
-  for (const compound of report.compounds) {
-    const products = getProductsForCompound(compound.slug);
-    if (products.length === 0) continue;
-    const primary = primaryProduct(products);
-
-    if (compound.suitability === "higher_concern") {
-      states.push({ kind: "concern", compound, product: primary, reasons: concernReasons(compound, report.globalFlags) });
-      continue;
-    }
-
-    const sellable = products.filter((p) => purchasable(p) || p.availability === "consultation");
-    if (sellable.length === 0) {
-      const notSold = products.find((p) => p.availability === "not_sold");
-      if (notSold) states.push({ kind: "not_sold", compound, product: notSold });
-      else if (compound.suitability === "insufficient_information") states.push({ kind: "insufficient", compound, product: primary });
-      else states.push({ kind: "match", compound, product: primary });
-      continue;
-    }
-
-    if (compound.suitability === "insufficient_information") {
-      states.push({ kind: "insufficient", compound, product: primary });
-      continue;
-    }
-
-    for (const product of sellable) {
-      if (product.channel === "prescription" || product.availability === "consultation") {
-        states.push({ kind: "consultation", compound, product });
-      } else {
-        states.push({ kind: "match", compound, product });
-      }
-    }
-  }
-  return states;
-}
-
-/**
- * Up to three purchasable products researched for the goal that the user did
- * not consider. Anything linked to a considered compound — directly or inside
- * a kit — is excluded so a compound assessed above never reappears here.
- */
-function alsoResearched(report: Report, shown: MatchState[]): Product[] {
-  const goal = report.objective.goal;
-  if (!goal || goal === "other") return [];
-  const shownIds = new Set(shown.map((m) => m.product.id));
-  const considered = new Set(report.compounds.map((c) => c.slug));
-  const linkedToConsidered = (p: Product) =>
-    Boolean(p.compoundSlug && considered.has(p.compoundSlug)) ||
-    Boolean(p.bundleOf?.some((item) => considered.has(getProduct(item.productId)?.compoundSlug ?? "")));
-  return productsForGoal(goal)
-    .filter((p) => purchasable(p) && !shownIds.has(p.id) && !linkedToConsidered(p))
-    .slice(0, 3);
-}
+const KIND_LABELS: Record<MatchReasonKind, string> = {
+  goal: "Goal",
+  focus: "Focus",
+  evidence: "Evidence",
+  experience: "Format",
+  safety: "Safety",
+  regulatory: "Regulatory",
+  anti_doping: "Anti-doping",
+};
 
 function priceLabel(product: Product): string {
   const { min, max } = priceRange(product);
   if (min === 0) return "";
   return min === max ? formatMoney(min) : formatFrom(product.variants.map((v) => v.price).filter((p) => p > 0));
-}
-
-/** Leading sentences of a description (sentence ends are a full stop followed by a capital letter, so "0.9%" survives). */
-function leadSentences(text: string, count: number): string {
-  const sentences = text.match(/.*?[.!?](?=\s+[A-Z“"(]|\s*$)/g);
-  if (!sentences) return text.trim();
-  return sentences
-    .slice(0, count)
-    .map((s) => s.trim())
-    .join(" ");
-}
-
-/* ------------------------------------------------------------------ */
-/* Section                                                             */
-/* ------------------------------------------------------------------ */
-
-export function MatchesSection({ report, def }: { report: Report; def: ReportSectionDef }) {
-  const states = React.useMemo(() => matchStates(report), [report]);
-  /* Person-level review-required flags apply to every compound, so no unassessed products are suggested either. */
-  const blocked = report.globalFlags.some((f) => f.severity === "high");
-  const extras = React.useMemo(() => (blocked ? [] : alsoResearched(report, states)), [blocked, report, states]);
-  const goalLabel = report.objective.goalLabel;
-  const unlocked = !blocked && report.completeness.score >= PROMO_MIN_COMPLETENESS;
-
-  /* A generated report that clears the threshold unlocks the assessment promo in the cart. */
-  React.useEffect(() => {
-    if (unlocked) useCartStore.getState().setAssessmentCompleted(true);
-  }, [unlocked]);
-
-  const empty = states.length === 0 && extras.length === 0;
-
-  return (
-    <ReportSection
-      def={def}
-      description="Products are matched to the suitability label each compound received above. A Potentially relevant label with a batch-tested product in stock can go in your cart; a Higher concern label never can, and links to a clinician instead."
-    >
-      {empty ? (
-        <EmptyMatches blocked={blocked} />
-      ) : (
-        <ul className="space-y-4">
-          {states.map((m) => (
-            <li key={`${m.compound.slug}:${m.product.id}`}>
-              <MatchCard state={m} />
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {blocked && states.length > 0 && (
-        <p className="border border-ink border-l-[3px] border-l-accent-500 bg-white px-4 py-3.5 text-sm leading-relaxed text-ink-2">
-          A review-required flag from your answers about yourself applies to everything you are considering, so this
-          report does not suggest other products either. Speak to a clinician first.
-        </p>
-      )}
-
-      {extras.length > 0 && (
-        <div>
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="font-display text-[1.2rem] uppercase leading-none text-ink">Also researched for {goalLabel.toLowerCase()}</h3>
-            <MonoLabel className="tnum">
-              {extras.length} product{extras.length === 1 ? "" : "s"}
-            </MonoLabel>
-          </div>
-          <p className="mb-4 text-sm text-muted">
-            Not assessed in this report — you did not include them in your assessment. Listed because they are researched
-            for your goal, not because they suit you.
-          </p>
-          <ul className={cn("cell-grid", extras.length === 1 ? "sm:grid-cols-1" : extras.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
-            {extras.map((p) => (
-              <li key={p.id} className="flex flex-col p-4">
-                <ExtraProduct product={p} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {unlocked && <PromoPanel />}
-
-      <p className="text-xs leading-relaxed text-muted">
-        Suitability labels describe whether your responses identified factors that warrant professional review — they are
-        not a clinical determination. Products sold through the research channel carry this labelling: {RESEARCH_USE_LABEL}
-      </p>
-    </ReportSection>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Cards                                                               */
-/* ------------------------------------------------------------------ */
-
-function MatchCard({ state }: { state: MatchState }) {
-  switch (state.kind) {
-    case "match":
-      return <PurchasableCard compound={state.compound} product={state.product} />;
-    case "consultation":
-      return <ConsultationCard compound={state.compound} product={state.product} />;
-    case "concern":
-      return <ConcernCard compound={state.compound} product={state.product} reasons={state.reasons} />;
-    case "insufficient":
-      return <InsufficientCard compound={state.compound} product={state.product} />;
-    case "not_sold":
-      return <NotSoldCard compound={state.compound} product={state.product} />;
-  }
-}
-
-function Visual({ product, muted, className }: { product: Product; muted?: boolean; className?: string }) {
-  return (
-    <div className={cn("h-24 w-24 shrink-0 border border-ink", muted && "opacity-50 grayscale", className)}>
-      <ProductVisual product={product} grid={false} />
-    </div>
-  );
-}
-
-function WhyMatched({ compound }: { compound: CompoundReport }) {
-  const evidence = compound.goalEvidence ?? compound.overallEvidence;
-  return (
-    <p className="mt-3 text-[13px] leading-relaxed text-ink-3">
-      <span className="label-mono mr-2 text-ink">Why it matched</span>
-      {SUITABILITY_LABELS[compound.suitability]} · {GOAL_ALIGNMENT_LABELS[compound.goalAlignment].toLowerCase()} · evidence{" "}
-      {EVIDENCE_LABELS[evidence].toLowerCase()}
-    </p>
-  );
 }
 
 function useAddToCart() {
@@ -273,26 +59,171 @@ function useAddToCart() {
   );
 }
 
-function PurchasableCard({ compound, product }: { compound: CompoundReport; product: Product }) {
-  const add = useAddToCart();
-  const variant = defaultVariant(product);
-  const price = priceLabel(product);
-  const canBuy = purchasable(product);
-  const stockNote = product.availability !== "in_stock" ? AVAILABILITY_LABELS[product.availability] : undefined;
+/* ------------------------------------------------------------------ */
+/* Section                                                             */
+/* ------------------------------------------------------------------ */
+
+export function MatchesSection({ report, match, def }: { report: Report; match: MatchResult; def: ReportSectionDef }) {
+  const primary = match.primary;
+  const unlocked = Boolean(primary) && !match.reviewRequired && report.completeness.score >= PROMO_MIN_COMPLETENESS;
+
+  /* A generated result that clears the threshold unlocks the assessment promo in the cart. */
+  React.useEffect(() => {
+    if (unlocked) useCartStore.getState().setAssessmentCompleted(true);
+  }, [unlocked]);
 
   return (
-    <article className="border border-ink border-l-[3px] border-l-brand-600 bg-white p-4 sm:p-5" aria-label={`${product.name} — match`}>
-      <div className="flex gap-4 sm:gap-5">
-        <Visual product={product} />
-        <div className="min-w-0 flex-1">
+    <ReportSection
+      def={def}
+      description={`Every pen in the ${BRAND.name} range is scored 0–100 against your goal, focus areas, the human evidence for your goal and the pen format, then checked against the flags above. A high-severity flag or a Higher concern label on any component rules a pen out — nothing goes in your cart, and it links to a clinician instead.`}
+    >
+      {primary ? <PrimaryCard match={primary} result={match} /> : <NoMatch match={match} report={report} />}
+
+      {match.unmatchedFocus && match.unmatchedFocus.length > 0 && (
+        <p className="border border-ink border-l-[3px] border-l-ink bg-paper-2 px-4 py-3.5 text-sm leading-relaxed text-ink-2">
+          <span className="label-mono mr-2 text-ink">Not covered</span>
+          You also picked {match.unmatchedFocus.join(", ").toLowerCase()}. Nothing in the range is researched for{" "}
+          {match.unmatchedFocus.length === 1 ? "it" : "these"}, so {match.unmatchedFocus.length === 1 ? "it" : "they"} did not
+          count towards any pen.
+        </p>
+      )}
+
+      {match.alternatives.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h3 className="font-display text-[1.2rem] uppercase leading-none text-ink">Also considered</h3>
+            <MonoLabel className="tnum">
+              {match.alternatives.length} pen{match.alternatives.length === 1 ? "" : "s"}
+            </MonoLabel>
+          </div>
+          <ul className={cn("cell-grid", match.alternatives.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+            {match.alternatives.map((m) => (
+              <li key={m.productId} className="flex flex-col p-4 sm:p-5">
+                <AlternativeCard match={m} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {match.notRecommended.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h3 className="font-display text-[1.2rem] uppercase leading-none text-ink">{VERDICT_LABELS.not_recommended}</h3>
+            <MonoLabel className="tnum">
+              {match.notRecommended.length} pen{match.notRecommended.length === 1 ? "" : "s"}
+            </MonoLabel>
+          </div>
+          <ul className="space-y-3">
+            {match.notRecommended.map((m) => (
+              <li key={m.productId}>
+                <NotRecommendedCard match={m} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {unlocked && <PromoPanel />}
+
+      <p className="text-xs leading-relaxed text-muted">
+        Matching is deterministic and based on your answers; it is not a clinical recommendation. Suitability labels describe
+        whether your responses identified factors that warrant professional review. Products in the range carry this
+        labelling: {RESEARCH_USE_LABEL}
+      </p>
+    </ReportSection>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Cards                                                               */
+/* ------------------------------------------------------------------ */
+
+function ReasonList({ reasons, className }: { reasons: MatchReason[]; className?: string }) {
+  return (
+    <ul className={cn("space-y-2.5", className)}>
+      {reasons.map((r) => (
+        <li key={r.text} className="grid grid-cols-[auto_1fr] items-start gap-3 text-[13.5px] leading-snug text-ink">
+          <span
+            className={cn(
+              "mt-[0.15rem] inline-flex h-5 min-w-[4.5rem] items-center justify-center border px-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em]",
+              r.kind === "goal" || r.kind === "focus" ? "border-brand-600 bg-brand-600 text-white" : "border-ink bg-white text-ink",
+            )}
+          >
+            {KIND_LABELS[r.kind]}
+          </span>
+          <span>{r.text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CautionList({ cautions }: { cautions: MatchReason[] }) {
+  if (cautions.length === 0) {
+    return <p className="text-[13.5px] leading-relaxed text-muted">Nothing in your answers raised a caution for this pen.</p>;
+  }
+  return (
+    <ul className="space-y-2">
+      {cautions.map((c) => (
+        <li key={c.text} className="flex items-start gap-3 text-[13.5px] leading-snug text-ink">
+          <span className={cn("mt-[0.4rem] h-2 w-2 shrink-0", c.kind === "anti_doping" ? "bg-accent-500" : "bg-caution")} aria-hidden />
+          {c.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Breakdown({ match }: { match: ProductMatch }) {
+  if (!match.breakdown) return null;
+  const b = match.breakdown;
+  return (
+    <p className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted tnum">
+      Goal {b.goal} · Focus {b.focus} · Evidence {b.evidence} · Format {b.experience}
+      {b.antiDoping !== 0 ? ` · Anti-doping ${b.antiDoping}` : ""}
+    </p>
+  );
+}
+
+function PrimaryCard({ match, result }: { match: ProductMatch; result: MatchResult }) {
+  const add = useAddToCart();
+  const product = getProductBySlug(match.slug);
+  if (!product) return null;
+  const variant = defaultVariant(product);
+  const review = match.verdict === "match_with_review";
+  const canBuy = purchasable(product) && !result.reviewRequired;
+  const stockNote = product.availability !== "in_stock" ? AVAILABILITY_LABELS[product.availability] : undefined;
+  const goal = result.goal ? GOAL_MAP[result.goal]?.label : undefined;
+
+  return (
+    <article
+      className="border border-ink bg-white break-inside-avoid"
+      style={{ borderTop: `3px solid ${product.visual.color ?? "#0b0b0c"}` }}
+      aria-label={`${product.name} — your match`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink px-4 py-3 sm:px-5">
+        <MonoLabel className={cn("flex items-center gap-2", review ? "text-ink" : "text-brand-600")}>
+          <ProductSwatch product={product} />
+          {VERDICT_LABELS[match.verdict]}
+        </MonoLabel>
+        <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-ink tnum">
+          Fit <span className="text-[15px] font-medium">{match.score}</span>/100
+        </p>
+      </div>
+
+      <div className="grid gap-5 p-4 sm:grid-cols-[10rem_1fr] sm:p-5">
+        <div className="w-32 border border-ink bg-white sm:w-full">
+          <ProductImage product={product} prefer="pack" frame="portrait" sizes="(min-width: 640px) 10rem, 8rem" />
+        </div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <MonoLabel className="text-brand-600">Match · {SUITABILITY_LABELS[compound.suitability]}</MonoLabel>
-              <h3 className="mt-1.5 font-display text-[1.35rem] uppercase leading-none text-ink">{product.name}</h3>
+              <h3 className="font-display text-[1.6rem] uppercase leading-none text-ink sm:text-[1.9rem]">{product.name}</h3>
               <p className="mt-1.5 text-[13px] text-muted">{product.subtitle}</p>
             </div>
             <div className="text-right">
-              <p className="font-mono text-[1.1rem] font-medium leading-none tnum text-ink">{price}</p>
+              <p className="font-mono text-[1.1rem] font-medium leading-none tnum text-ink">{priceLabel(product)}</p>
               <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted">{variant.label}</p>
             </div>
           </div>
@@ -300,27 +231,50 @@ function PurchasableCard({ compound, product }: { compound: CompoundReport; prod
             <Badge tone="outline" size="xs">
               {CHANNEL_LABELS[product.channel]}
             </Badge>
+            {goal && (
+              <Badge tone="brand" size="xs">
+                {goal}
+              </Badge>
+            )}
             {stockNote && (
               <Badge tone="warning" size="xs" dot>
                 {stockNote}
               </Badge>
             )}
-            {compound.goalEvidence && <EvidenceBadge level={compound.goalEvidence} size="xs" prefix="Goal evidence" />}
+          </div>
+          <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-2">{result.summary}</p>
+        </div>
+      </div>
+
+      <div className="grid border-t border-ink sm:grid-cols-2">
+        <div className="p-4 sm:p-5">
+          <MonoLabel as="h4" className="text-ink">
+            Why this is your match
+          </MonoLabel>
+          <ReasonList reasons={match.reasons} className="mt-3" />
+          <div className="mt-4">
+            <Breakdown match={match} />
+          </div>
+        </div>
+        <div className={cn("border-t border-ink p-4 sm:border-l sm:border-t-0 sm:p-5", review && "bg-caution-soft")}>
+          <MonoLabel as="h4" className="text-ink">
+            Before you buy
+          </MonoLabel>
+          <div className="mt-3">
+            <CautionList cautions={match.cautions} />
           </div>
         </div>
       </div>
 
-      <WhyMatched compound={compound} />
-
-      <div className="no-print mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:items-center">
+      <div className="no-print flex flex-col gap-2 border-t border-ink p-4 sm:flex-row sm:items-center sm:p-5">
         {canBuy && (
           <Button size="md" onClick={() => add(product)}>
             <ShoppingBag className="h-4 w-4" aria-hidden />
             Add to cart
           </Button>
         )}
-        <Button href={`/shop/${product.slug}/`} variant={canBuy ? "secondary" : "primary"} size="md">
-          {canBuy ? "View product" : "View product · notify me"}
+        <Button href={`/shop/${product.slug}/?match=1`} variant={canBuy ? "secondary" : "primary"} size="md">
+          View pen
           <ArrowUpRight className="h-4 w-4" aria-hidden />
         </Button>
         {product.coa && (
@@ -333,157 +287,126 @@ function PurchasableCard({ compound, product }: { compound: CompoundReport; prod
   );
 }
 
-function ConsultationCard({ compound, product }: { compound: CompoundReport; product: Product }) {
+function AlternativeCard({ match }: { match: ProductMatch }) {
+  const product = getProductBySlug(match.slug);
+  if (!product) return null;
+  const review = match.verdict === "match_with_review";
   return (
-    <article className="border border-ink border-l-[3px] border-l-brand-600 bg-white p-4 sm:p-5" aria-label={`${product.name} — consultation`}>
-      <div className="flex gap-4 sm:gap-5">
-        <Visual product={product} />
+    <>
+      <div className="flex gap-4">
+        <div className="h-20 w-20 shrink-0 border border-ink bg-white">
+          <ProductImage product={product} prefer="pack" frame="square" sizes="80px" />
+        </div>
         <div className="min-w-0 flex-1">
-          <MonoLabel className="text-brand-600">Match · {SUITABILITY_LABELS[compound.suitability]}</MonoLabel>
-          <h3 className="mt-1.5 font-display text-[1.35rem] uppercase leading-none text-ink">{product.name}</h3>
-          <p className="mt-1.5 text-[13px] text-muted">{product.subtitle}</p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            <Badge tone="ink" size="xs">
-              {CHANNEL_LABELS[product.channel]}
-            </Badge>
-            {compound.goalEvidence && <EvidenceBadge level={compound.goalEvidence} size="xs" prefix="Goal evidence" />}
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h4 className="flex items-center gap-2 font-display text-[1.15rem] uppercase leading-none text-ink">
+              <ProductSwatch product={product} />
+              {product.name}
+            </h4>
+            <span className="font-mono text-[12px] tnum text-ink">{match.score}/100</span>
           </div>
+          <p className="mt-1 truncate text-[12.5px] text-muted">{product.subtitle}</p>
+          <p className="mt-1.5 label-mono text-muted">{review ? "Review first" : "Fit"}</p>
         </div>
       </div>
+      <ReasonList reasons={match.reasons.slice(0, 2)} className="mt-4" />
+      {match.cautions.length > 0 && (
+        <div className="mt-3">
+          <CautionList cautions={match.cautions.slice(0, 2)} />
+        </div>
+      )}
+      <div className="no-print mt-4 flex items-center gap-3">
+        <Link href={`/shop/${product.slug}/?match=1`} className="link-rule font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
+          View pen
+        </Link>
+        <span className="font-mono text-[11px] tnum text-muted">{priceLabel(product)}</span>
+      </div>
+    </>
+  );
+}
 
-      <WhyMatched compound={compound} />
-
-      <p className="mt-3 border-t border-line pt-3 text-sm leading-relaxed text-ink-2">
-        {product.name} is a prescription-only medicine. We do not sell it directly — it is supplied by a registered
-        pharmacy only after an online consultation and prescription from {COMMERCE.prescriberPartner}. No price is shown
-        because eligibility is decided by the prescriber.
-      </p>
-
+function NotRecommendedCard({ match }: { match: ProductMatch }) {
+  const product = getProductBySlug(match.slug);
+  if (!product) return null;
+  return (
+    <article className="border border-ink border-l-[3px] border-l-accent-500 bg-white p-4 sm:p-5" aria-label={`${product.name} — not recommended`}>
+      <div className="flex gap-4">
+        <div className="h-20 w-20 shrink-0 border border-line bg-white opacity-60 grayscale">
+          <ProductImage product={product} prefer="pack" frame="square" sizes="80px" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <MonoLabel className="text-accent-600">{VERDICT_LABELS.not_recommended}</MonoLabel>
+          <h4 className="mt-1.5 font-display text-[1.2rem] uppercase leading-none text-ink">Not adding {product.name} to your cart</h4>
+          <ul className="mt-3 space-y-1.5">
+            {match.reasons.map((r) => (
+              <li key={r.text} className="flex items-start gap-3 text-sm leading-snug text-ink">
+                <span className="mt-[0.4rem] h-2 w-2 shrink-0 bg-accent-500" aria-hidden />
+                {r.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button href={`/shop/${product.slug}/`} size="md">
-          Start consultation
-          <ArrowUpRight className="h-4 w-4" aria-hidden />
+        <Button size="sm" onClick={() => scrollToSection("next-steps")}>
+          Speak to a clinician
         </Button>
-        <Button href={`/peptides/${compound.slug}/`} variant="secondary" size="md">
-          Read the evidence
+        <Button href={`/shop/${product.slug}/`} variant="secondary" size="sm">
+          View pen
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
         </Button>
       </div>
     </article>
   );
 }
 
-function ConcernCard({ compound, product, reasons }: { compound: CompoundReport; product: Product; reasons: Flag[] }) {
-  return (
-    <article className="border border-accent-500 border-l-[3px] bg-white p-4 sm:p-5" aria-label={`${compound.name} — not added to cart`}>
-      <div className="flex gap-4 sm:gap-5">
-        <Visual product={product} muted />
-        <div className="min-w-0 flex-1">
-          <MonoLabel className="text-accent-600">{SUITABILITY_LABELS.higher_concern}</MonoLabel>
-          <h3 className="mt-1.5 font-display text-[1.35rem] uppercase leading-none text-ink">Not adding {compound.name} to your cart</h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">This needs professional review first.</p>
-          {product.availability === "not_sold" && <p className="mt-1 text-sm text-muted">We do not sell this product.</p>}
-        </div>
-      </div>
+/* ------------------------------------------------------------------ */
+/* No match                                                            */
+/* ------------------------------------------------------------------ */
 
-      {reasons.length > 0 && (
-        <ul className="mt-4 border-t border-line pt-4">
-          {reasons.map((f) => (
-            <li key={f.id} className="flex items-start gap-3 py-1 text-sm leading-snug text-ink">
-              <span className={cn("mt-[0.45rem] h-2 w-2 shrink-0", f.severity === "high" ? "bg-accent-500" : "bg-caution")} aria-hidden />
+function NoMatch({ match, report }: { match: MatchResult; report: Report }) {
+  const goal = match.goal ? GOAL_MAP[match.goal]?.label.toLowerCase() : undefined;
+  const highs = report.globalFlags.filter((f) => f.severity === "high");
+  return (
+    <div className={cn("border border-ink border-l-[3px] bg-white p-5 sm:p-6", match.reviewRequired ? "border-l-accent-500" : "border-l-ink")}>
+      <MonoLabel className={match.reviewRequired ? "text-accent-600" : "text-ink"}>
+        {match.reviewRequired ? "Review required" : "No match"}
+      </MonoLabel>
+      <h3 className="mt-2 font-display text-[1.5rem] uppercase leading-[0.98] text-ink sm:text-[1.75rem]">
+        {match.reviewRequired ? "Nothing in the range until you have spoken to a clinician" : `No pen in the range for ${goal ?? "this goal"}`}
+      </h3>
+      <p className="mt-3 max-w-xl text-pretty text-[15px] leading-relaxed text-ink-2">{match.summary}</p>
+      {highs.length > 0 && (
+        <ul className="mt-4 space-y-1.5">
+          {highs.map((f) => (
+            <li key={f.id} className="flex items-start gap-3 text-sm leading-snug text-ink">
+              <span className="mt-[0.4rem] h-2 w-2 shrink-0 bg-accent-500" aria-hidden />
               {f.title}
             </li>
           ))}
         </ul>
       )}
-
-      <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
+      {!match.reviewRequired && (
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          We would rather say so than stretch a pen to fit. The evidence, regulatory and suitability sections above show how each
+          compound in the range was assessed against your answers.
+        </p>
+      )}
+      <div className="no-print mt-5 flex flex-col gap-2 sm:flex-row">
         <Button size="md" onClick={() => scrollToSection("next-steps")}>
-          Speak to a clinician
+          {match.reviewRequired ? "Speak to a clinician" : "Next steps"}
         </Button>
-        <Button href={`/peptides/${compound.slug}/`} variant="secondary" size="md">
-          Read the evidence
-          <ArrowUpRight className="h-4 w-4" aria-hidden />
+        <Button href="/assessment/" variant="secondary" size="md">
+          Retake the {BRAND.assessmentName}
         </Button>
       </div>
-    </article>
+    </div>
   );
 }
 
-function InsufficientCard({ compound, product }: { compound: CompoundReport; product: Product }) {
-  return (
-    <article className="border border-line bg-paper-2 p-4 sm:p-5" aria-label={`${compound.name} — complete the assessment to unlock`}>
-      <div className="flex gap-4 sm:gap-5">
-        <Visual product={product} muted className="border-line" />
-        <div className="min-w-0 flex-1">
-          <MonoLabel>{SUITABILITY_LABELS.insufficient_information}</MonoLabel>
-          <h3 className="mt-1.5 font-display text-[1.35rem] uppercase leading-none text-ink">Complete the assessment to unlock</h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">
-            There isn&apos;t enough in your answers to label {compound.name}. Finish the missing sections and this card
-            updates — it may become a match, or it may not.
-          </p>
-        </div>
-      </div>
-      <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button href="/assessment/start/" variant="secondary" size="md">
-          Complete the assessment
-          <ArrowUpRight className="h-4 w-4" aria-hidden />
-        </Button>
-      </div>
-    </article>
-  );
-}
-
-function NotSoldCard({ compound, product }: { compound: CompoundReport; product: Product }) {
-  return (
-    <article className="border border-ink bg-white p-4 sm:p-5" aria-label={`${product.name} — not sold`}>
-      <div className="flex gap-4 sm:gap-5">
-        <Visual product={product} muted />
-        <div className="min-w-0 flex-1">
-          <MonoLabel>{AVAILABILITY_LABELS.not_sold}</MonoLabel>
-          <h3 className="mt-1.5 font-display text-[1.35rem] uppercase leading-none text-ink">We don&apos;t sell {product.name}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{leadSentences(product.description, 2)}</p>
-        </div>
-      </div>
-      <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button href={`/shop/${product.slug}/`} variant="secondary" size="md">
-          Why we don&apos;t sell it
-        </Button>
-        <Button href={`/peptides/${compound.slug}/`} variant="secondary" size="md">
-          Read the evidence
-          <ArrowUpRight className="h-4 w-4" aria-hidden />
-        </Button>
-      </div>
-    </article>
-  );
-}
-
-function ExtraProduct({ product }: { product: Product }) {
-  const add = useAddToCart();
-  const variant = defaultVariant(product);
-  return (
-    <>
-      <div className="aspect-square w-full border border-line">
-        <ProductVisual product={product} />
-      </div>
-      <h4 className="mt-3 font-display text-[1.05rem] uppercase leading-none text-ink">{product.name}</h4>
-      <p className="mt-1 truncate text-[12.5px] text-muted">{product.subtitle}</p>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-[14px] font-medium tnum text-ink">{priceLabel(product)}</span>
-        <Badge tone="outline" size="xs">
-          {CHANNEL_LABELS[product.channel]}
-        </Badge>
-      </div>
-      <div className="no-print mt-3 flex items-center gap-2">
-        <Button size="sm" onClick={() => add(product)} aria-label={`Add ${product.name} ${variant.label} to cart`}>
-          Add
-        </Button>
-        <Link href={`/shop/${product.slug}/`} className="link-rule font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
-          View
-        </Link>
-      </div>
-    </>
-  );
-}
+/* ------------------------------------------------------------------ */
+/* Promo                                                               */
+/* ------------------------------------------------------------------ */
 
 function PromoPanel() {
   const [copied, setCopied] = React.useState(false);
@@ -504,20 +427,20 @@ function PromoPanel() {
     <div className="bg-ink p-5 text-white sm:p-6">
       <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center">
         <div>
-          <MonoLabel className="text-brand-300">Assessment complete</MonoLabel>
+          <MonoLabel className="text-brand-300">{BRAND.assessmentName} complete</MonoLabel>
           <p className="mt-2 font-display text-[1.5rem] uppercase leading-[0.98] sm:text-[1.75rem]">
             {promo ? `${promo.value}% off` : "A discount"} with {PROMO_CODE} at checkout
           </p>
           <p className="mt-3 max-w-lg text-[13.5px] leading-relaxed text-white/70">
-            Enter the code at checkout on any order of research products, supplies, supplements or cosmetics. It does not
-            apply to prescription consultations, and it never applies to a compound your report marked Higher concern.
+            Enter the code at checkout on your matched pen or any pen the {BRAND.assessmentName} did not rule out. It never applies to a
+            pen marked not recommended for you.
           </p>
         </div>
         <div className="no-print flex flex-col gap-2 sm:items-end">
           <button
             type="button"
             onClick={copy}
-            className="inline-flex h-12 items-center justify-center gap-2 border border-white bg-white px-4 font-mono text-[13px] font-medium tracking-[0.12em] text-ink transition-colors hover:bg-brand-600 hover:border-brand-600 hover:text-white"
+            className="inline-flex h-12 items-center justify-center gap-2 border border-white bg-white px-4 font-mono text-[13px] font-medium tracking-[0.12em] text-ink transition-colors hover:border-brand-600 hover:bg-brand-600 hover:text-white"
           >
             {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
             {PROMO_CODE}
@@ -526,29 +449,6 @@ function PromoPanel() {
             Shop all
           </Button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function EmptyMatches({ blocked }: { blocked: boolean }) {
-  return (
-    <div className="border border-line bg-paper-2 p-5 sm:p-6">
-      <MonoLabel>No linked products</MonoLabel>
-      <h3 className="mt-2 font-display text-[1.35rem] uppercase leading-none text-ink">Nothing to match yet</h3>
-      <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-2">
-        {blocked
-          ? "None of the compounds you considered has a product in our range, and a review-required flag from your answers about yourself means we are not suggesting others. Speak to a clinician first."
-          : "None of the compounds you considered has a product in our range, and your goal did not map to any product we stock. Browse the shop, or complete the assessment with a compound we sell."}
-      </p>
-      <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button href="/shop/" variant="secondary" size="md">
-          Browse the shop
-          <ArrowUpRight className="h-4 w-4" aria-hidden />
-        </Button>
-        <Button href="/assessment/start/" variant="secondary" size="md">
-          Edit the assessment
-        </Button>
       </div>
     </div>
   );

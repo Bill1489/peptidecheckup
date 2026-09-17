@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ProductImage } from "@/components/commerce/product-image";
 import { ProductVisual } from "@/components/commerce/product-visual";
 import { Badge } from "@/components/ui/badge";
 import { SpecRow } from "@/components/ui/card";
@@ -49,12 +50,16 @@ export function displayLinesFromOrder(lines: OrderLine[]): DisplayLine[] {
   return lines.map((l) => ({ ...l, channel: getProduct(l.productId)?.channel }));
 }
 
-/** 56px product thumbnail. Falls back to a generic vial with the product name when the catalogue no longer has the product. */
+/** 56px product photograph. Falls back to the generic illustration with the product name when the catalogue no longer has the product. */
 export function LineThumb({ productId, name, variantLabel, className }: { productId: string; name: string; variantLabel: string; className?: string }) {
   const product = getProduct(productId);
   return (
-    <div className={cn("h-14 w-14 shrink-0 overflow-hidden border border-ink bg-paper-2", className)} aria-hidden>
-      <ProductVisual product={product} code={product ? undefined : name} meta={variantLabel} grid={false} />
+    <div className={cn("w-14 shrink-0 overflow-hidden border border-ink bg-white", className)} aria-hidden>
+      {product ? (
+        <ProductImage product={product} prefer="pack" frame="square" sizes="56px" />
+      ) : (
+        <ProductVisual code={name} meta={variantLabel} grid={false} className="aspect-square" />
+      )}
     </div>
   );
 }

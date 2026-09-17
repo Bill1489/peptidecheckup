@@ -164,6 +164,8 @@ export interface GoalOption {
 export interface SourceAssessment {
   level: "lower" | "moderate" | "higher";
   headline: string;
+  /** Overrides the generic level description when the supply route is the store's own batch-tested pens. */
+  description?: string;
   points: string[];
 }
 

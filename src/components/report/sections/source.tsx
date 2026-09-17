@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SOURCE_LABELS } from "@/lib/assessment/types";
 import type { Report, SourceAssessment } from "@/lib/engine/types";
-import { SOURCE_LEVEL_DESCRIPTIONS } from "@/lib/engine/labels";
+import { SOURCE_LEVEL_DESCRIPTIONS, STORE_SOURCE_LABEL } from "@/lib/engine/labels";
 import { MonoLabel, ReportCard, ReportSection } from "../primitives";
 import type { ReportSectionDef } from "../sections";
 
@@ -25,19 +25,19 @@ export function SourceSection({ report, def }: { report: Report; def: ReportSect
   return (
     <ReportSection
       def={def}
-      description="Supply risk is assessed separately from the compound: the same molecule from a licensed pharmacy and from a research-chemical vendor is not the same product. Every product we sell ships with a published, batch-specific certificate of analysis."
+      description="Supply risk is assessed separately from the compound: the same molecule from a licensed pharmacy and from an anonymous vendor is not the same product. Every pen in the range ships with a published, lot-specific certificate of analysis — and that is what is assessed here."
     >
       <ReportCard className={`border-l-[3px] ${LEVEL_EDGE[s.level]}`}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <MonoLabel>{source ? `Source you described · ${SOURCE_LABELS[source]}` : "Source not described"}</MonoLabel>
+            <MonoLabel>{source ? `Source you described · ${SOURCE_LABELS[source]}` : `Source · ${STORE_SOURCE_LABEL}`}</MonoLabel>
             <h3 className="mt-2 font-display text-[1.35rem] uppercase leading-none text-ink">{s.headline}</h3>
           </div>
           <Badge tone={LEVEL_TONE[s.level]} size="md" dot>
             {s.headline}
           </Badge>
         </div>
-        <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-2">{SOURCE_LEVEL_DESCRIPTIONS[s.level]}</p>
+        <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-2">{s.description ?? SOURCE_LEVEL_DESCRIPTIONS[s.level]}</p>
         <div className="mt-5 border-t border-line pt-5">
           <MonoLabel as="h4" className="text-ink">
             Considerations

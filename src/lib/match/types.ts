@@ -28,6 +28,20 @@ export interface MatchReason {
   text: string;
 }
 
+/** How the 0–100 fit score was built — shown so the matching is transparent. */
+export interface ScoreBreakdown {
+  /** +40 primary goal, +20 a secondary goal */
+  goal: number;
+  /** Up to +25 from the focus areas picked */
+  focus: number;
+  /** Up to +10, scaled by the human-evidence grade for the goal */
+  evidence: number;
+  /** +5 when the pre-filled pen format suits a first-time user */
+  experience: number;
+  /** −15 when a tested athlete would be using a WADA-prohibited compound */
+  antiDoping: number;
+}
+
 export interface ProductMatch {
   productId: string;
   slug: string;
@@ -41,6 +55,7 @@ export interface ProductMatch {
   cautions: MatchReason[];
   /** Compound slugs this product contains that were assessed */
   compounds: string[];
+  breakdown?: ScoreBreakdown;
 }
 
 export interface MatchResult {
@@ -56,6 +71,8 @@ export interface MatchResult {
   summary: string;
   /** True when a person-level high flag means nothing should be bought without review */
   reviewRequired: boolean;
+  /** Focus areas the user picked that nothing in the range is researched for — stated rather than hidden */
+  unmatchedFocus?: string[];
 }
 
 export const VERDICT_LABELS: Record<MatchVerdict, string> = {

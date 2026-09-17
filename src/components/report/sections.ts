@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Report } from "@/lib/engine/types";
 
 export type ReportSectionId =
@@ -31,18 +32,18 @@ export interface ReportSectionDef {
 const ORDERED: Omit<ReportSectionDef, "number">[] = [
   { id: "overview", label: "Overview", heading: "Your personal peptide report" },
   { id: "objective", label: "Your objective", heading: "What you want to achieve" },
-  { id: "considering", label: "What you are considering", heading: "The compounds you have in mind" },
+  { id: "considering", label: "Compounds assessed", heading: "The compounds inside the pens this report covers" },
   { id: "evidence", label: "Evidence assessment", heading: "What the research shows for your goal" },
   { id: "regulatory", label: "Regulatory status", heading: "Where each compound stands where you live" },
   { id: "suitability", label: "Personal suitability", heading: "How your responses map onto each compound" },
-  { id: "matches", label: "Your matches", heading: "What goes in your cart, and what does not" },
+  { id: "matches", label: "Your match", heading: `The pen the ${BRAND.assessmentName} matched you to — and the ones it did not` },
   {
     id: "dosing",
-    label: "Dosing — three layers",
-    heading: "Published exposures against the dose you are considering",
+    label: "Dosing — what was studied",
+    heading: "Published exposures, and what your flags mean for them",
     printBreak: true,
   },
-  { id: "stack", label: "Stack intelligence", heading: "What is known about combining these compounds" },
+  { id: "stack", label: "Blend intelligence", heading: "What is known about the compounds combined in these pens" },
   {
     id: "not-recommended",
     label: "Review required",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Check, Columns2, Printer, Send, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { isValidEmail } from "@/lib/assessment/derived";
 import { BRAND, DISCLAIMER_REPORT } from "@/lib/brand";
 import type { Report } from "@/lib/engine/types";
 import { submitLead } from "@/lib/leads";
@@ -26,8 +27,10 @@ export function NextStepsSection({
   compareHref?: string;
 }) {
   const [status, setStatus] = React.useState<LeadStatus>("idle");
-  const email = report.answers.contactEmail?.trim();
-  const canRequest = report.contactRequested && Boolean(email);
+  const [emailInput, setEmailInput] = React.useState(report.answers.contactEmail ?? "");
+  const [inputError, setInputError] = React.useState<string | undefined>(undefined);
+  const storedEmail = report.answers.contactEmail?.trim();
+  const canRequest = report.contactRequested && Boolean(storedEmail);
   const hasConcern = report.overview.higherConcern > 0;
 
   const lastReviewed = report.compounds
@@ -37,7 +40,12 @@ export function NextStepsSection({
     .at(-1);
 
   const request = async () => {
-    if (!email) return;
+    const email = canRequest ? storedEmail : emailInput.trim();
+    if (!email || !isValidEmail(email)) {
+      setInputError("Enter a valid email address.");
+      return;
+    }
+    setInputError(undefined);
     setStatus("sending");
     const result = await submitLead({
       kind: "report",
@@ -66,8 +74,8 @@ export function NextStepsSection({
       def={def}
       description={
         hasConcern
-          ? "At least one compound carries a Higher concern label. Talk it through with a clinician before you buy anything — the matches section only offers products your labels allow."
-          : "Your product matches are listed above. Take this report to a clinician before starting anything, and quote the reference number if you ask us for a review."
+          ? "At least one compound carries a Higher concern label. Talk it through with a clinician before you buy anything — the match section only offers pens your labels allow."
+          : "Your match is above. Take this report to a clinician before starting anything, and quote the reference number if you ask us for a review."
       }
     >
       <ReportCard tone="ink" padding="lg">
@@ -79,23 +87,42 @@ export function NextStepsSection({
             </h3>
             <p className="mt-3 max-w-lg text-pretty text-[15px] leading-relaxed text-white/70">
               {canRequest
-                ? `You asked to be contacted about a professional review. We'll use the reference above and the email you gave — ${email} — to arrange it. Nothing is shared with anyone else.`
-                : "You didn't opt in to a clinician review in your assessment. You can add your details in the “Your report” section — nothing is shared without your explicit consent."}
+                ? `You asked to be contacted about a professional review. We'll use the reference above and the email you gave — ${storedEmail} — to arrange it. Nothing is shared with anyone else.`
+                : "A registered clinician reads this report and the answers behind it, then gets in touch to discuss what is and is not worth pursuing. Enter an email to ask for one — it is used for that purpose only and never shared."}
             </p>
-            {canRequest && <p className="mt-3 font-mono text-[12px] text-white/60">{email}</p>}
+            {canRequest && <p className="mt-3 font-mono text-[12px] text-white/60">{storedEmail}</p>}
           </div>
-          <div className="no-print flex flex-col gap-2 sm:flex-row lg:flex-col">
-            {canRequest ? (
-              <Button variant="inverted" size="lg" onClick={request} loading={status === "sending"} disabled={status === "sent"} className="min-w-56">
-                {status === "sent" ? <Check className="h-4 w-4" aria-hidden /> : status === "idle" ? <Send className="h-4 w-4" aria-hidden /> : null}
-                {status === "sent" ? "Request received" : status === "sending" ? "Sending" : "Request a clinician review"}
-              </Button>
-            ) : (
-              <Button href="/assessment/start/" variant="inverted" size="lg" className="min-w-56">
-                Add my details
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
-              </Button>
+          <div className="no-print flex flex-col gap-2 lg:min-w-72">
+            {!canRequest && status !== "sent" && (
+              <div>
+                <label htmlFor="review-email" className="sr-only">
+                  Email for clinician review
+                </label>
+                <input
+                  id="review-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={emailInput}
+                  aria-invalid={Boolean(inputError) || undefined}
+                  onChange={(e) => {
+                    setEmailInput(e.target.value);
+                    if (inputError) setInputError(undefined);
+                  }}
+                  className="h-12 w-full rounded-none border border-white/40 bg-transparent px-3 text-[15px] text-white placeholder:text-white/40 focus:border-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-300"
+                />
+                {inputError && (
+                  <p role="alert" className="mt-2 text-xs text-accent-300">
+                    {inputError}
+                  </p>
+                )}
+              </div>
             )}
+            <Button variant="inverted" size="lg" onClick={request} loading={status === "sending"} disabled={status === "sent"} className="w-full">
+              {status === "sent" ? <Check className="h-4 w-4" aria-hidden /> : status === "idle" ? <Send className="h-4 w-4" aria-hidden /> : null}
+              {status === "sent" ? "Request received" : status === "sending" ? "Sending" : "Request a clinician review"}
+            </Button>
           </div>
         </div>
       </ReportCard>
@@ -103,7 +130,7 @@ export function NextStepsSection({
       <div className="no-print grid gap-3 sm:grid-cols-2">
         <Button size="lg" className="w-full" onClick={() => scrollToSection("matches")}>
           <ShoppingBag className="h-4 w-4" aria-hidden />
-          Shop your matches
+          See your match
         </Button>
         {compareHref && (
           <Button href={compareHref} variant="secondary" size="lg" className="w-full">
@@ -129,9 +156,9 @@ export function NextStepsSection({
         <p className="mt-2 text-sm text-muted">
           Everything this report was generated from. If something is wrong or missing,{" "}
           <Link href="/assessment/start/" className="link-rule no-print text-ink">
-            edit your assessment
+            edit your answers
           </Link>
-          <span className="hidden print:inline">edit your assessment</span> and the report — and your matches — will regenerate.
+          <span className="hidden print:inline">edit your answers</span> and the report — and your match — will regenerate.
         </p>
         <div className="mt-4 border-t border-ink">
           <ResponsesAppendix answers={report.answers} />

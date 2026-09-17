@@ -28,7 +28,7 @@ export function StackSection({ report, def }: { report: Report; def: ReportSecti
   return (
     <ReportSection
       def={def}
-      description={`You indicated you might combine ${stack.compounds.map((c) => c.name).join(", ")}. Each pair is checked against the stack notes in our database.`}
+      description={`Some pens in this report blend more than one compound — ${stack.compounds.map((c) => c.name).join(", ")} between them. Each pair inside a blend is checked against the stack notes in our database; a pen is only as well-evidenced as its least-studied pairing.`}
     >
       <div className="cell-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <StatTile label="Number of compounds" value={stack.count} />

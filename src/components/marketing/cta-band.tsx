@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ASSESSMENT_MINUTES } from "./copy";
+import { ASSESSMENT_MINUTES, CHECKUP, CHECKUP_SHORT } from "./copy";
 
 /**
  * Flat cobalt closing band. One headline, one button, one line of small print.
  * The footer that follows carries the full legal text, so this stays short.
  */
 export function CtaBand({
-  label = "Assessment",
-  title = `Find your match in ${ASSESSMENT_MINUTES} minutes.`,
+  label = CHECKUP,
+  title = `Find your pen in ${ASSESSMENT_MINUTES} minutes.`,
   href = "/assessment",
-  cta = "Start the checkup",
+  cta = `Start the ${CHECKUP_SHORT}`,
   secondary,
 }: {
   label?: string;
@@ -41,7 +41,7 @@ export function CtaBand({
             )}
           </div>
           <p className="mt-8 font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/70">
-            Not medical advice · Research-use labelling applies · 18+ only
+            Not medical advice · Research-use labelling applies · 18+ only · It can say no
           </p>
         </div>
       </div>

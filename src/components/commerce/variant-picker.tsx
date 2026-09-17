@@ -25,10 +25,10 @@ export function VariantPicker({
   return (
     <div className={className}>
       <p className="label-mono mb-2 flex items-center justify-between">
-        <span>Size</span>
+        <span>{product.pen ? "Pack" : "Size"}</span>
         <span className="tnum">{product.variants.length} options</span>
       </p>
-      <div role="radiogroup" aria-label="Variant" className={cn("grid gap-px border border-ink bg-ink", cols)}>
+      <div role="radiogroup" aria-label={product.pen ? "Pack" : "Variant"} className={cn("grid gap-px border border-ink bg-ink", cols)}>
         {product.variants.map((v) => (
           <VariantOption key={v.id} product={product} variant={v} selected={v.id === value} onSelect={() => onChange(v.id)} />
         ))}

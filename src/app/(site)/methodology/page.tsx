@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { COMPOUNDS } from "@/data/compounds";
+import { COMPOUNDS, getCompound } from "@/data/compounds";
 import { PRODUCTS } from "@/data/products";
 import { HUMAN_EVIDENCE_LABELS, JURISDICTION_LABELS, type HumanEvidenceLevel } from "@/data/types";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { SUITABILITY_LABELS } from "@/lib/engine/types";
+import { VERDICT_LABELS } from "@/lib/match/types";
 import { formatDate } from "@/lib/utils";
-import { latestReviewDate, NAMED_JURISDICTIONS, pluralise } from "@/components/marketing/copy";
+import {
+  blendProducts,
+  CHECKUP,
+  CHECKUP_SHORT,
+  latestReviewDate,
+  NAMED_JURISDICTIONS,
+  numberWord,
+  pluralise,
+  productCompoundSlugs,
+} from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { Note, Prose, ProseH2, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
+import { Note, NumberedRows, Prose, ProseH2, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
 import { EvidenceScale, RegulatoryScale, SuitabilityScale } from "@/components/marketing/scales";
 
-const DESCRIPTION =
-  "How Peptide Checkup grades evidence, maintains regulatory status per jurisdiction, runs the rules engine, compares doses and analyses stacks — plus limitations, the store’s conflict of interest, update cadence and how to report an error.";
+const DESCRIPTION = `How ${BRAND.displayName} grades evidence, maintains regulatory status per jurisdiction, runs the rules engine and the deterministic product matcher behind the ${CHECKUP} — plus limitations, the store’s conflict of interest, update cadence and how to report an error.`;
 
 export const metadata: Metadata = {
   title: "Methodology",
@@ -26,8 +35,9 @@ const TOC = [
   { id: "evidence", label: "Evidence grading" },
   { id: "regulatory", label: "Regulatory database" },
   { id: "engine", label: "Rules engine" },
+  { id: "matcher", label: "Product matcher" },
   { id: "dosing", label: "Dose comparison" },
-  { id: "stacks", label: "Stack analysis" },
+  { id: "blends", label: "Blends and stacks" },
   { id: "store", label: "The store and the grades" },
   { id: "limitations", label: "Limitations" },
   { id: "updates", label: "Update cadence" },
@@ -43,16 +53,46 @@ const LADDER: HumanEvidenceLevel[] = [
   "preclinical_only",
 ];
 
+const MATCHER_INPUTS: { title: string; meta: string; body: string }[] = [
+  {
+    title: "Goal",
+    meta: "Primary",
+    body: "Whether the pen is listed for the goal you chose. A pen not listed for your goal cannot be the match, however well it scores elsewhere.",
+  },
+  {
+    title: "Focus",
+    meta: "Sharpens",
+    body: "The specific problem you picked — the landing-page symptom or the focus question — against the pen’s own problem statements. This is how the matcher separates two pens that share a goal, such as a repair blend from a skin-and-repair blend.",
+  },
+  {
+    title: "Evidence",
+    meta: "Weighted",
+    body: "The compound’s evidence grade for your goal, read from the record. A higher grade scores higher, the grade is shown on the result, and “early” or “insufficient” is stated in words.",
+  },
+  {
+    title: "Experience",
+    meta: "Format",
+    body: "Whether you have used an injectable before and how you feel about the format. Every pen in the range is pre-filled and dose-dial, so this mostly adds a review note rather than changing the pen.",
+  },
+  {
+    title: "Safety verdict",
+    meta: "Decisive",
+    body: `The rules engine’s label for each compound in the pen. A Higher-concern label or a high-severity flag makes the verdict “${VERDICT_LABELS.not_recommended}” regardless of score; caution-level flags make it “${VERDICT_LABELS.match_with_review}”.`,
+  },
+];
+
 export default function MethodologyPage() {
   const reviewed = latestReviewDate();
-  const linked = PRODUCTS.filter((p) => p.compoundSlug).length;
+  const rangeSlugs = Array.from(new Set(PRODUCTS.flatMap((p) => productCompoundSlugs(p))));
+  const withRecord = rangeSlugs.filter((slug) => getCompound(slug)).length;
+  const blends = blendProducts();
 
   return (
     <TrustPage
       label="Methodology"
       meta={[pluralise(COMPOUNDS.length, "compound"), reviewed ? `Reviewed ${formatDate(reviewed, { month: "short" })}` : ""].filter(Boolean)}
-      title="How the grades are made — and what they cannot tell you."
-      description="Every label on this site is derived from a structured field in a database we maintain by hand. This page explains where those fields come from, how the rules engine uses them, and where the approach has limits — including the fact that we sell some of what we grade."
+      title="How the grades and the match are made — and what they cannot tell you."
+      description="Every label on this site is derived from a structured field in a database we maintain by hand, and every match is derived from those labels by fixed rules. This page explains where the fields come from, how the engine and the matcher use them, and where the approach has limits — including the fact that we sell what we grade."
       toc={TOC}
       after={<CtaBand secondary={{ href: "/peptides", label: "Compound directory" }} />}
     >
@@ -60,8 +100,8 @@ export default function MethodologyPage() {
         <h2 id="principles">Principles</h2>
         <ul>
           <li>
-            <strong>Structured, not generated.</strong> There is no language model anywhere in the pipeline. Reports are assembled from database fields and
-            fixed rules, so the same inputs always give the same output.
+            <strong>Structured, not generated.</strong> There is no language model anywhere in the pipeline. Reports and matches are assembled from
+            database fields and fixed rules, so the same inputs always give the same output.
           </li>
           <li>
             <strong>Human evidence first.</strong> Animal and laboratory data never raise a grade above “Insufficient”. Marketing claims and anecdote are not
@@ -71,11 +111,16 @@ export default function MethodologyPage() {
             <strong>Regulatory status is recorded, never inferred.</strong> If we have not confirmed a status from a regulator source, the entry says “Unclear”.
           </li>
           <li>
-            <strong>The same grade whether or not we sell it.</strong> Grades are assigned to compounds, not products, and a product page shows the compound’s
-            grade unchanged. Compounds we sell are graded by the same criteria as compounds we do not.
+            <strong>The same grade whether or not we sell it.</strong> Grades are assigned to compounds, not pens, and a pen page shows the compound’s grade
+            unchanged. The {numberWord(PRODUCTS.length)} pens are graded by the same criteria as the {COMPOUNDS.length - withRecord} compounds we do not sell.
           </li>
           <li>
-            <strong>Clinician-reviewable.</strong> Every compound record lists its sources; every flag in a report names the answer that produced it.
+            <strong>The matcher can return nothing.</strong> A match is a product of the rules, not a guarantee of one. When the rules rule everything out,
+            the {CHECKUP_SHORT} says so.
+          </li>
+          <li>
+            <strong>Clinician-reviewable.</strong> Every compound record lists its sources; every flag in a report names the answer that produced it; every
+            match lists the reasons it was made.
           </li>
         </ul>
       </Prose>
@@ -95,7 +140,7 @@ export default function MethodologyPage() {
           We start from the highest-quality human evidence available for that goal: randomised controlled trials and regulator assessments first, then
           controlled human studies, then early-phase or observational human data. We consider size, duration, whether the population studied resembles
           people likely to use the site, whether the outcome measured is the one the goal describes, and whether findings have been replicated. Evidence
-          for a related but different use — weight loss when the goal is body composition, for example — is graded “Limited” at most.
+          for a related but different use — visceral fat when the goal is scale weight, for example — is graded “Limited” at most.
         </p>
         <h3>The human-evidence ladder</h3>
         <p>Alongside the grade, every compound is placed on a ladder that describes what kind of human evidence exists at all:</p>
@@ -106,7 +151,7 @@ export default function MethodologyPage() {
         </ol>
         <p>
           The dosing studies quoted in reports and on compound pages are the ones that support the grade, with their citation, population, duration,
-          doses, outcomes and adverse events.
+          amounts, outcomes and adverse events.
         </p>
       </Prose>
 
@@ -136,7 +181,7 @@ export default function MethodologyPage() {
           </li>
           <li>
             Anti-doping status under the World Anti-Doping Code is recorded separately — prohibited at all times, in competition only, or not listed — and
-            shown on compound pages, in comparisons and in reports.
+            shown on compound pages, in comparisons, in reports and on the match.
           </li>
         </ul>
         <Note tone="alert" title="Status can change between reviews">
@@ -166,14 +211,15 @@ export default function MethodologyPage() {
             <strong>Pregnancy, breastfeeding and age.</strong> Applied from the compound’s pregnancy field and the age you enter.
           </li>
           <li>
-            <strong>Dose comparison</strong> and <strong>stack analysis</strong>, described below.
+            <strong>Amount comparison</strong> and <strong>blend analysis</strong>, described below.
           </li>
           <li>
-            <strong>Regulatory and anti-doping.</strong> Status for your country, and prohibited status where your goal is athletic performance.
+            <strong>Regulatory and anti-doping.</strong> Status for your country, and prohibited status where you compete in tested sport or your goal is
+            athletic performance.
           </li>
           <li>
-            <strong>Expectations, history and source.</strong> A timeframe shorter than trials measured, a previous adverse reaction, treatment stopped for
-            adverse effects, or an unregulated source each becomes a flag.
+            <strong>Expectations, history and source.</strong> A timeframe shorter than trials measured, a previous adverse reaction, or treatment stopped for
+            adverse effects each becomes a flag.
           </li>
         </ol>
         <h3>From flags to a label</h3>
@@ -182,56 +228,79 @@ export default function MethodologyPage() {
       <Prose>
         <p>
           Where your answers identify factors that may make an option inappropriate, or that require professional assessment before proceeding, the label
-          is <strong>{SUITABILITY_LABELS.higher_concern}</strong> — and the store does not add that product to your cart from the report. Where your goal
-          overlaps the compound’s intended or researched use, the label is <strong>{SUITABILITY_LABELS.potentially_relevant}</strong>, still with every
-          identified factor listed. Where the record or your answers do not contain enough to assess, the label is{" "}
-          <strong>{SUITABILITY_LABELS.insufficient_information}</strong>. The labels are not a ranking of how “good” a compound is and are not a clinical
-          determination.
+          is <strong>{SUITABILITY_LABELS.higher_concern}</strong> — and the matcher will not land on a pen containing that compound. Where your goal overlaps
+          the compound’s researched use, the label is <strong>{SUITABILITY_LABELS.potentially_relevant}</strong>, still with every identified factor listed.
+          Where the record or your answers do not contain enough to assess, the label is <strong>{SUITABILITY_LABELS.insufficient_information}</strong>. The
+          labels are not a ranking of how “good” a compound is and are not a clinical determination.
         </p>
+      </Prose>
+
+      <ProseH2 id="matcher">Product matcher</ProseH2>
+      <Prose>
+        <p>
+          The matcher runs after the report and reads only two things: the report and the catalogue. It is deterministic — the same answers always land on
+          the same pen — and it knows nothing about price, margin or stock. Each of the {numberWord(PRODUCTS.length)} pens is scored on five inputs, in
+          this order of weight:
+        </p>
+      </Prose>
+      <NumberedRows className="mt-6" items={MATCHER_INPUTS} />
+      <Prose>
+        <p>
+          The output is a primary match (the best-scoring pen that is not ruled out), up to two alternatives, and the list of pens that were ruled out with
+          the reason for each. The result routes you to the pen’s page, where the “Your match” panel shows the reasons, the evidence grade for your goal,
+          the cautions to review and the price and lot — and adds nothing to your cart until you ask it to. Where nothing survives the safety verdict, or
+          nothing in the range is listed for your goal, there is no primary match and the panel says so.
+        </p>
+        <Note tone="brand" title="What the score is not">
+          The score orders pens; it is never shown as a number and it is not a measure of how likely a pen is to work. Only the evidence grade speaks to
+          that, and for most of the range it says the human data is early or absent.
+        </Note>
       </Prose>
 
       <Prose>
         <h2 id="dosing">Dose comparison</h2>
         <p>
           Dosing on this site is <strong>research information, not a recommendation</strong>. We report what published human studies used — population,
-          duration, route, dose escalation, outcomes and adverse events — because that is the only honest basis for a conversation about dose.
+          duration, route, dose escalation, outcomes and adverse events — because that is the only honest basis for a conversation about amounts.
         </p>
         <p>
-          If you enter a dose you are considering, the engine converts it to the same units as the study exposures on record and returns one verdict:
+          If you enter an amount you are considering, the engine converts it to the same units as the study exposures on record and returns one verdict:
           within range, above range, below range, different frequency, different route, no human data to compare against, or not comparable. Where the
           verdict is above range or there are no human data, the report asks you to seek professional review before making a decision. We do not publish
-          “protocols”, and product pages state the amount in the vial, not a dose.
+          “protocols”, and pen pages state the amount in the pen, not what to dial.
         </p>
       </Prose>
 
       <Prose>
-        <h2 id="stacks">Stack analysis</h2>
+        <h2 id="blends">Blends and stacks</h2>
         <p>
-          For two or more compounds the engine checks each pair against the database’s stack notes: whether the combination has been studied in humans
-          (studied, limited or none), whether the two act on the same pathway or duplicate a mechanism, and any overlapping considerations such as
-          additive effects on glucose or blood pressure. It counts the evidence gaps and returns an overall uncertainty rating — low, moderate,
-          moderate–high or high — with a plain-English summary. Kits in the shop bundle a peptide with supplies, never with another peptide.
+          {blends.length > 0 ? `${blends.map((b) => b.name).join(" and ")} are blends.` : "Some pens combine more than one compound."} The report treats each
+          component as a compound in its own right — its own record, grade, contraindications and interactions — and then checks each pair against the
+          database’s stack notes: whether the combination has been studied in humans (studied, limited or none), whether two components act on the same
+          pathway, and any overlapping considerations. It counts the evidence gaps and returns an uncertainty rating — low, moderate, moderate–high or
+          high — with a plain-English summary. No blend in the range has human data as a combination, and the report says so rather than averaging the
+          components into a grade that looks better than any of them.
         </p>
       </Prose>
 
       <Prose>
         <h2 id="store">The store and the grades</h2>
         <p>
-          We sell {pluralise(linked, "product")} linked to compounds in this database, and we have an interest in selling them. Three things keep that
-          interest away from the grades.
+          We sell {pluralise(PRODUCTS.length, "pen")} containing {pluralise(rangeSlugs.length, "compound")} from this database, and we have an interest in
+          selling them. Three things keep that interest away from the grades.
         </p>
         <ul>
           <li>
-            <strong>Grades attach to compounds, not products.</strong> A product page reads the compound record; it cannot carry a different grade, and
-            the compound page is linked from every product.
+            <strong>Grades attach to compounds, not pens.</strong> A pen page reads the compound record; it cannot carry a different grade, and the
+            compound page is linked from every pen.
           </li>
           <li>
-            <strong>The engine does not know what is in stock.</strong> Suitability labels are computed from your answers and the compound record only.
-            The store reads the label afterwards and acts on it — a Higher-concern compound is never added to the cart from a report.
+            <strong>Neither the engine nor the matcher knows what is in stock.</strong> Suitability labels are computed from your answers and the record;
+            the match is computed from the labels and the catalogue’s goal and problem fields. Price, margin and stock are not inputs.
           </li>
           <li>
-            <strong>Compounds we decline to sell stay in the database</strong>, graded by the same criteria, with the regulator warning that led to the
-            decision on the product page.
+            <strong>The database is larger than the range.</strong> {COMPOUNDS.length - withRecord} of the {COMPOUNDS.length} compounds are ones we do not
+            sell, graded by the same criteria, and the report names them where they are researched for your goal.
           </li>
         </ul>
       </Prose>
@@ -252,12 +321,16 @@ export default function MethodologyPage() {
             reasonably differ at the boundary between grades.
           </li>
           <li>
+            <strong>A match is a fit to the record, not a prediction.</strong> The matcher says which pen the evidence and your answers point to. It does
+            not say the pen will do anything.
+          </li>
+          <li>
             <strong>Regulatory status has a review date.</strong> It may have changed since.
           </li>
           <li>
-            <strong>Testing describes the vial, not the outcome.</strong> A certificate confirms identity, purity and endotoxin for a lot. It says nothing
-            about whether the compound works or is safe in people; only the evidence grade speaks to that, and for many research compounds it says
-            “Insufficient”.
+            <strong>Testing describes the pen, not the outcome.</strong> A certificate confirms identity, purity and endotoxin for a lot. It says nothing
+            about whether the compound works or is safe in people; only the evidence grade speaks to that, and for most of the range it says “Insufficient”
+            or “Limited”.
           </li>
           <li>
             <strong>It is not a substitute for a consultation.</strong> Nothing here diagnoses, treats or replaces professional advice.
@@ -269,14 +342,16 @@ export default function MethodologyPage() {
         <h2 id="updates">Update cadence</h2>
         <p>
           Compound records and regulatory entries are reviewed on a rolling basis, and immediately when a regulator issues a safety communication, a
-          licensing decision or a shortage notice that affects a listed compound. Each record and each regulatory entry shows its own last-reviewed date.
+          licensing decision or a shortage notice that affects a compound in the range. Each record and each regulatory entry shows its own last-reviewed
+          date.
         </p>
       </Prose>
       <SpecSheet
         items={[
           { label: "Compounds", value: pluralise(COMPOUNDS.length, "compound") },
           { label: "Jurisdictions", value: `${NAMED_JURISDICTIONS.length} named + other` },
-          { label: "Products linked", value: `${linked} of ${PRODUCTS.length}` },
+          { label: "In the range", value: `${withRecord} of ${rangeSlugs.length} compounds with a record` },
+          { label: "Pens scored", value: String(PRODUCTS.length) },
           { label: "Most recent review", value: reviewed ? formatDate(reviewed) : "—" },
         ]}
       />
@@ -284,9 +359,9 @@ export default function MethodologyPage() {
       <Prose>
         <h2 id="errors">Corrections</h2>
         <p>
-          If you believe a grade, a regulatory entry, a study citation or a rule is wrong, email{" "}
-          <a href={`mailto:${BRAND.supportEmail}?subject=Methodology%20correction`}>{BRAND.supportEmail}</a> with the compound, the field and, ideally,
-          the source you are relying on. Corrections are made to the database, so they reach the compound pages, product pages, comparisons and future
+          If you believe a grade, a regulatory entry, a study citation, a rule or a match is wrong, email{" "}
+          <a href={`mailto:${BRAND.supportEmail}?subject=Methodology%20correction`}>{BRAND.supportEmail}</a> with the compound or pen, the field and, ideally,
+          the source you are relying on. Corrections are made to the database, so they reach the compound pages, pen pages, comparisons, matches and future
           reports at the same time. You can also read <Link href="/about">who we are</Link> and <Link href="/safety">how to use the site safely</Link>.
         </p>
       </Prose>

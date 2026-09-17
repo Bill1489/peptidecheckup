@@ -20,7 +20,8 @@ import {
   type RegulatoryStatus,
   type Route,
 } from "@/data/types";
-import { MAX_COMPARE, REGULATORY_RANK, type SelectableJurisdiction } from "@/lib/compare";
+import { BRAND } from "@/lib/brand";
+import { MAX_COMPARE, RANGE_SLUGS, REGULATORY_RANK, inRange, type SelectableJurisdiction } from "@/lib/compare";
 import { useHydratePrefs, usePrefsStore } from "@/lib/compare-store";
 import { cn } from "@/lib/utils";
 import { CompareBar } from "./compare-bar";
@@ -68,9 +69,11 @@ const ROUTE_OPTIONS: Option<Route>[] = ROUTE_ORDER.map((r) => ({
   count: COMPOUNDS.filter((c) => c.routes.includes(r)).length,
 })).filter((o) => o.count > 0);
 
-type SortKey = "evidence" | "name" | "regulatory" | "family";
+type SortKey = "range" | "evidence" | "name" | "regulatory" | "family";
 
+/** "Range" is the default: the compounds in the Aervyn range first, then evidence. */
 const SORT_OPTIONS: { value: SortKey; label: string; title: string }[] = [
+  { value: "range", label: "Range", title: `${BRAND.displayName} range first, then evidence` },
   { value: "evidence", label: "Evidence", title: "Evidence (strongest first)" },
   { value: "name", label: "Name", title: "Name (A–Z)" },
   { value: "regulatory", label: "Regulatory", title: "Regulatory (authorised first)" },
@@ -86,8 +89,16 @@ function sortCompounds(list: Compound[], sort: SortKey, jurisdiction: Selectable
   const byName = (a: Compound, b: Compound) => a.name.localeCompare(b.name);
   // Ties keep the curated registry order (the database's default display order).
   const byRegistry = (a: Compound, b: Compound) => COMPOUNDS.indexOf(a) - COMPOUNDS.indexOf(b);
+  // Range pens in catalogue order, then everything else.
+  const byRange = (a: Compound, b: Compound) => {
+    const ia = RANGE_SLUGS.indexOf(a.slug);
+    const ib = RANGE_SLUGS.indexOf(b.slug);
+    return Number(ia === -1) - Number(ib === -1) || ia - ib;
+  };
   const copy = [...list];
   switch (sort) {
+    case "range":
+      return copy.sort((a, b) => byRange(a, b) || byEvidence(a, b) || byRegistry(a, b));
     case "name":
       return copy.sort(byName);
     case "regulatory":
@@ -115,12 +126,14 @@ function Chip({
   disabled,
   count,
   onClick,
+  className,
   children,
 }: {
   active: boolean;
   disabled?: boolean;
   count?: number;
   onClick: () => void;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -133,6 +146,7 @@ function Chip({
         "inline-flex h-11 items-center gap-2 border px-3 font-mono text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-150 sm:h-9 sm:px-2.5",
         active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:border-ink",
         disabled && "pointer-events-none opacity-40",
+        className,
       )}
     >
       {children}
@@ -187,7 +201,8 @@ export function CompoundDirectory() {
   const [regulatory, setRegulatory] = React.useState<RegulatoryStatus[]>([]);
   const [routes, setRoutes] = React.useState<Route[]>([]);
   const [wadaSafe, setWadaSafe] = React.useState(false);
-  const [sort, setSort] = React.useState<SortKey>("evidence");
+  const [rangeOnly, setRangeOnly] = React.useState(false);
+  const [sort, setSort] = React.useState<SortKey>("range");
   const [filtersOpen, setFiltersOpen] = React.useState(false);
 
   const regulatoryOptions: Option<RegulatoryStatus>[] = REGULATORY_ORDER.map((status) => ({
@@ -196,12 +211,14 @@ export function CompoundDirectory() {
     count: COMPOUNDS.filter((c) => c.regulatory[jurisdiction].status === status).length,
   })).filter((o) => o.count > 0);
 
-  const activeCount = goals.length + families.length + evidence.length + regulatory.length + routes.length + (wadaSafe ? 1 : 0);
+  const activeCount =
+    goals.length + families.length + evidence.length + regulatory.length + routes.length + (wadaSafe ? 1 : 0) + (rangeOnly ? 1 : 0);
 
   const trimmedQuery = query.trim();
   const base = trimmedQuery ? searchCompounds(trimmedQuery, COMPOUNDS.length) : COMPOUNDS;
   const filtered = base.filter(
     (c) =>
+      (!rangeOnly || inRange(c.slug)) &&
       (goals.length === 0 || c.goals.some((g) => goals.includes(g.goal))) &&
       (families.length === 0 || families.includes(c.family)) &&
       (evidence.length === 0 || evidence.includes(c.overallEvidence)) &&
@@ -218,6 +235,7 @@ export function CompoundDirectory() {
     setRegulatory([]);
     setRoutes([]);
     setWadaSafe(false);
+    setRangeOnly(false);
   };
 
   const clearEverything = () => {
@@ -235,6 +253,7 @@ export function CompoundDirectory() {
   };
 
   const activeChips: { key: string; label: string; remove: () => void }[] = [
+    ...(rangeOnly ? [{ key: "range", label: `${BRAND.displayName} range`, remove: () => setRangeOnly(false) }] : []),
     ...goals.map((g) => ({
       key: `goal-${g}`,
       label: GOALS.find((x) => x.id === g)?.short ?? g,
@@ -291,9 +310,19 @@ export function CompoundDirectory() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="label-mono hidden sm:inline">Jurisdiction</span>
-            <JurisdictionSwitch value={jurisdiction} onChange={setJurisdiction} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Chip
+              active={rangeOnly}
+              count={RANGE_SLUGS.length}
+              onClick={() => setRangeOnly((v) => !v)}
+              className={cn("border-ink sm:h-11 sm:px-3.5", !rangeOnly && "hover:bg-paper-2")}
+            >
+              {BRAND.displayName} range
+            </Chip>
+            <div className="flex items-center gap-3">
+              <span className="label-mono hidden sm:inline">Jurisdiction</span>
+              <JurisdictionSwitch value={jurisdiction} onChange={setJurisdiction} />
+            </div>
           </div>
           <button
             type="button"

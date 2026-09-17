@@ -321,6 +321,12 @@ export const tesamorelin: Compound = {
       evidence: "none",
       note: "Marketed together as 'recovery' stacks; no human data on the combination and BPC-157 lacks human efficacy data.",
     },
+    {
+      with: "nad",
+      evidence: "none",
+      overlap: "Both are promoted for healthy ageing and body composition.",
+      note: "No human studies of tesamorelin combined with NAD+ or its precursors.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Synthetic GHRH analogue" },

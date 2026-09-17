@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/commerce/product-detail";
-import { productPath } from "@/components/commerce/product-utils";
+import { productCompounds, productPath } from "@/components/commerce/product-utils";
 import { JsonLd, type JsonLdObject } from "@/components/marketing/json-ld";
-import { getCompound } from "@/data/compounds";
-import { CATEGORY_LABELS, PRODUCTS, defaultVariant, getProductBySlug, purchasable, type Availability, type Product } from "@/data/products";
+import { PRODUCTS, defaultVariant, getProductBySlug, purchasable, type Availability, type Product } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
+import { asset } from "@/lib/utils";
 
 type Params = { slug: string };
 
-/** Static export: every product page is prerendered; unknown slugs are not served. */
+/** Static export: every pen page is prerendered; unknown slugs are not served. */
 export const dynamicParams = false;
 
 export function generateStaticParams(): Params[] {
@@ -23,6 +23,10 @@ function truncate(text: string, max = 158): string {
   return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
 }
 
+function imageUrls(product: Product): string[] {
+  return product.images.map((i) => `${BRAND.url}${asset(i.src)}`);
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
@@ -31,22 +35,23 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const path = productPath(product.slug);
   const title = `${product.name} — ${product.subtitle}`;
   const description = truncate(product.description);
-  const compound = product.compoundSlug ? getCompound(product.compoundSlug) : undefined;
+  const compounds = productCompounds(product);
+  const images = imageUrls(product);
 
   return {
     title,
     description,
     keywords: [
       product.name,
-      ...(compound?.aliases ?? []),
-      `buy ${product.name} UK`,
+      ...compounds.flatMap((c) => [c.name, ...c.aliases]),
+      `buy ${product.name} pen UK`,
       `${product.name} certificate of analysis`,
-      CATEGORY_LABELS[product.category],
+      "pre-filled peptide pen",
       ...product.tags,
     ],
     alternates: { canonical: path },
     openGraph: {
-      images: OG_IMAGES,
+      images: images.length ? images.map((url) => ({ url, alt: product.images[0]?.alt ?? product.name })) : OG_IMAGES,
       type: "website",
       title,
       description,
@@ -86,17 +91,22 @@ function buildJsonLd(product: Product): JsonLdObject {
         }))
     : undefined;
 
+  const images = imageUrls(product);
+
   const productNode: JsonLdObject = {
     "@type": "Product",
     "@id": `${url}#product`,
     name: product.name,
     description: product.description,
     sku: variant.sku,
-    category: CATEGORY_LABELS[product.category],
+    category: "Pre-filled peptide pens",
     brand: { "@type": "Brand", name: BRAND.displayName },
     url,
+    ...(images.length ? { image: images } : {}),
     additionalProperty: [
       { "@type": "PropertyValue", name: "Sale channel", value: product.channel },
+      { "@type": "PropertyValue", name: "Format", value: product.pen ? `Pre-filled dose-dial pen, ${product.pen.volumeMl} mL` : product.form },
+      ...(product.pen ? [{ "@type": "PropertyValue", name: "Contents", value: product.pen.composition }] : []),
       ...(product.coa
         ? [
             { "@type": "PropertyValue", name: "Batch", value: product.coa.batch },
@@ -115,9 +125,8 @@ function buildJsonLd(product: Product): JsonLdObject {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Shop", item: `${BRAND.url}/shop/` },
-          { "@type": "ListItem", position: 2, name: CATEGORY_LABELS[product.category], item: `${BRAND.url}/shop/?category=${product.category}` },
-          { "@type": "ListItem", position: 3, name: product.name, item: url },
+          { "@type": "ListItem", position: 1, name: "The range", item: `${BRAND.url}/shop/` },
+          { "@type": "ListItem", position: 2, name: product.name, item: url },
         ],
       },
     ],

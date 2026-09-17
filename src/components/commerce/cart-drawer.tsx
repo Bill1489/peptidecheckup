@@ -8,11 +8,11 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ProductVisual } from "@/components/commerce/product-visual";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
 import { QtyStepper } from "@/components/commerce/qty-stepper";
-import { featuredProducts, priceLine, productPath } from "@/components/commerce/product-utils";
+import { featuredProducts, formatLine, priceLine, productPath } from "@/components/commerce/product-utils";
 import { getProduct, getVariant } from "@/data/products";
-import { RESEARCH_USE_LABEL } from "@/lib/brand";
+import { BRAND, RESEARCH_USE_LABEL } from "@/lib/brand";
 import { cartHasResearchItems, computeTotals, useCartStore, type CartLine } from "@/lib/commerce/cart-store";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney } from "@/lib/commerce/money";
@@ -176,22 +176,28 @@ function CartLineRow({ line, onNavigate }: { line: CartLine; onNavigate: () => v
   }
 
   const href = productPath(product.slug);
+  const meta = [formatLine(product), product.channel === "research" ? "research use only" : null].filter(Boolean).join(" · ");
   return (
     <li className="flex gap-4 border-b border-line px-5 py-4">
-      <Link href={href} onClick={onNavigate} className="h-16 w-16 shrink-0 border border-ink" aria-label={`${product.name} — view product`}>
-        <ProductVisual product={product} meta={variant.label} grid={false} />
+      <Link href={href} onClick={onNavigate} className="w-16 shrink-0 self-start border border-ink bg-white" aria-label={`${product.name} — view product`}>
+        <ProductImage product={product} prefer="pack" frame="square" sizes="64px" />
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
-          <Link href={href} onClick={onNavigate} className="link-rule decoration-transparent hover:decoration-current text-[14px] font-semibold leading-snug text-ink">
+          <Link
+            href={href}
+            onClick={onNavigate}
+            className="link-rule inline-flex items-center gap-2 decoration-transparent hover:decoration-current text-[14px] font-semibold leading-snug text-ink"
+          >
+            <ProductSwatch product={product} />
             {product.name}
           </Link>
           <span className="shrink-0 font-mono text-[13px] tnum">{formatMoney(variant.price * line.qty)}</span>
         </div>
         <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
           {variant.label} · {formatMoney(variant.price)} each
-          {product.channel === "research" && " · Research use only"}
         </p>
+        <p className="mt-0.5 font-mono text-[10.5px] tracking-[0.06em] text-muted">{meta}</p>
         <div className="mt-3 flex items-center justify-between gap-3">
           <QtyStepper size="sm" value={line.qty} onChange={(n) => setQty(line.variantId, n)} label={`Quantity of ${product.name}`} />
           <button
@@ -271,7 +277,7 @@ function PromoBox({ promoCode, promoLabel }: { promoCode?: string; promoLabel?: 
               onClick={() => apply("CHECKUP10")}
               className="mt-2 flex w-full items-center justify-between border border-brand-600 px-3 py-2 text-left font-mono text-[10.5px] uppercase tracking-[0.12em] text-brand-700 transition-colors hover:bg-brand-600 hover:text-white"
             >
-              Assessment complete · apply CHECKUP10 for 10% off
+              {BRAND.assessmentName} complete · apply CHECKUP10 for 10% off
               <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </button>
           )}
@@ -311,24 +317,28 @@ function EmptyState({ onNavigate }: { onNavigate: () => void }) {
         <p className="label-mono">Empty</p>
         <h3 className="mt-3 text-[1.5rem] uppercase">Nothing in your cart</h3>
         <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
-          Not sure what fits? The 7-minute assessment maps your goal and history against the evidence and tells you when not to buy.
+          Not sure which pen? The 7-minute {BRAND.assessmentName} maps your goal and history against the evidence, ends at the right pen — or
+          tells you not to buy.
         </p>
         <Button href="/assessment/" variant="primary" size="md" className="mt-5 w-full justify-between" onClick={onNavigate}>
-          Take the assessment
+          Take the {BRAND.assessmentName}
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Button>
       </div>
       <div className="px-5 py-5">
-        <p className="label-mono">Featured</p>
+        <p className="label-mono">From the range</p>
         <ul className="mt-3 border border-ink">
           {featured.map((p) => (
             <li key={p.id} className="border-b border-line last:border-b-0">
-              <Link href={productPath(p.slug)} onClick={onNavigate} className="flex items-center gap-4 p-3 hover-invert">
-                <span className="h-16 w-16 shrink-0 border border-current">
-                  <ProductVisual product={p} grid={false} />
+              <Link href={productPath(p.slug)} onClick={onNavigate} className="group flex items-center gap-4 p-3 transition-colors hover:bg-paper-2">
+                <span className="w-16 shrink-0 border border-ink bg-white">
+                  <ProductImage product={p} prefer="pack" frame="square" sizes="64px" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-[14px] uppercase leading-tight">{p.name}</span>
+                  <span className="flex items-center gap-2 font-display text-[14px] uppercase leading-tight transition-colors group-hover:text-brand-600">
+                    <ProductSwatch product={p} />
+                    {p.name}
+                  </span>
                   <span className="mt-1 block truncate text-[12px] text-muted">{p.subtitle}</span>
                 </span>
                 <span className="shrink-0 font-mono text-[13px] tnum">{priceLine(p) ?? "—"}</span>
@@ -337,7 +347,7 @@ function EmptyState({ onNavigate }: { onNavigate: () => void }) {
           ))}
         </ul>
         <Link href="/shop/" onClick={onNavigate} className="link-rule mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium text-ink">
-          Browse the catalogue
+          See the range
           <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
       </div>

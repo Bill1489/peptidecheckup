@@ -201,6 +201,17 @@ export const ghkCu: Compound = {
       overlap: "Both are promoted for repair and both are angiogenic in laboratory models.",
       note: "No human data on the combination; TB-500 has no human data at all.",
     },
+    {
+      with: "kpv",
+      evidence: "none",
+      overlap: "Both are marketed for skin repair — GHK-Cu for collagen and remodelling, KPV for inflammation.",
+      note: "Commonly blended, as in the Klow pen. There is no human study of either injected compound alone, let alone together.",
+    },
+    {
+      with: "nad",
+      evidence: "none",
+      note: "No human data on the combination and no shared mechanism has been demonstrated.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Naturally occurring copper-binding tripeptide" },

@@ -9,9 +9,9 @@ import { LogoMark } from "@/components/ui/logo";
 import { JURISDICTION_LABELS } from "@/data/types";
 import { BRAND } from "@/lib/brand";
 import { useAssessmentStore } from "@/lib/assessment/store";
-import { generateReport } from "@/lib/engine/generate";
 import type { Report } from "@/lib/engine/types";
-import { ReportHeader } from "./report-header";
+import { buildQuizResult, type MatchResult } from "@/lib/match";
+import { MatchStrip, ReportHeader } from "./report-header";
 import { ReportToc, ReportTocMobile, useActiveSection } from "./report-toc";
 import { reportSections, type ReportSectionDef, type ReportSectionId } from "./sections";
 import { OverviewSection } from "./sections/overview";
@@ -44,22 +44,29 @@ export function ReportView() {
   const hydrated = useAssessmentStore((s) => s.hydrated);
   const answers = useAssessmentStore((s) => s.answers);
   const lastReport = useAssessmentStore((s) => s.lastReport);
+  const lastMatch = useAssessmentStore((s) => s.lastMatch);
   const setLastReport = useAssessmentStore((s) => s.setLastReport);
+  const setLastMatch = useAssessmentStore((s) => s.setLastMatch);
   const reset = useAssessmentStore((s) => s.reset);
   const router = useRouter();
 
   const ready = mounted && hydrated;
   const meaningful = Boolean(answers.primaryGoal || answers.consideredCompounds.length > 0);
 
-  const report = React.useMemo<Report | null>(() => {
+  /* Reuse the stored result when it was built from these exact answers; otherwise rebuild both report and match on this device. */
+  const result = React.useMemo<{ report: Report; match: MatchResult } | null>(() => {
     if (!ready || !meaningful) return null;
-    if (lastReport && JSON.stringify(lastReport.answers) === JSON.stringify(answers)) return lastReport;
-    return generateReport(answers);
-  }, [ready, meaningful, lastReport, answers]);
+    if (lastReport && lastMatch && JSON.stringify(lastReport.answers) === JSON.stringify(answers)) {
+      return { report: lastReport, match: lastMatch };
+    }
+    return buildQuizResult(answers);
+  }, [ready, meaningful, lastReport, lastMatch, answers]);
 
   React.useEffect(() => {
-    if (report && report !== lastReport) setLastReport(report);
-  }, [report, lastReport, setLastReport]);
+    if (!result) return;
+    if (result.report !== lastReport) setLastReport(result.report);
+    if (result.match !== lastMatch) setLastMatch(result.match);
+  }, [result, lastReport, lastMatch, setLastReport, setLastMatch]);
 
   const startOver = () => {
     reset();
@@ -67,13 +74,13 @@ export function ReportView() {
   };
 
   if (!ready) return <ReportSkeleton />;
-  if (!report) return <ReportEmptyState />;
-  return <ReportDocument report={report} onStartOver={startOver} />;
+  if (!result) return <ReportEmptyState />;
+  return <ReportDocument report={result.report} match={result.match} onStartOver={startOver} />;
 }
 
 /* ------------------------------------------------------------------ */
 
-export function ReportDocument({ report, onStartOver }: { report: Report; onStartOver: () => void }) {
+export function ReportDocument({ report, match, onStartOver }: { report: Report; match: MatchResult; onStartOver: () => void }) {
   const sections = React.useMemo(() => reportSections(report), [report]);
   const ids = React.useMemo(() => sections.map((s) => s.id), [sections]);
   const active = useActiveSection(ids);
@@ -86,6 +93,7 @@ export function ReportDocument({ report, onStartOver }: { report: Report; onStar
   return (
     <div className="min-h-screen bg-white">
       <ReportHeader generatedAt={report.generatedAt} jurisdiction={where} compareHref={compareHref} onStartOver={onStartOver} />
+      <MatchStrip match={match} />
       <ReportTocMobile sections={sections} active={active} />
 
       <div className="container-x py-8 sm:py-10 lg:py-14">
@@ -103,7 +111,7 @@ export function ReportDocument({ report, onStartOver }: { report: Report; onStar
             <EvidenceSection report={report} def={def("evidence")} />
             <RegulatorySection report={report} def={def("regulatory")} />
             <SuitabilitySection report={report} def={def("suitability")} />
-            <MatchesSection report={report} def={def("matches")} />
+            <MatchesSection report={report} match={match} def={def("matches")} />
             <DosingSection report={report} def={def("dosing")} />
             {report.stack && <StackSection report={report} def={def("stack")} />}
             <NotRecommendedSection report={report} def={def("not-recommended")} />
@@ -166,12 +174,12 @@ function ReportEmptyState() {
         <p className="label-mono text-ink">Your report</p>
         <h1 className="mt-4 font-display text-[2.4rem] uppercase leading-[0.95] text-ink sm:text-[3.2rem]">No report yet</h1>
         <p className="mt-5 max-w-md text-pretty text-[15px] leading-relaxed text-muted">
-          Your personal report is generated from your assessment answers, right here in your browser. Complete the
-          assessment — about seven minutes — and it will appear on this page with your product matches.
+          Your report is generated from your {BRAND.assessmentName} answers, right here in your browser. Complete it — about
+          seven minutes — and it will appear on this page alongside your match.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href="/assessment/" size="lg">
-            Start assessment
+            Start the {BRAND.assessmentName}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
           <Button href="/shop/" size="lg" variant="secondary">

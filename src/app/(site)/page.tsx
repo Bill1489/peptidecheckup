@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import { PRODUCTS, purchasable } from "@/data/products";
+import { productPath } from "@/components/commerce/product-utils";
+import { getProductBySlug, PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
-import { Bestsellers } from "@/components/marketing/bestsellers";
 import { CheckupSteps } from "@/components/marketing/checkup-steps";
+import { ASSESSMENT_MINUTES } from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { EvidenceSection } from "@/components/marketing/evidence-section";
 import { FaqSection } from "@/components/marketing/faq-section";
 import { HOME_FAQ } from "@/components/marketing/faq-data";
-import { GoalGrid } from "@/components/marketing/goal-grid";
 import { HomeHero } from "@/components/marketing/home-hero";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { LabPanel } from "@/components/marketing/lab-panel";
-import { TrustStrip } from "@/components/marketing/trust-strip";
-import { ASSESSMENT_MINUTES } from "@/components/marketing/copy";
+import { PenFormat } from "@/components/marketing/pen-format";
+import { ProblemGrid } from "@/components/marketing/problem-grid";
+import { RangeEvidence } from "@/components/marketing/range-evidence";
+import { RangeStrip } from "@/components/marketing/range-strip";
 
-const TITLE = `${BRAND.displayName} — Batch-tested peptides, matched to you`;
+const TITLE = `${BRAND.name} · ${BRAND.descriptor} — ${BRAND.tagline}`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -28,30 +29,27 @@ export const metadata: Metadata = {
   },
 };
 
-/** Featured products for the hero; falls back to the front of the catalogue. */
-function featuredProducts() {
-  const featured = PRODUCTS.filter((p) => p.featured);
-  const rest = PRODUCTS.filter((p) => !p.featured);
-  return [...featured, ...rest].slice(0, 4);
-}
-
-/** Bestsellers for the row; pads with purchasable products so the row is never thin. */
-function bestsellerProducts() {
-  const flagged = PRODUCTS.filter((p) => p.bestseller);
-  const pad = PRODUCTS.filter((p) => !p.bestseller && purchasable(p));
-  return [...flagged, ...pad].slice(0, 6);
+/** A pen with a hand photograph, by preference; the hand shots are the most editorial. */
+function heroPen(preferred: string[]) {
+  for (const slug of preferred) {
+    const p = getProductBySlug(slug);
+    if (p?.images.some((i) => i.kind === "hand")) return p;
+  }
+  return PRODUCTS.find((p) => p.images.some((i) => i.kind === "hand")) ?? PRODUCTS[0];
 }
 
 export default function HomePage() {
-  const featured = featuredProducts();
-  const bestsellers = bestsellerProducts();
+  const hero = heroPen(["nad", "klow"]);
+  const boxPen = heroPen(["klow", "mots-c", "tesamorelin"].filter((s) => s !== hero.slug));
 
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: BRAND.displayName,
+      name: BRAND.name,
+      alternateName: BRAND.displayName,
       legalName: BRAND.legalName,
+      slogan: BRAND.tagline,
       url: BRAND.url,
       email: BRAND.supportEmail,
       foundingDate: String(BRAND.foundedYear),
@@ -62,8 +60,8 @@ export default function HomePage() {
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: BRAND.displayName,
-      alternateName: BRAND.name,
+      name: BRAND.name,
+      alternateName: `${BRAND.displayName} · ${BRAND.descriptor}`,
       url: BRAND.url,
       description: BRAND.description,
       inLanguage: "en-GB",
@@ -71,14 +69,14 @@ export default function HomePage() {
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Featured products",
+      name: `The ${BRAND.displayName} range`,
       itemListOrder: "https://schema.org/ItemListOrderAscending",
-      numberOfItems: featured.length,
-      itemListElement: featured.map((p, i) => ({
+      numberOfItems: PRODUCTS.length,
+      itemListElement: PRODUCTS.map((p, i) => ({
         "@type": "ListItem",
         position: i + 1,
         name: p.name,
-        url: `${BRAND.url}/shop/${p.slug}/`,
+        url: `${BRAND.url}${productPath(p.slug)}`,
       })),
     },
     {
@@ -95,15 +93,15 @@ export default function HomePage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <HomeHero products={featured} />
-      <TrustStrip />
-      <GoalGrid />
-      <Bestsellers products={bestsellers} />
+      <HomeHero product={hero} />
+      <RangeStrip />
+      <ProblemGrid />
       <CheckupSteps />
+      <PenFormat product={boxPen} />
       <LabPanel />
-      <EvidenceSection />
+      <RangeEvidence />
       <FaqSection />
-      <CtaBand title={`Find your match in ${ASSESSMENT_MINUTES} minutes.`} />
+      <CtaBand title={`Find your pen in ${ASSESSMENT_MINUTES} minutes.`} secondary={{ href: "/shop", label: "Or shop the range" }} />
     </>
   );
 }

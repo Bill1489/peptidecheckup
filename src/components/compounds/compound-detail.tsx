@@ -28,6 +28,7 @@ import { DosingResearch } from "./dosing-research";
 import { EvidenceLadder } from "./evidence-ladder";
 import { GoalIcon } from "./goal-icon";
 import { JurisdictionTabs } from "./jurisdiction-tabs";
+import { RangeStrip } from "./range-strip";
 import {
   CONTRAINDICATION_LABELS,
   CONTRAINDICATION_TONE,
@@ -241,7 +242,8 @@ export function CompoundDetail({ compound }: { compound: Compound }) {
           </aside>
         </div>
 
-        <div className="container-x pb-10 lg:pb-14">
+        <div className="container-x space-y-6 pb-10 lg:space-y-8 lg:pb-14">
+          <RangeStrip compound={compound} />
           <KeyFacts facts={compound.keyFacts} />
         </div>
       </header>

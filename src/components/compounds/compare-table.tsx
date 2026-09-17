@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowUpRight, Plus, X } from "lucide-react";
+import { ProductSwatch } from "@/components/commerce/product-image";
 import { Badge, RegulatoryBadge } from "@/components/ui/badge";
 import { CONDITION_MAP } from "@/data/conditions";
 import { GOAL_MAP } from "@/data/goals";
@@ -15,12 +16,14 @@ import {
   type Compound,
   type GoalId,
 } from "@/data/types";
+import { BRAND } from "@/lib/brand";
 import {
   MAX_COMPARE,
   commerceForCompound,
   compoundHref,
   formatNumber,
   goalsAcross,
+  joinNames,
   studyStats,
   wadaLabel,
   type SelectableJurisdiction,
@@ -106,16 +109,24 @@ function buildRows(goals: GoalId[], jurisdiction: SelectableJurisdiction): Row[]
     {
       id: "price",
       label: "Price",
-      hint: "In the shop",
+      hint: `${BRAND.displayName} range · per pen`,
       render: (c) => {
         const k = commerceForCompound(c.slug);
         return (
           <div>
-            <span className="font-mono text-[14px] text-ink tnum">{k.priceLabel}</span>
+            <span className="inline-flex items-center gap-2 font-mono text-[14px] text-ink tnum">
+              {k.product && <ProductSwatch product={k.product} />}
+              {k.priceLabel}
+            </span>
+            {k.inBlend && k.blendPartners && k.blendPartners.length > 0 && (
+              <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
+                Blend pen — {c.name} with {joinNames(k.blendPartners)}
+              </p>
+            )}
             {k.channelLabel && <p className="label-mono mt-1">{k.channelLabel}</p>}
             {k.product && (
               <Link href={k.href} className="link-rule mt-1.5 inline-flex items-center gap-1 text-[12.5px] text-ink">
-                {k.product.name}
+                {k.product.name} pen
                 <ArrowUpRight className="h-3 w-3" aria-hidden />
               </Link>
             )}
@@ -131,7 +142,10 @@ function buildRows(goals: GoalId[], jurisdiction: SelectableJurisdiction): Row[]
         const k = commerceForCompound(c.slug);
         return (
           <div>
-            <span className="font-medium text-ink">{k.availabilityLabel}</span>
+            <span className="font-medium text-ink">
+              {k.availabilityLabel}
+              {k.inBlend && k.product && <span className="font-normal text-muted"> · in {k.product.name}</span>}
+            </span>
             {k.product?.coa && (
               <p className="mt-1 font-mono text-[11.5px] leading-relaxed text-muted tnum">
                 Lot {k.product.coa.batch} · {k.product.coa.purity}
@@ -306,9 +320,12 @@ export function CompareTable({
                     </button>
                   </div>
                   <div className="mt-auto flex flex-col gap-2">
-                    <p className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink tnum">
-                      {commerce.priceLabel}
-                      {commerce.state === "buy" && <span className="text-muted"> · {commerce.availabilityLabel}</span>}
+                    <p className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.06em] text-ink tnum">
+                      {commerce.product && <ProductSwatch product={commerce.product} />}
+                      <span className="min-w-0">
+                        {commerce.priceLabel}
+                        {commerce.state === "buy" && <span className="text-muted"> · {commerce.availabilityLabel}</span>}
+                      </span>
                     </p>
                     <CommerceCta commerce={commerce} size="sm" compact className="w-full" />
                   </div>

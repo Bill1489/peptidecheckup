@@ -7,19 +7,14 @@ import { CONDITION_MAP } from "@/data/conditions";
 import { COUNTRY_MAP } from "@/data/countries";
 import { GOAL_MAP } from "@/data/goals";
 import { MEDICATION_CLASS_MAP } from "@/data/medications";
-import { getCompound } from "@/data/compounds";
+import { selectedProducts } from "@/lib/assessment/derived";
+import { EXPERIENCE_LABELS, FLOW_SECTIONS, FOCUS_NONE, RISK_QUESTIONS, focusLabel, goalProblemLabel } from "@/lib/assessment/flow";
+import { RISK_LABELS } from "@/lib/assessment/summary";
 import {
-  ADVERSE_LABELS,
   ALCOHOL_LABELS,
-  DURATION_LABELS,
-  IMPORTANCE_LABELS,
-  INFLUENCE_LABELS,
   NICOTINE_LABELS,
   OTC_LABELS,
-  RECREATIONAL_LABELS,
-  REPORT_WANTS,
   SECTION_META,
-  SOURCE_LABELS,
   TIMEFRAME_LABELS,
   type AssessmentAnswers,
   type SectionId,
@@ -27,7 +22,6 @@ import {
   type YesNoNA,
   type YesNoUnsure,
 } from "@/lib/assessment/types";
-import { formatUserDose } from "@/lib/engine/rules/dose";
 import { bmi, cn } from "@/lib/utils";
 import { MonoLabel } from "./primitives";
 
@@ -44,55 +38,32 @@ function val(v: React.ReactNode | undefined | null | ""): React.ReactNode {
 
 function rowsFor(section: SectionId, a: AssessmentAnswers): Row[] {
   switch (section) {
-    case "goals":
+    case "goals": {
+      const focus = a.focusAreas.filter((f) => f !== FOCUS_NONE).map(focusLabel);
       return [
+        { label: "What you want to change", value: val(goalProblemLabel(a.primaryGoal)) },
         {
-          label: "Primary goal",
-          value: val(a.primaryGoal === "other" ? a.otherGoalText?.trim() || "Other" : a.primaryGoal ? GOAL_MAP[a.primaryGoal].label : undefined),
+          label: "Sounds like you",
+          value: focus.length > 0 ? focus.join("; ") : a.focusAreas.includes(FOCUS_NONE) ? "None of these" : NOT_ANSWERED,
         },
-        { label: "What success looks like", value: val(a.successDescription?.trim()) },
-        { label: "Importance", value: val(a.importance ? IMPORTANCE_LABELS[a.importance] : undefined) },
+        {
+          label: "Also working on",
+          value: a.secondaryGoals.length > 0 ? a.secondaryGoals.map((g) => goalProblemLabel(g) ?? GOAL_MAP[g]?.label ?? g).join("; ") : "Nothing else",
+        },
         { label: "Timeframe", value: val(a.timeframe ? TIMEFRAME_LABELS[a.timeframe] : undefined) },
+        { label: "Peptide experience", value: val(a.experienceLevel ? EXPERIENCE_LABELS[a.experienceLevel] : undefined) },
       ];
-    case "considering":
+    }
+    case "considering": {
+      const pens = selectedProducts(a);
       return [
         {
-          label: "Compounds",
-          value:
-            a.consideredCompounds.length > 0 ? (
-              <ul className="space-y-1">
-                {a.consideredCompounds.map((c) => (
-                  <li key={c.slug}>
-                    {getCompound(c.slug)?.name ?? c.slug}
-                    {c.dose?.amount !== undefined && (
-                      <span className="ml-2 font-mono text-xs text-muted">{formatUserDose(c.dose)}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              NOT_ANSWERED
-            ),
+          label: "Pens in mind",
+          value: pens.length > 0 ? pens.map((p) => p.name).join(", ") : "None — let the quiz decide",
         },
-        { label: "Other compound", value: val(a.otherCompoundText?.trim()) },
-        { label: "Currently taking any", value: val(yn(a.currentlyTaking)) },
-        {
-          label: "Considering more than one",
-          value: val(a.consideringMultiple === "not_sure" ? "Not sure" : a.consideringMultiple === "yes" ? "Yes" : a.consideringMultiple === "no" ? "No" : undefined),
-        },
-        {
-          label: "Combinations",
-          value:
-            a.combinations.length > 0
-              ? a.combinations.map((combo) => combo.map((s) => getCompound(s)?.name ?? s).join(" + ")).join("; ")
-              : NOT_ANSWERED,
-        },
-        { label: "Why these compounds", value: val(a.whyChosen?.trim()) },
-        {
-          label: "Where the idea came from",
-          value: a.influence && a.influence.length > 0 ? a.influence.map((i) => INFLUENCE_LABELS[i]).join(", ") : NOT_ANSWERED,
-        },
+        { label: "Currently using a peptide or similar", value: val(yn(a.currentlyTaking)) },
       ];
+    }
     case "basics": {
       const b = bmi(a.heightCm, a.weightKg);
       return [
@@ -171,91 +142,30 @@ function rowsFor(section: SectionId, a: AssessmentAnswers): Row[] {
               ? a.supplements.map((s) => [s.name, s.amount, s.frequency].filter(Boolean).join(" · ")).join("; ")
               : val(a.takesSupplements === "no" ? "None" : undefined),
         },
-        { label: "Recreational substances", value: val(a.recreational ? RECREATIONAL_LABELS[a.recreational] : undefined) },
         { label: "Alcohol", value: val(a.alcohol ? ALCOHOL_LABELS[a.alcohol] : undefined) },
         { label: "Nicotine", value: val(a.nicotine ? NICOTINE_LABELS[a.nicotine] : undefined) },
       ];
-    case "experience":
-      return [
-        { label: "Used a peptide before", value: val(yn(a.previousPeptideUse)) },
-        {
-          label: "Previous use",
-          value:
-            a.previousUses.length > 0 ? (
-              <ul className="space-y-1">
-                {a.previousUses.map((u) => (
-                  <li key={u.id}>
-                    {u.name}
-                    {u.duration && <span className="text-muted"> · {DURATION_LABELS[u.duration]}</span>}
-                    {u.adverse && <span className="text-muted"> · adverse effects: {ADVERSE_LABELS[u.adverse].toLowerCase()}</span>}
-                    {u.stoppedDueToAdverse === "yes" && <span className="text-muted"> · stopped because of them</span>}
-                    {u.supervised && <span className="text-muted"> · {u.supervised === "yes" ? "supervised" : "unsupervised"}</span>}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              NOT_ANSWERED
-            ),
-        },
-        { label: "Previously stopped a treatment as ineffective", value: val(yn(a.stoppedIneffective)) },
-      ];
-    case "source":
-      return [
-        {
-          label: "Where you would obtain it",
-          value: val(a.source ? (a.source === "other" && a.sourceOtherText ? `Other (${a.sourceOtherText})` : SOURCE_LABELS[a.source]) : undefined),
-        },
-        { label: "Prescribed", value: val(yn(a.prescribed)) },
-        { label: "Authorised in your country", value: val(yn(a.authorisedKnown)) },
-        { label: "Independent quality documentation", value: val(yn(a.qualityDocs)) },
-      ];
     case "risk":
       return [
-        { label: "Serious allergic reaction to a medicine", value: val(yn(a.seriousAllergy)) },
-        { label: "Known allergy to a component", value: val(yn(a.componentAllergy)) },
-        { label: "Previous serious reaction to similar treatment", value: val(yn(a.previousSeriousReaction)) },
-        { label: "Unexplained or severe current symptoms", value: val(yn(a.severeSymptoms)) },
-        { label: "Advised against this type of treatment", value: val(yn(a.advisedAgainst)) },
-        { label: "Under investigation for a relevant condition", value: val(yn(a.underInvestigation)) },
-        { label: "Receiving a treatment that could interact", value: val(yn(a.interactingTreatment)) },
+        ...RISK_QUESTIONS.map((q) => ({ label: RISK_LABELS[q.field], value: val(yn(a[q.field])) })),
         { label: "Details", value: val(a.riskDetails?.trim()) },
+        { label: "Competes in drug-tested sport", value: val(yn(a.testedAthlete)) },
       ];
-    case "wants":
+    case "final":
       return [
-        {
-          label: "What you wanted the report to tell you",
-          value:
-            a.reportWants.length > 0
-              ? REPORT_WANTS.filter((w) => a.reportWants.includes(w.id))
-                  .map((w) => w.label)
-                  .join("; ")
-              : NOT_ANSWERED,
-        },
+        { label: "Anything else", value: val(a.anythingElse?.trim()) },
         { label: "Clinician review requested", value: a.contactConsent ? "Yes" : "No" },
         { label: "Contact email", value: val(a.contactConsent ? a.contactEmail : undefined) },
       ];
-    case "final":
-      return [{ label: "Anything else", value: val(a.anythingElse?.trim()) }];
+    default:
+      return [];
   }
 }
-
-const APPENDIX_SECTIONS: SectionId[] = [
-  "goals",
-  "considering",
-  "basics",
-  "medical",
-  "medications",
-  "experience",
-  "source",
-  "risk",
-  "wants",
-  "final",
-];
 
 export function ResponsesAppendix({ answers }: { answers: AssessmentAnswers }) {
   return (
     <Accordion.Root type="multiple" defaultValue={["goals"]} className="divide-y divide-line" data-report-appendix>
-      {APPENDIX_SECTIONS.map((id, i) => {
+      {FLOW_SECTIONS.map((id, i) => {
         const meta = SECTION_META[id];
         const skipped = answers.skippedSections.includes(id);
         const completed = answers.completedSections.includes(id);

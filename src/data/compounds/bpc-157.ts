@@ -197,6 +197,17 @@ export const bpc157: Compound = {
       evidence: "none",
       note: "No human data. Both are promoted for repair and both show angiogenic activity in laboratory models.",
     },
+    {
+      with: "kpv",
+      evidence: "none",
+      overlap: "Both carry anti-inflammatory and repair claims derived from animal models.",
+      note: "Blended together in the Klow pen. No human data on the combination; neither has published human efficacy trials.",
+    },
+    {
+      with: "nad",
+      evidence: "none",
+      note: "Marketed together in 'recovery' stacks. No human data on the combination, and neither has controlled human efficacy data for recovery.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Synthetic 15-amino-acid peptide (gastric-juice derived)" },

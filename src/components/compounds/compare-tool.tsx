@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, Link2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { COMPOUNDS, getCompounds } from "@/data/compounds";
+import { BRAND } from "@/lib/brand";
 import {
   MAX_COMPARE,
   assessmentHref,
@@ -40,8 +41,8 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         </h2>
         <p className="mt-4 text-pretty text-[14px] leading-relaxed text-muted sm:text-[15px]">
           Every row comes from the same structured record — evidence for each goal, regulatory status in your jurisdiction, adverse
-          effects, contraindications, interactions and the human studies behind them, plus what each compound costs where we stock it.
-          When two or more are selected, the combination notes in our database are checked for every pair.
+          effects, contraindications, interactions and the human studies behind them, plus the {BRAND.displayName} pen that carries each
+          compound and its price. When two or more are selected, the combination notes in our database are checked for every pair.
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           <Button size="lg" onClick={onAdd}>
@@ -56,7 +57,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
       <div className="border-t border-ink lg:border-l lg:border-t-0">
         <p className="label-mono border-b border-line bg-paper-2 px-5 py-2.5">
-          {suggestions.length > 0 ? "Suggested comparisons" : "Start from a compound"}
+          {suggestions.length > 0 ? `Suggested comparisons · the ${BRAND.displayName} range` : "Start from a compound"}
         </p>
         <ul className="divide-y divide-line">
           {suggestions.length > 0

@@ -66,12 +66,12 @@ export function ConditionGrid() {
       {extended.length > 0 && (
         <div className="grid gap-3">
           <div>
-            <MonoLabel>Specific to your selection</MonoLabel>
+            <MonoLabel>Specific to the range</MonoLabel>
             <p className="mt-1 text-sm text-muted">
-              Added because {extended.length === 1 ? "a compound you selected references it" : "compounds you selected reference them"}.
+              Added because {extended.length === 1 ? "a compound in one of the six pens references it" : "compounds in the six pens reference them"}.
             </p>
           </div>
-          <ul className="border border-ink" aria-label="Conditions specific to your selection">
+          <ul className="border border-ink" aria-label="Conditions specific to the range">
             {extended.map(({ condition, compounds }) => (
               <ConditionRow
                 key={condition.id}

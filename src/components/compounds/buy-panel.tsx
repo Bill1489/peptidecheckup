@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { ProductVisual } from "@/components/commerce/product-visual";
+import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
 import { Button } from "@/components/ui/button";
 import { SpecRow } from "@/components/ui/card";
+import type { Product } from "@/data/products";
 import type { Compound } from "@/data/types";
+import { BRAND } from "@/lib/brand";
 import { formatFrom, formatMoney } from "@/lib/commerce/money";
-import { COMMERCE_STATE_LABELS, commerceForCompound } from "@/lib/compare";
+import { COMMERCE_STATE_LABELS, commerceForCompound, joinNames } from "@/lib/compare";
 import { formatDate } from "@/lib/utils";
 import { AddToCartButton } from "./commerce-cta";
 import { Segmented } from "./segmented";
@@ -27,15 +29,41 @@ function PanelHead({ title, meta }: { title: string; meta?: string }) {
   );
 }
 
+/** Pen photograph (pack shot on white) in a 1px frame, at the panel's thumbnail size. */
+function PenPhoto({ product }: { product: Product }) {
+  return (
+    <div className="w-24 shrink-0 border border-ink bg-white sm:w-28">
+      <ProductImage product={product} prefer="pack" frame="square" sizes="112px" />
+    </div>
+  );
+}
+
+/** Pen name with its packaging swatch, plus the contents line. */
+function PenName({ product }: { product: Product }) {
+  return (
+    <>
+      <p className="flex items-center gap-2 text-[1.15rem] uppercase leading-none">
+        <ProductSwatch product={product} />
+        {product.name}
+      </p>
+      <p className="mt-1.5 text-[13px] leading-snug text-muted">{product.subtitle}</p>
+    </>
+  );
+}
+
 /**
  * Detail-page "Buy" panel. Renders from the static catalogue, so the server and
- * first client render match; the cart is only touched on click.
+ * first client render match; the cart is only touched on click. A compound that
+ * is only stocked inside a blend (BPC-157 → Wolverine, KPV → Klow) resolves to
+ * that pen and says so.
  */
 export function BuyPanel({ compound }: { compound: Compound }) {
   const commerce = commerceForCompound(compound.slug);
-  const { product, state, href, availabilityLabel, channelLabel } = commerce;
+  const { product, state, href, availabilityLabel, channelLabel, inBlend, blendPartners } = commerce;
   const [variantId, setVariantId] = React.useState(commerce.variant?.id);
   const variant = product?.variants.find((v) => v.id === variantId) ?? commerce.variant;
+
+  const panelTitle = inBlend ? "In the range · blend" : "In the range";
 
   /* ---------------------------------------------------------- Purchasable */
   if (state === "buy" && product && variant) {
@@ -45,15 +73,20 @@ export function BuyPanel({ compound }: { compound: Compound }) {
     const cheaperExists = multi && prices.some((p) => p < variant.price);
     return (
       <section className="p-5 sm:p-6" aria-label={`Buy ${product.name}`}>
-        <PanelHead title="In the shop" meta={[availabilityLabel, channelLabel].filter(Boolean).join(" · ")} />
+        <PanelHead title={panelTitle} meta={[availabilityLabel, channelLabel].filter(Boolean).join(" · ")} />
+
+        {inBlend && (
+          <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">
+            Available in <span className="font-medium text-ink">{product.name}</span>
+            {blendPartners && blendPartners.length > 0 && <> (with {joinNames(blendPartners)})</>}. {compound.name} is not sold on its own
+            in the {BRAND.displayName} range.
+          </p>
+        )}
 
         <div className="mt-4 flex gap-4">
-          <div className="w-24 shrink-0 border border-ink sm:w-28">
-            <ProductVisual product={product} grid={false} />
-          </div>
+          <PenPhoto product={product} />
           <div className="min-w-0 flex-1">
-            <p className="text-[1.15rem] uppercase leading-none">{product.name}</p>
-            <p className="mt-1.5 text-[13px] leading-snug text-muted">{product.subtitle}</p>
+            <PenName product={product} />
             <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
               <span className="font-mono text-[1.35rem] leading-none tnum">{formatMoney(variant.price)}</span>
               {variant.compareAtPrice !== undefined && variant.compareAtPrice > variant.price && (
@@ -84,18 +117,23 @@ export function BuyPanel({ compound }: { compound: Compound }) {
           />
         )}
 
-        {product.coa && (
-          <dl className="mt-4 border-t border-line">
-            <SpecRow label="Batch" value={<span className="font-mono text-[13px] tnum">{product.coa.batch}</span>} />
-            <SpecRow label="Purity" value={product.coa.purity} />
-            <SpecRow label="Tested" value={`${product.coa.lab} · ${formatDate(product.coa.testedOn, { month: "short" })}`} />
-          </dl>
-        )}
+        <dl className="mt-4 border-t border-line">
+          {inBlend && product.pen && <SpecRow label="Pen contents" value={product.pen.composition} />}
+          {product.coa && (
+            <>
+              <SpecRow label="Batch" value={<span className="font-mono text-[13px] tnum">{product.coa.batch}</span>} />
+              <SpecRow label="Purity" value={product.coa.purity} />
+              <SpecRow label="Tested" value={`${product.coa.lab} · ${formatDate(product.coa.testedOn, { month: "short" })}`} />
+            </>
+          )}
+        </dl>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <AddToCartButton product={product} variant={variant} />
+          <AddToCartButton product={product} variant={variant}>
+            {inBlend ? `Add ${product.name}` : COMMERCE_STATE_LABELS.buy}
+          </AddToCartButton>
           <Button href={href} variant="secondary">
-            View product
+            View pen
           </Button>
         </div>
         <p className="mt-3 text-[11.5px] leading-snug text-muted">{product.regulatoryLabel}</p>
@@ -109,12 +147,9 @@ export function BuyPanel({ compound }: { compound: Compound }) {
       <section className="p-5 sm:p-6" aria-label={`${product.name} consultation`}>
         <PanelHead title="Prescription-only" meta={availabilityLabel} />
         <div className="mt-4 flex gap-4">
-          <div className="w-24 shrink-0 border border-ink sm:w-28">
-            <ProductVisual product={product} grid={false} />
-          </div>
+          <PenPhoto product={product} />
           <div className="min-w-0 flex-1">
-            <p className="text-[1.15rem] uppercase leading-none">{product.name}</p>
-            <p className="mt-1.5 text-[13px] leading-snug text-muted">{product.subtitle}</p>
+            <PenName product={product} />
             <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">{product.regulatoryLabel}</p>
           </div>
         </div>
@@ -146,16 +181,14 @@ export function BuyPanel({ compound }: { compound: Compound }) {
   if (product) {
     return (
       <section className="p-5 sm:p-6" aria-label={`${product.name} availability`}>
-        <PanelHead title="In the shop" meta={[availabilityLabel, channelLabel].filter(Boolean).join(" · ")} />
+        <PanelHead title={panelTitle} meta={[availabilityLabel, channelLabel].filter(Boolean).join(" · ")} />
         <div className="mt-4 flex gap-4">
-          <div className="w-24 shrink-0 border border-ink sm:w-28">
-            <ProductVisual product={product} grid={false} />
-          </div>
+          <PenPhoto product={product} />
           <div className="min-w-0 flex-1">
-            <p className="text-[1.15rem] uppercase leading-none">{product.name}</p>
-            <p className="mt-1.5 text-[13px] leading-snug text-muted">{product.subtitle}</p>
+            <PenName product={product} />
             <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">
-              Out of stock. Register on the product page to be told when the next tested batch is released.
+              {inBlend ? `${compound.name} is carried in this pen, which is ` : "Currently "}out of stock. Register on the pen&rsquo;s page to be
+              told when the next tested batch is released.
             </p>
           </div>
         </div>
@@ -166,17 +199,17 @@ export function BuyPanel({ compound }: { compound: Compound }) {
     );
   }
 
-  /* ---------------------------------------------------------- Not stocked */
+  /* ---------------------------------------------------------- Not in the range */
   return (
     <section className="p-5 sm:p-6" aria-label={`${compound.name} availability`}>
-      <PanelHead title="In the shop" meta={availabilityLabel} />
-      <p className="mt-4 text-[1.15rem] uppercase leading-none">Not stocked</p>
+      <PanelHead title="In the range" meta={availabilityLabel} />
+      <p className="mt-4 text-[1.15rem] uppercase leading-none">Not in the range</p>
       <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">
-        We do not currently stock {compound.name}. The record on this page stands on its own; the shop lists what has passed batch
-        testing.
+        No {BRAND.displayName} pen contains {compound.name}. The record on this page stands on its own; the shop lists the pens that have
+        passed batch testing.
       </p>
       <Button href={href} variant="secondary" className="mt-4 w-full">
-        {COMMERCE_STATE_LABELS.unstocked}
+        See the range
       </Button>
     </section>
   );

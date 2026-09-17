@@ -1,30 +1,44 @@
 import type { SourceAssessment } from "../types";
-import { type EngineContext, REGULATED_SOURCES } from "../context";
+import { type EngineContext, REGULATED_SOURCES, suppliedByStore } from "../context";
 import {
   SOURCE_LEVEL_LABELS,
   SOURCE_POINTS,
   SOURCE_SKIPPED_POINT,
+  STORE_SOURCE_DESCRIPTION,
+  STORE_SOURCE_POINTS,
 } from "../labels";
 
 /**
  * Product / source considerations. Supply risk is assessed independently of
- * the compound: the same molecule from a licensed pharmacy and from a
- * research-chemical vendor are not the same product.
+ * the compound: the same molecule from a licensed pharmacy and from an
+ * anonymous vendor are not the same product.
+ *
+ * The quiz no longer asks where the product would come from — it
+ * is run from the store, so an undefined `source` means the store's own
+ * batch-tested, certificate-backed pens. That route is assessed as lower
+ * supply risk, with the compounds' own source considerations kept alongside.
  */
 export function sourceRules(ctx: EngineContext): SourceAssessment {
   const { answers: a } = ctx;
-  const sectionSkipped = ctx.isSkipped("source") || (!ctx.isComplete("source") && !a.source);
-
   const compoundPoints = dedupe(ctx.compounds.flatMap((c) => c.sourceConsiderations)).slice(0, 6);
 
-  if (sectionSkipped) {
+  if (suppliedByStore(a)) {
+    if (ctx.isSkipped("source")) {
+      return {
+        level: "moderate",
+        headline: SOURCE_LEVEL_LABELS.moderate,
+        points: [SOURCE_SKIPPED_POINT, ...compoundPoints],
+      };
+    }
     return {
-      level: "moderate",
-      headline: SOURCE_LEVEL_LABELS.moderate,
-      points: [SOURCE_SKIPPED_POINT, ...compoundPoints],
+      level: "lower",
+      headline: SOURCE_LEVEL_LABELS.lower,
+      description: STORE_SOURCE_DESCRIPTION,
+      points: dedupe([...STORE_SOURCE_POINTS, ...compoundPoints]),
     };
   }
 
+  /* Legacy answers that did describe a source (older saved assessments). */
   let level: SourceAssessment["level"] = "moderate";
   if (a.source && REGULATED_SOURCES.includes(a.source) && a.prescribed === "yes" && a.qualityDocs === "yes") {
     level = "lower";

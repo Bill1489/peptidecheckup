@@ -1,5 +1,6 @@
 import type { DoseFrequency, StackEvidence } from "@/data/types";
 import type { ProductSource } from "@/lib/assessment/types";
+import { BRAND } from "@/lib/brand";
 import type {
   DoseVerdict,
   Flag,
@@ -177,6 +178,21 @@ export const SOURCE_POINTS: Record<ProductSource, string> = {
 
 export const SOURCE_SKIPPED_POINT =
   "You skipped the product/source section — complete it to assess supply risk.";
+
+/**
+ * When the assessment is run from the store, the supply route is the store's
+ * own pens: no source question is asked and `answers.source` stays undefined.
+ */
+export const STORE_SOURCE_LABEL = `${BRAND.name} pre-filled pens`;
+
+export const STORE_SOURCE_DESCRIPTION = `Every ${BRAND.name} pen ships with a lot-numbered certificate of analysis from an independent laboratory — identity by LC-MS, purity by HPLC, endotoxin — published against the batch. That is quality assurance for what is in the pen; it is not a marketing authorisation, and the products remain research-use only.`;
+
+export const STORE_SOURCE_POINTS: string[] = [
+  "Batch tested by an independent laboratory, with the certificate of analysis published against the lot number on every carton.",
+  "Identity confirmed by LC-MS and purity by HPLC per lot; check the lot number on your carton against the certificate before use.",
+  "Pre-filled, dose-dial pens remove reconstitution and drawing-up errors, but the dial sets volume, not a recommended dose — nothing in this report is a dosing instruction.",
+  "Sold for research use only. A certificate of analysis verifies identity and purity; it does not make a compound an authorised medicine or establish that it is appropriate for you.",
+];
 
 /** Join a list into readable prose: "a", "a and b", "a, b and c". */
 export function joinList(items: string[]): string {

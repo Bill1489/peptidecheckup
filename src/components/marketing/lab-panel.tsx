@@ -1,4 +1,4 @@
-import { coaLabs, productsWithCoa } from "./copy";
+import { blendProducts, coaLabs, numberWord, productsWithCoa } from "./copy";
 import { IndexHead } from "./index-head";
 
 const TESTS: { label: string; method: string; figure: string; body: string }[] = [
@@ -6,19 +6,19 @@ const TESTS: { label: string; method: string; figure: string; body: string }[] =
     label: "Purity",
     method: "HPLC",
     figure: "≥ 99%",
-    body: "High-performance liquid chromatography. The percentage of the main peak is the purity figure on the certificate; the release threshold for peptides is 99%.",
+    body: "High-performance liquid chromatography. The percentage of the main peak is the purity figure on the certificate; the release threshold is 99% — per component for blends.",
   },
   {
     label: "Identity",
     method: "LC-MS",
     figure: "Confirmed",
-    body: "Liquid chromatography–mass spectrometry. The measured mass is compared with the expected mass of the sequence. A lot that does not match is not listed.",
+    body: "Liquid chromatography–mass spectrometry. The measured mass is compared with the expected mass of each compound in the pen. A lot that does not match is not listed.",
   },
   {
     label: "Endotoxin",
     method: "LAL",
     figure: "EU/mg",
-    body: "Limulus amebocyte lysate assay for bacterial endotoxin, reported per lot in endotoxin units per milligram for lyophilised vials.",
+    body: "Limulus amebocyte lysate assay for bacterial endotoxin, reported per lot in endotoxin units per milligram of the solution in the pen.",
   },
 ];
 
@@ -26,6 +26,7 @@ const TESTS: { label: string; method: string; figure: string; body: string }[] =
 export function LabPanel() {
   const labs = coaLabs();
   const withCoa = productsWithCoa();
+  const blends = blendProducts();
 
   return (
     <section className="bg-ink text-white">
@@ -34,8 +35,8 @@ export function LabPanel() {
           tone="dark"
           index="06"
           label="What we test"
-          title="Every batch. Three tests. One certificate."
-          description="Testing is done by an independent laboratory, not by us, and the certificate is published as issued against the lot number printed on the vial."
+          title="Every lot. Three tests. One certificate."
+          description={`Testing is done by an independent laboratory, not by us. ${blends.length > 0 ? `The ${numberWord(blends.length)} blends — ${blends.map((b) => b.name).join(" and ")} — are tested per component, with the split stated on the certificate. ` : ""}The certificate is published as issued against the lot number printed on the carton.`}
           action={{ href: "/lab-testing", label: "Look up a lot number" }}
         />
         <ul className="mt-10 grid border-t border-white/25 md:grid-cols-3 md:divide-x md:divide-white/25">

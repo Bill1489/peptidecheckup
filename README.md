@@ -1,8 +1,8 @@
-# PeptideCheckup
+# AERVYN · Performance Science
 
-**Batch-tested peptides. Matched to you.**
+**Peptide pens. Matched to you.**
 
-An e-commerce store for batch-tested peptides, fed by an evidence-led assessment funnel. Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup"), complete a structured 10-section questionnaire, and receive a report that maps their goal, medical history and medicines against a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research — then shows product matches, or tells them not to buy.
+The e-commerce site for AERVYN's range of six pre-filled, dose-dial peptide pens (Tesamorelin, MOTS-C, GHK-Cu, NAD+, Wolverine, Klow), fed by an evidence-led assessment funnel — the **Peptide Checkup**. Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup"), complete a structured 10-section questionnaire, and are matched deterministically to the right pen — with the reasons shown on the product page — or told not to buy when their answers raise a safety flag. Every claim traces back to a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research.
 
 Live demo: **https://bill1489.github.io/peptidecheckup/**
 
@@ -11,7 +11,7 @@ Live demo: **https://bill1489.github.io/peptidecheckup/**
 | Surface | Route | Notes |
 | --- | --- | --- |
 | Store home | `/` | Featured products, shop by goal, bestsellers, lab testing, FAQ |
-| Shop | `/shop`, `/shop/[slug]` | Catalogue with filters; product pages with variants, CoA, spec sheet, evidence record |
+| The range | `/shop`, `/shop/[slug]` | Six pens with real photography; product pages with "Your match" panel, pen spec, CoA, evidence record per component |
 | Cart & checkout | drawer, `/checkout`, `/order?id=`, `/account/orders` | Client-side cart (localStorage), mock/Stripe payment abstraction, orders posted to a webhook |
 | Lab testing | `/lab-testing` | How batches are tested; CoA table |
 | Shipping | `/shipping` | Shipping & returns policy generated from config |
@@ -30,7 +30,8 @@ Live demo: **https://bill1489.github.io/peptidecheckup/**
 - **Questionnaire contract** — `src/lib/assessment/types.ts` (`AssessmentAnswers`) is what the wizard writes and the engine reads.
 - **Report contract** — `src/lib/engine/types.ts` (`Report`) is what the engine emits and the report UI renders.
 - **Commerce** — products in `src/data/products/catalog.ts` (typed by `types.ts`), cart in `src/lib/commerce/cart-store.ts`, store config (currency, VAT, shipping, promo codes, payment provider, webhooks) in `src/lib/commerce/config.ts`, orders/payments in `src/lib/commerce/orders.ts` and `payments.ts`. Sale channels per product: `research` (research-use labelling + 18+/intended-use acknowledgement), `prescription` (consultation-gated, never sold directly), `supplement`, `cosmetic`, `supplies`, or `not_sold`.
-- **Brand** — a single constant in `src/lib/brand.ts`; the logo lives in `src/components/ui/logo.tsx` and `src/app/icon.svg`.
+- **Matcher** — `src/lib/match/engine.ts` scores the six pens from the quiz answers and the rules-engine report (goal, focus, evidence, experience, safety verdict) and routes to the winning product page.
+- **Brand** — a single constant in `src/lib/brand.ts` (store brand AERVYN; assessment name Peptide Checkup); the helix wordmark lives in `src/components/ui/logo.tsx` and `src/app/icon.svg`. Product photography is in `public/products`.
 
 See `docs/BRIEF.md` for the full build brief, design system and questionnaire/report spec.
 
@@ -52,6 +53,7 @@ Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the static
 - **Payments** — `src/lib/commerce/payments.ts`. Default provider `mock` completes demo orders locally. Set `NEXT_PUBLIC_PAYMENT_PROVIDER=stripe` plus keys and add a server-side Checkout Session (or Payment Links) to take real payments.
 - **Orders** — every placed order is POSTed as JSON to `NEXT_PUBLIC_ORDER_WEBHOOK` (Zapier/Make/your API → fulfilment, receipts).
 - **Leads** — newsletter, report-by-email, consultation requests and clinician-review requests POST to `NEXT_PUBLIC_LEAD_WEBHOOK`. Without it, requests resolve locally.
+- **Prices** — catalogue prices are placeholders pending the client's price list (`src/data/products/catalog.ts`).
 - **Legal model** — confirm the sale channel per product (`research` vs `prescription` vs `not_sold`) with a regulatory adviser before launch; the store is configured to sell unlicensed compounds only under research-use labelling and to route licensed medicines through a partner prescriber.
 - **Analytics** — none installed by default (privacy page states this). Add your tag in `src/app/layout.tsx`.
 - **Clinical review** — the compound records, regulatory entries and rules in `src/lib/engine/rules/*` are written to be reviewed line-by-line by a clinician/pharmacist. Each regulatory entry carries a `lastReviewed` date.

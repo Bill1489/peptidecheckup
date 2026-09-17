@@ -12,8 +12,8 @@ import { COMMERCE } from "@/lib/commerce/config";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/shop", label: "Shop" },
-  { href: "/assessment", label: "Assessment" },
+  { href: "/shop", label: "The range" },
+  { href: "/assessment", label: "Peptide Checkup" },
   { href: "/peptides", label: "Evidence" },
   { href: "/compare", label: "Compare" },
   { href: "/lab-testing", label: "Lab testing" },
@@ -47,7 +47,7 @@ export function Nav() {
           {[0, 1].map((k) => (
             <div key={k} className="flex shrink-0 items-center">
               {COMMERCE.trustFacts.map((fact) => (
-                <span key={`${k}-${fact}`} className="flex items-center gap-4 px-6 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+                <span key={`${k}-${fact}`} className="flex items-center gap-4 whitespace-nowrap px-6 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
                   <span className="h-1.5 w-1.5 bg-brand-400" />
                   {fact}
                 </span>
@@ -83,7 +83,7 @@ export function Nav() {
 
           <div className="flex items-center gap-2">
             <Button href="/assessment" size="md" variant="primary" className="hidden lg:inline-flex">
-              Find my match
+              Find my pen
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
             <CartButton />
@@ -135,7 +135,7 @@ export function Nav() {
               </div>
               <div className="p-5" onClick={close}>
                 <Button href="/assessment" size="xl" variant="primary" className="w-full">
-                  Take the 7-minute assessment
+                  Find my pen — 7-minute Checkup
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <p className="mt-3 text-center font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted">

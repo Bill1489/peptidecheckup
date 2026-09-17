@@ -2,24 +2,14 @@
 
 import { ExternalLink } from "lucide-react";
 import { Badge, FlagBadge, SuitabilityBadge } from "@/components/ui/badge";
+import { ProductSwatch } from "@/components/commerce/product-image";
 import { ROUTE_LABELS, type DosingStudy } from "@/data/types";
-import type { CompoundReport, DoseVerdict, Report } from "@/lib/engine/types";
-import { DOSE_VERDICT_LABELS, PROFESSIONAL_REVIEW_SENTENCE, RESEARCH_INFO_LABEL } from "@/lib/engine/labels";
-import { cn } from "@/lib/utils";
+import { productsContaining } from "@/lib/assessment/derived";
+import { BRAND } from "@/lib/brand";
+import type { CompoundReport, Report } from "@/lib/engine/types";
+import { PROFESSIONAL_REVIEW_SENTENCE, RESEARCH_INFO_LABEL } from "@/lib/engine/labels";
 import { CompoundHeading, DataTable, MonoLabel, Note, ReportCard, ReportSection } from "../primitives";
 import type { ReportSectionDef } from "../sections";
-
-/** Signal edge for the comparison verdict: cobalt within range, orange above, amber for other differences, ink when not comparable. */
-const VERDICT_EDGE: Record<DoseVerdict, string> = {
-  within_range: "border-l-brand-600",
-  above_range: "border-l-accent-500",
-  below_range: "border-l-caution",
-  frequency_differs: "border-l-caution",
-  route_differs: "border-l-caution",
-  no_human_data: "border-l-ink",
-  not_comparable: "border-l-ink",
-  not_provided: "border-l-ink",
-};
 
 function LayerLabel({ n, children }: { n: string; children: React.ReactNode }) {
   return (
@@ -59,6 +49,7 @@ function StudyCell({ s }: { s: DosingStudy }) {
 function CompoundDosing({ c }: { c: CompoundReport }) {
   const riskFlags = c.flags.filter((f) => f.severity !== "info").slice(0, 5);
   const infoFlags = c.flags.filter((f) => f.severity === "info");
+  const pens = productsContaining(c.slug);
 
   return (
     <ReportCard padding="none">
@@ -118,25 +109,24 @@ function CompoundDosing({ c }: { c: CompoundReport }) {
         )}
       </div>
 
-      {/* Layer B — comparison */}
+      {/* Layer B — what the pen contains */}
       <div className="border-b border-ink px-5 py-5 sm:px-6">
-        <LayerLabel n="B">How this compares with what you&apos;re considering</LayerLabel>
-        <div className={cn("mt-4 border border-ink border-l-[3px] bg-white p-4 break-inside-avoid", VERDICT_EDGE[c.doseComparison.verdict])}>
-          <p className="text-[15px] font-medium leading-snug text-ink">{DOSE_VERDICT_LABELS[c.doseComparison.verdict]}</p>
-          <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[12px] text-ink-3">
-            <div className="flex gap-2">
-              <dt className="uppercase tracking-[0.1em] text-muted">Your dose</dt>
-              <dd className="tnum">{c.doseComparison.userDoseLabel}</dd>
-            </div>
-            {c.doseComparison.referenceStudy && (
-              <div className="flex gap-2">
-                <dt className="uppercase tracking-[0.1em] text-muted">Reference</dt>
-                <dd>{c.doseComparison.referenceStudy}</dd>
-              </div>
-            )}
-          </dl>
-          <p className="mt-3 text-pretty text-sm leading-relaxed text-ink-2">{c.doseComparison.explanation}</p>
-        </div>
+        <LayerLabel n="B">What the {BRAND.name} pen contains</LayerLabel>
+        <ul className="mt-4 divide-y divide-line border border-ink">
+          {pens.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
+              <span className="inline-flex items-center gap-2 text-[15px] font-medium text-ink">
+                <ProductSwatch product={p} />
+                {p.name}
+              </span>
+              <span className="font-mono text-[12.5px] text-ink-3 tnum">{p.pen?.composition ?? p.subtitle}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-pretty text-sm leading-relaxed text-muted">
+          The pen is pre-filled and dose-dial: the dial sets the volume delivered, not a recommended dose. Nothing in this
+          report is a dosing instruction; the studies above are what was tested, in whom, and what happened.
+        </p>
       </div>
 
       {/* Layer C — personal suitability and risk */}
@@ -177,7 +167,7 @@ export function DosingSection({ report, def }: { report: Report; def: ReportSect
   return (
     <ReportSection
       def={def}
-      description="Three layers for each compound: what published human studies actually used, how the dose you entered compares with those exposures, and what your personal flags mean for the decision. None of it is a dosing recommendation."
+      description={`Three layers for each compound: what published human studies actually used, what the ${BRAND.name} pen contains, and what your personal flags mean for the decision. None of it is a dosing recommendation.`}
     >
       {report.compounds.map((c) => (
         <CompoundDosing key={c.slug} c={c} />

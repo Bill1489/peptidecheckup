@@ -1,27 +1,17 @@
-import { getCompound } from "@/data/compounds";
 import { CONDITION_MAP } from "@/data/conditions";
 import { COUNTRY_MAP } from "@/data/countries";
 import { GOAL_MAP } from "@/data/goals";
-import { ROUTE_LABELS, type ConditionId, type DoseFrequency } from "@/data/types";
+import type { ConditionId } from "@/data/types";
 import { bmi } from "@/lib/utils";
-import { formatHeight, formatWeight, jurisdictionLabel } from "./derived";
-import type { Step } from "./flow";
+import { formatHeight, formatWeight, jurisdictionLabel, selectedProducts } from "./derived";
+import { EXPERIENCE_LABELS, FLOW_SECTIONS, RISK_QUESTIONS, focusLabel, goalProblemLabel, type Step } from "./flow";
 import {
-  ADVERSE_LABELS,
   ALCOHOL_LABELS,
-  DURATION_LABELS,
-  IMPORTANCE_LABELS,
-  INFLUENCE_LABELS,
   NICOTINE_LABELS,
   OTC_LABELS,
-  RECREATIONAL_LABELS,
-  REPORT_WANTS,
   SECTION_META,
-  SECTION_ORDER,
-  SOURCE_LABELS,
   TIMEFRAME_LABELS,
   type AssessmentAnswers,
-  type ConsideredCompound,
   type SectionId,
 } from "./types";
 
@@ -55,29 +45,16 @@ const YES_NO_LABELS: Record<string, string> = {
   prefer_not: "Prefer not to say",
 };
 
-export const DOSE_FREQUENCY_LABELS: Record<DoseFrequency, string> = {
-  once: "Once",
-  daily: "Once daily",
-  twice_daily: "Twice daily",
-  three_times_daily: "Three times daily",
-  weekly: "Once weekly",
-  twice_weekly: "Twice weekly",
-  monthly: "Monthly",
-  other: "Other",
+/** Short risk-row labels for the review and the appendix, keyed by field. */
+export const RISK_LABELS: Record<(typeof RISK_QUESTIONS)[number]["field"], string> = {
+  seriousAllergy: "Serious allergic reaction to a medicine",
+  componentAllergy: "Allergy to a component",
+  previousSeriousReaction: "Previous serious reaction to a similar treatment",
+  severeSymptoms: "Unexplained or severe symptoms",
+  advisedAgainst: "Advised not to use this type of treatment",
+  underInvestigation: "Under investigation",
+  interactingTreatment: "Treatment that could interact",
 };
-
-export function compoundName(slug: string): string {
-  return getCompound(slug)?.name ?? slug;
-}
-
-export function formatDose(c: ConsideredCompound): string | undefined {
-  const d = c.dose;
-  if (!d || d.amount === undefined) return undefined;
-  const parts = [`${d.amount}${d.unit ? ` ${d.unit}` : ""}`];
-  if (d.frequency) parts.push(DOSE_FREQUENCY_LABELS[d.frequency].toLowerCase());
-  if (d.route) parts.push(ROUTE_LABELS[d.route].toLowerCase());
-  return parts.join(", ");
-}
 
 function yn(v?: string): string | undefined {
   return v ? YES_NO_LABELS[v] ?? v : undefined;
@@ -99,44 +76,31 @@ function compact(rows: (ReviewRow | null)[]): ReviewRow[] {
 
 function rowsFor(section: SectionId, a: AssessmentAnswers): ReviewRow[] {
   switch (section) {
-    case "goals": {
-      const goal = a.primaryGoal ? GOAL_MAP[a.primaryGoal]?.label : undefined;
+    case "goals":
       return compact([
+        row("goal", "What you want to change", goalProblemLabel(a.primaryGoal)),
+        row("focus", "Sounds like you", a.focusAreas.length ? a.focusAreas.map(focusLabel).join("; ") : undefined),
         row(
-          "goal",
-          "Primary goal",
-          goal ? (a.primaryGoal === "other" && a.otherGoalText ? `${goal} — ${a.otherGoalText}` : goal) : undefined,
+          "secondary-goals",
+          "Also working on",
+          a.secondaryGoals.length
+            ? a.secondaryGoals.map((g) => goalProblemLabel(g) ?? GOAL_MAP[g]?.label ?? g).join("; ")
+            : a.completedSections.includes("goals")
+              ? "Nothing else"
+              : undefined,
         ),
-        row("success", "What success looks like", a.successDescription?.trim()),
-        row("importance", "Importance", a.importance ? IMPORTANCE_LABELS[a.importance] : undefined),
         row("timeframe", "Timeframe", a.timeframe ? TIMEFRAME_LABELS[a.timeframe] : undefined),
+        row("experience", "Peptide experience", a.experienceLevel ? EXPERIENCE_LABELS[a.experienceLevel] : undefined),
       ]);
-    }
     case "considering": {
-      const names = a.consideredCompounds.map((c) => compoundName(c.slug));
-      if (a.otherCompoundText?.trim()) names.push(`Other: ${a.otherCompoundText.trim()}`);
-      const doses = a.consideredCompounds
-        .map((c) => {
-          const d = formatDose(c);
-          return d ? `${compoundName(c.slug)} — ${d}` : null;
-        })
-        .filter((x): x is string => Boolean(x));
+      const pens = selectedProducts(a).map((p) => p.name);
       return compact([
-        row("compounds", "Compounds", names.length ? names.join(", ") : undefined),
-        row("doses", "Doses considered", doses.length ? doses.join("; ") : undefined),
-        row("currently-taking", "Currently taking", yn(a.currentlyTaking)),
-        row("multiple", "Considering more than one", yn(a.consideringMultiple)),
         row(
-          "combinations",
-          "Combination",
-          a.combinations[0]?.length ? a.combinations[0].map(compoundName).join(" + ") : undefined,
+          "products",
+          "Pens in mind",
+          pens.length ? pens.join(", ") : a.completedSections.includes("considering") ? "None — let the quiz decide" : undefined,
         ),
-        row("why", "Why these compounds", a.whyChosen?.trim()),
-        row(
-          "why",
-          "Where the idea came from",
-          a.influence?.length ? a.influence.map((i) => INFLUENCE_LABELS[i]).join(", ") : undefined,
-        ),
+        row("currently-taking", "Currently using a peptide", yn(a.currentlyTaking)),
       ]);
     }
     case "basics": {
@@ -185,79 +149,15 @@ function rowsFor(section: SectionId, a: AssessmentAnswers): ReviewRow[] {
         ),
         row("otc", "Over-the-counter", otc.length ? otc.join(", ") : undefined),
         row("supplements", "Supplements", a.takesSupplements === "no" ? "None" : supp.length ? supp.join(", ") : undefined),
-        row(
-          "recreational",
-          "Recreational substances",
-          a.recreational
-            ? a.recreationalDetails?.trim()
-              ? `${RECREATIONAL_LABELS[a.recreational]} — ${a.recreationalDetails.trim()}`
-              : RECREATIONAL_LABELS[a.recreational]
-            : undefined,
-        ),
-        row("alcohol", "Alcohol", a.alcohol ? ALCOHOL_LABELS[a.alcohol] : undefined),
-        row("nicotine", "Nicotine", a.nicotine ? NICOTINE_LABELS[a.nicotine] : undefined),
+        row("lifestyle", "Alcohol", a.alcohol ? ALCOHOL_LABELS[a.alcohol] : undefined),
+        row("lifestyle", "Nicotine", a.nicotine ? NICOTINE_LABELS[a.nicotine] : undefined),
       ]);
     }
-    case "experience": {
-      const uses = a.previousUses
-        .filter((u) => u.name.trim())
-        .map((u) => {
-          const bits = [u.name.trim()];
-          if (u.duration) bits.push(DURATION_LABELS[u.duration].toLowerCase());
-          if (u.adverse) bits.push(`adverse effects: ${ADVERSE_LABELS[u.adverse].toLowerCase()}`);
-          if (u.stoppedDueToAdverse === "yes") bits.push("stopped because of them");
-          if (u.supervised) bits.push(u.supervised === "yes" ? "supervised" : "unsupervised");
-          return bits.join(", ");
-        });
-      return compact([
-        row("previous-use", "Used a peptide before", a.previousPeptideUse === "no" ? "No" : uses.length ? uses.join("; ") : yn(a.previousPeptideUse)),
-        row("stopped-ineffective", "Stopped a treatment as ineffective", yn(a.stoppedIneffective)),
-      ]);
-    }
-    case "source":
-      return compact([
-        row(
-          "source",
-          "Where you'd obtain it",
-          a.source
-            ? a.source === "other" && a.sourceOtherText?.trim()
-              ? `${SOURCE_LABELS[a.source]} — ${a.sourceOtherText.trim()}`
-              : SOURCE_LABELS[a.source]
-            : undefined,
-        ),
-        row("prescribed", "Prescribed to you", yn(a.prescribed)),
-        row("authorised", "Authorised in your country", yn(a.authorisedKnown)),
-        row("quality-docs", "Independent quality documentation", yn(a.qualityDocs)),
-      ]);
     case "risk":
       return compact([
-        row("serious-allergy", "Serious allergic reaction to a medicine", yn(a.seriousAllergy)),
-        row("component-allergy", "Allergy to a component", yn(a.componentAllergy)),
-        row("previous-reaction", "Previous serious reaction to a similar treatment", yn(a.previousSeriousReaction)),
-        row("severe-symptoms", "Unexplained or severe symptoms", yn(a.severeSymptoms)),
-        row("advised-against", "Advised not to use this type of treatment", yn(a.advisedAgainst)),
-        row("under-investigation", "Under investigation", yn(a.underInvestigation)),
-        row("interacting-treatment", "Treatment that could interact", yn(a.interactingTreatment)),
-        row("risk-details", "Details", a.riskDetails?.trim()),
-      ]);
-    case "wants":
-      return compact([
-        row(
-          "report-wants",
-          "Report focus",
-          a.reportWants.length
-            ? a.reportWants.map((w) => REPORT_WANTS.find((r) => r.id === w)?.label ?? w).join("; ")
-            : undefined,
-        ),
-        row(
-          "contact",
-          "Professional review",
-          a.contactConsent
-            ? `Yes — ${a.contactEmail ?? ""}${a.contactName ? ` (${a.contactName})` : ""}`
-            : a.completedSections.includes("wants")
-              ? "Not requested"
-              : undefined,
-        ),
+        ...RISK_QUESTIONS.map((q) => row("safety", RISK_LABELS[q.field], yn(a[q.field]))),
+        row("safety", "Details", a.riskDetails?.trim()),
+        row("tested-athlete", "Competes in drug-tested sport", yn(a.testedAthlete)),
       ]);
     case "final":
       return compact([row("anything-else", "Anything else", a.anythingElse?.trim())]);
@@ -267,7 +167,7 @@ function rowsFor(section: SectionId, a: AssessmentAnswers): ReviewRow[] {
 }
 
 export function buildReview(a: AssessmentAnswers): ReviewSection[] {
-  return SECTION_ORDER.map((id) => {
+  return FLOW_SECTIONS.map((id) => {
     const rows = rowsFor(id, a);
     let status: ReviewStatus;
     if (a.completedSections.includes(id)) status = "complete";

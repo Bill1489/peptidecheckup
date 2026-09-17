@@ -1,4 +1,5 @@
 import * as React from "react";
+import { FLOW_SECTIONS } from "@/lib/assessment/flow";
 import { LogoMark } from "@/components/ui/logo";
 
 /** Rendered until the persisted store has hydrated, to avoid SSR/CSR mismatch. */
@@ -12,7 +13,7 @@ export function WizardSkeleton() {
             <span className="skeleton h-3 w-32" />
           </div>
           <div className="hidden items-center gap-1 md:flex">
-            {Array.from({ length: 10 }).map((_, i) => (
+            {FLOW_SECTIONS.map((_, i) => (
               <span key={i} className="skeleton h-6 w-6" />
             ))}
           </div>
