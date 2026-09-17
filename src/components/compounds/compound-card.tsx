@@ -60,7 +60,7 @@ export function CompoundCard({
     >
       {/* Head: family tag + compare checkbox */}
       <div className={cn("flex items-center justify-between gap-2 border-b pl-3 pr-0 sm:pl-4", RULE)}>
-        <p className={cn("label-mono min-w-0 truncate", MUTED)} title={FAMILY_LABELS[compound.family]}>
+        <p className={cn("label-mono min-w-0 break-words", MUTED)} title={FAMILY_LABELS[compound.family]}>
           {FAMILY_LABELS[compound.family]}
         </p>
         <button
@@ -93,7 +93,7 @@ export function CompoundCard({
             {compound.name}
           </Link>
         </h3>
-        <p className={cn("label-mono mt-2 truncate", MUTED)} title={compound.classLabel}>
+        <p className={cn("label-mono mt-2 break-words", MUTED)} title={compound.classLabel}>
           {compound.classLabel}
         </p>
         <p className="mt-2.5 line-clamp-2 text-[13px] leading-snug text-ink-3 group-hover:text-white/80">{compound.tagline}</p>
@@ -137,13 +137,13 @@ export function CompoundCard({
           {commerce.product ? (
             <p className={cn("label-mono mt-1 flex items-center gap-1.5 text-[10px]", MUTED)}>
               <ProductSwatch product={commerce.product} className="h-2 w-2" />
-              <span className="truncate">
+              <span className="break-words">
                 In the range · {commerce.product.name}
                 {commerce.inBlend && " (blend)"}
               </span>
             </p>
           ) : (
-            commerce.channelLabel && <p className={cn("label-mono mt-0.5 truncate text-[10px]", MUTED)}>{commerce.channelLabel}</p>
+            commerce.channelLabel && <p className={cn("label-mono mt-0.5 break-words text-[10px]", MUTED)}>{commerce.channelLabel}</p>
           )}
         </div>
         {commerce.product && (

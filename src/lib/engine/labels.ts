@@ -183,9 +183,9 @@ export const SOURCE_SKIPPED_POINT =
  * When the assessment is run from the store, the supply route is the store's
  * own pens: no source question is asked and `answers.source` stays undefined.
  */
-export const STORE_SOURCE_LABEL = `${BRAND.name} pre-filled pens`;
+export const STORE_SOURCE_LABEL = `${BRAND.range.name} pre-filled pens from ${BRAND.displayName}`;
 
-export const STORE_SOURCE_DESCRIPTION = `Every ${BRAND.name} pen ships with a lot-numbered certificate of analysis from an independent laboratory — identity by LC-MS, purity by HPLC, endotoxin — published against the batch. That is quality assurance for what is in the pen; it is not a marketing authorisation, and the products remain research-use only.`;
+export const STORE_SOURCE_DESCRIPTION = `Every ${BRAND.range.name} pen ships with a lot-numbered certificate of analysis from an independent laboratory — identity by LC-MS, purity by HPLC, endotoxin — published against the batch. That is quality assurance for what is in the pen; it is not a marketing authorisation, and the products remain research-use only.`;
 
 export const STORE_SOURCE_POINTS: string[] = [
   "Batch tested by an independent laboratory, with the certificate of analysis published against the lot number on every carton.",

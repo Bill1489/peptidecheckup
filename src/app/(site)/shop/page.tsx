@@ -20,7 +20,7 @@ const nameList = `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]
 
 export const metadata: Metadata = {
   title: `The range — ${count} pre-filled peptide pens, every lot tested`,
-  description: `${nameList}: ${count} pre-filled 3 mL dose-dial pens from ${BRAND.name}, ${blends} of them blends, each with a published certificate of analysis. UK pricing, VAT included, free UK shipping over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
+  description: `${nameList}: ${count} pre-filled 3 mL dose-dial pens from ${BRAND.range.name}, stocked by ${BRAND.displayName}, ${blends} of them blends, each with a published certificate of analysis. UK pricing, VAT included, free UK shipping over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
   alternates: { canonical: "/shop/" },
   openGraph: {
     images: OG_IMAGES,
@@ -67,7 +67,7 @@ export default function ShopPage() {
         <div className="container-x grid gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <p className="label-mono">Six pens · One format · CoA per lot</p>
-            <h1 className="mt-4 text-[3rem] uppercase leading-[0.92] sm:text-[4.5rem] lg:text-[6rem]">The range</h1>
+            <h1 className="mt-4 break-words text-[2.75rem] uppercase leading-[0.92] sm:text-[4rem] lg:text-[5.5rem]">The range</h1>
             <p className="mt-5 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[16px]">
               Six pre-filled 3 mL dose-dial pens. No vials, no reconstitution, no drawing up. Every lot is tested by an independent laboratory
               and its certificate is published against the batch number on the carton. Sold for research use; the {BRAND.assessmentName} tells

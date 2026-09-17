@@ -22,7 +22,7 @@ export function RangeStrip({ compound, className }: { compound: Compound; classN
       {/* The cell grid draws its own 1px frame; the header bar sits on top of it. */}
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border border-b-0 border-ink bg-paper-2 px-4 py-2.5 sm:px-5">
         <h2 id="range-strip-title" className="label-mono text-ink">
-          In the {BRAND.displayName} range
+          In the {BRAND.range.name} range
         </h2>
         <p className="label-mono tnum">
           {pens.length === 1 ? "1 pen carries" : `${pens.length} pens carry`} {compound.name}

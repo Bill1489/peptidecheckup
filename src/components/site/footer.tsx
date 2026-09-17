@@ -91,7 +91,7 @@ export function Footer() {
         <div className="container-x grid gap-6 py-8 text-[12px] leading-relaxed text-muted md:grid-cols-2">
           <p>
             <strong className="font-semibold text-ink">Research products. </strong>
-            {RESEARCH_USE_LABEL} Aervyn pens are pre-filled for laboratory research and shipped chilled with the lot certificate.
+            {RESEARCH_USE_LABEL} {BRAND.range.name} pens are pre-filled for laboratory research and shipped chilled with the lot certificate.
           </p>
           <p>
             <strong className="font-semibold text-ink">{BRAND.assessmentName}. </strong>

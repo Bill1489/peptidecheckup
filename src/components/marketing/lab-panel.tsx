@@ -45,7 +45,7 @@ export function LabPanel() {
               <p className="label-mono text-white/60">
                 {t.label} · {t.method}
               </p>
-              <p className="mt-5 font-mono text-[2.25rem] leading-none tnum sm:text-[2.75rem]">{t.figure}</p>
+              <p className="mt-5 break-words font-mono text-[1.75rem] leading-none tnum sm:text-[2rem] lg:text-[2.5rem]">{t.figure}</p>
               <p className="mt-5 text-[13px] leading-relaxed text-white/70">{t.body}</p>
             </li>
           ))}

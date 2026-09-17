@@ -28,13 +28,13 @@ export function IndexHead({
 }) {
   const dark = tone === "dark";
   return (
-    <div className={cn("grid gap-4 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10", className)}>
+    <div className={cn("grid gap-4 xl:grid-cols-[14rem_minmax(0,1fr)] xl:gap-10", className)}>
       <p className={cn("label-mono", dark ? "text-white/60" : "text-ink")}>
         {index && <span className="tnum">{index} — </span>}
         {label}
       </p>
       <div className="min-w-0">
-        <Tag className={cn("text-balance text-[2rem] uppercase sm:text-[2.6rem] lg:text-[3.25rem]", dark ? "text-white" : "text-ink")}>
+        <Tag className={cn("min-w-0 text-balance break-words text-[2rem] uppercase sm:text-[2.6rem] xl:text-[3.25rem]", dark ? "text-white" : "text-ink")}>
           {title}
         </Tag>
         {description && (

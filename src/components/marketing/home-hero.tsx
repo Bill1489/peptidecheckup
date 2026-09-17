@@ -22,7 +22,7 @@ export function HomeHero({ product }: { product: Product }) {
       <div className="container-x grid gap-10 py-10 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:items-center lg:gap-16 lg:py-16">
         <div className="min-w-0">
           <p className="label-mono text-ink">
-            {BRAND.name} · {BRAND.descriptor} · UK
+            {BRAND.range.relationship} · {BRAND.range.name} pens
           </p>
           <h1 className="mt-6 text-[2.75rem] uppercase leading-[0.95] sm:text-[4rem] lg:text-[3.5rem] xl:text-[4.5rem] 2xl:text-[5.25rem]">
             {numberWord(count)} pens.

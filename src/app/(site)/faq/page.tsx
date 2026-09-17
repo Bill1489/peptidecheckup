@@ -9,7 +9,7 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { PageHeader } from "@/components/marketing/page-shell";
 import { Toc, TocRow } from "@/components/marketing/toc";
 
-const DESCRIPTION = `Answers to the questions people ask before buying an ${BRAND.name} pen or starting the ${CHECKUP}: research-use labelling, the pen format, needles, storage, certificates, shipping, returns, the assessment, data and deletion.`;
+const DESCRIPTION = `Answers to the questions people ask before buying an ${BRAND.range.name} pen or starting the ${CHECKUP}: research-use labelling, the pen format, needles, storage, certificates, shipping, returns, the assessment, data and deletion.`;
 
 export const metadata: Metadata = {
   title: "FAQ",

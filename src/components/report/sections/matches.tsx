@@ -75,7 +75,7 @@ export function MatchesSection({ report, match, def }: { report: Report; match: 
   return (
     <ReportSection
       def={def}
-      description={`Every pen in the ${BRAND.name} range is scored 0–100 against your goal, focus areas, the human evidence for your goal and the pen format, then checked against the flags above. A high-severity flag or a Higher concern label on any component rules a pen out — nothing goes in your cart, and it links to a clinician instead.`}
+      description={`Every pen in the ${BRAND.range.name} range is scored 0–100 against your goal, focus areas, the human evidence for your goal and the pen format, then checked against the flags above. A high-severity flag or a Higher concern label on any component rules a pen out — nothing goes in your cart, and it links to a clinician instead.`}
     >
       {primary ? <PrimaryCard match={primary} result={match} /> : <NoMatch match={match} report={report} />}
 

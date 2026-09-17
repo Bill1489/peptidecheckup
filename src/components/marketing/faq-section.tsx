@@ -12,7 +12,7 @@ export function FaqSection() {
           <p className="label-mono text-ink">
             <span className="tnum">08 — </span>FAQ
           </p>
-          <h2 className="mt-4 text-[2rem] uppercase sm:text-[2.6rem] lg:text-[2.75rem]">Questions.</h2>
+          <h2 className="mt-4 break-words text-[2rem] uppercase sm:text-[2.6rem] lg:text-[2.25rem] xl:text-[2.75rem]">Questions.</h2>
           <Link
             href="/faq"
             className="mt-5 inline-flex min-h-[44px] items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink link-rule"

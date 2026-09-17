@@ -105,7 +105,7 @@ export function SpecRow({
   return (
     <div className={cn("flex items-baseline justify-between gap-6 border-b border-line py-3 last:border-b-0", className)}>
       <span className="label-mono shrink-0">{label}</span>
-      <span className="text-right text-[14px] text-ink">{value}</span>
+      <span className="min-w-0 break-words text-right text-[14px] text-ink">{value}</span>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import { ProblemGrid } from "@/components/marketing/problem-grid";
 import { RangeEvidence } from "@/components/marketing/range-evidence";
 import { RangeStrip } from "@/components/marketing/range-strip";
 
-const TITLE = `${BRAND.name} · ${BRAND.descriptor} — ${BRAND.tagline}`;
+const TITLE = `${BRAND.displayName} — ${BRAND.tagline}`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -69,7 +69,7 @@ export default function HomePage() {
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: `The ${BRAND.displayName} range`,
+      name: `The ${BRAND.range.name} range at ${BRAND.displayName}`,
       itemListOrder: "https://schema.org/ItemListOrderAscending",
       numberOfItems: PRODUCTS.length,
       itemListElement: PRODUCTS.map((p, i) => ({

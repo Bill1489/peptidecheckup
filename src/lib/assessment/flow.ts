@@ -390,7 +390,7 @@ const goals: Step[] = [
     kind: "single",
     field: "experienceLevel",
     title: "Have you used peptides before?",
-    help: `${BRAND.name} pens are pre-filled and dose-dial — no vials, no reconstitution — which matters more to some people than others.`,
+    help: `${BRAND.range.name} pens are pre-filled and dose-dial — no vials, no reconstitution — which matters more to some people than others.`,
     options: EXPERIENCE_OPTIONS,
     valid: (a) => has(a.experienceLevel),
     error: "Choose one option to continue.",

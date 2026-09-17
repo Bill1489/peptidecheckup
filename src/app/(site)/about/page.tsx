@@ -8,7 +8,7 @@ import { blendProducts, CHECKUP, CHECKUP_SHORT, coaLabs, NAMED_JURISDICTIONS, nu
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, NumberedRows, Prose, ProseH2, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
 
-const DESCRIPTION = `${BRAND.displayName} is the independent UK company behind the ${BRAND.name} range — ${numberWord(PRODUCTS.length)} pre-filled peptide pens, each lot tested and certified, matched by the ${CHECKUP}. The principles it is built on, what it is not, and who maintains it.`;
+const DESCRIPTION = `${BRAND.displayName} is an independent UK retailer — the ${BRAND.range.relationship.toLowerCase()} of the ${BRAND.range.name} range — ${numberWord(PRODUCTS.length)} pre-filled peptide pens, each lot tested and certified, matched by the ${CHECKUP}. The principles it is built on, what it is not, and who maintains it.`;
 
 export const metadata: Metadata = {
   title: "About",
@@ -57,8 +57,8 @@ export default function AboutPage() {
     <TrustPage
       label="About"
       meta={[BRAND.legalName, `Est. ${BRAND.foundedYear} · United Kingdom`]}
-      title={`The independent UK company behind the ${BRAND.name} range.`}
-      description={`${BRAND.displayName} makes ${numberWord(PRODUCTS.length)} pre-filled peptide pens, tests every lot at an independent laboratory, and puts a ${CHECKUP_SHORT} in front of the shop that can end at no pen at all. We sell what we grade — so the rules that keep the two apart are written down here.`}
+      title={`The independent UK stockist of the ${BRAND.range.name} range.`}
+      description={`${BRAND.displayName} stocks ${numberWord(PRODUCTS.length)} pre-filled ${BRAND.range.name} peptide pens, publishes the independent laboratory certificate for every lot, and puts a ${CHECKUP_SHORT} in front of the shop that can end at no pen at all. We sell what we grade — so the rules that keep the two apart are written down here.`}
       toc={TOC}
       after={<CtaBand secondary={{ href: "/methodology", label: "Read the methodology" }} />}
     >
@@ -125,8 +125,10 @@ export default function AboutPage() {
       <Prose>
         <h2 id="team">Who we are</h2>
         <p>
-          The {BRAND.name} range and this site are operated by {BRAND.legalName}, a small, independent company registered in the United Kingdom, with
-          clinical, pharmacy, analytical and engineering backgrounds on the team. Compound records are written from regulator labels and
+          This site is operated by {BRAND.legalName}, a small, independent company registered in the United Kingdom, with
+          clinical, pharmacy, analytical and engineering backgrounds on the team. The pens are made by {BRAND.range.name} ({BRAND.range.descriptor});
+          we are their {BRAND.range.relationship.toLowerCase()}, not the manufacturer, and we say so wherever a lot, a certificate or a label is
+          discussed. Compound records are written from regulator labels and
           peer-reviewed trials and reviewed before publication; the rules engine and the matcher are reviewed against the same sources; pens are held
           until the laboratory result for the lot is in.
         </p>

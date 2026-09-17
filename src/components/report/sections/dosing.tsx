@@ -91,7 +91,7 @@ function CompoundDosing({ c }: { c: CompoundReport }) {
                 className: "font-mono text-[12.5px] tnum",
                 render: (s) => s.doses,
               },
-              { key: "route", header: "Route", className: "whitespace-nowrap", render: (s) => ROUTE_LABELS[s.route] },
+              { key: "route", header: "Route", render: (s) => ROUTE_LABELS[s.route] },
               { key: "outcome", header: "Outcome", className: "min-w-[12rem]", render: (s) => s.outcome },
             ]}
             detail={(s) => (
@@ -111,7 +111,7 @@ function CompoundDosing({ c }: { c: CompoundReport }) {
 
       {/* Layer B — what the pen contains */}
       <div className="border-b border-ink px-5 py-5 sm:px-6">
-        <LayerLabel n="B">What the {BRAND.name} pen contains</LayerLabel>
+        <LayerLabel n="B">What the {BRAND.range.name} pen contains</LayerLabel>
         <ul className="mt-4 divide-y divide-line border border-ink">
           {pens.map((p) => (
             <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
@@ -167,7 +167,7 @@ export function DosingSection({ report, def }: { report: Report; def: ReportSect
   return (
     <ReportSection
       def={def}
-      description={`Three layers for each compound: what published human studies actually used, what the ${BRAND.name} pen contains, and what your personal flags mean for the decision. None of it is a dosing recommendation.`}
+      description={`Three layers for each compound: what published human studies actually used, what the ${BRAND.range.name} pen contains, and what your personal flags mean for the decision. None of it is a dosing recommendation.`}
     >
       {report.compounds.map((c) => (
         <CompoundDosing key={c.slug} c={c} />

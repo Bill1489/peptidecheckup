@@ -9,7 +9,7 @@ import type { Product } from "./types";
 
 export const RX_LABEL =
   "Prescription-only medicine. Not sold directly — supplied by our partner prescriber after an online consultation and prescription.";
-export const NOT_SOLD_LABEL = "Listed for information only. Aervyn does not sell this compound.";
+export const NOT_SOLD_LABEL = "Listed for information only. We do not sell this compound.";
 export const SUPPLEMENT_LABEL = "Food supplement. Not a medicine. Do not exceed the stated dose.";
 export const COSMETIC_LABEL = "Cosmetic product for external use only.";
 export const SUPPLIES_LABEL = "General laboratory supplies.";

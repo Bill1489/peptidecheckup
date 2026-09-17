@@ -60,7 +60,7 @@ export function JurisdictionTabs({
             >
               <span className="flex w-full items-center justify-between gap-2">
                 <span className="font-mono text-[12px] font-semibold tracking-[0.08em]">{JURISDICTION_SHORT[j]}</span>
-                <span className="label-mono hidden truncate group-data-[state=active]/tab:text-white/60 xl:inline">
+                <span className="label-mono hidden break-words group-data-[state=active]/tab:text-white/60 xl:inline">
                   {JURISDICTION_LABELS[j]}
                 </span>
               </span>

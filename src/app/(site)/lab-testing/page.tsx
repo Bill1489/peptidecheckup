@@ -21,7 +21,7 @@ const blendNames = blends.map((p) => p.name).join(" and ");
 
 export const metadata: Metadata = {
   title: `Lab testing — ${certified.length} pens, ${certified.length} published certificates of analysis`,
-  description: `How every ${BRAND.name} pen lot is tested (HPLC purity, LC-MS identity, LAL endotoxin), how blends are tested per component, which independent laboratory we use, how to read a certificate and batch number, and the certificate for each of the ${certified.length} pens in the range.`,
+  description: `How every ${BRAND.range.name} pen lot is tested (HPLC purity, LC-MS identity, LAL endotoxin), how blends are tested per component, which independent laboratory we use, how to read a certificate and batch number, and the certificate for each of the ${certified.length} pens in the range.`,
   alternates: { canonical: "/lab-testing/" },
   openGraph: {
     images: OG_IMAGES,
@@ -237,7 +237,7 @@ export default function LabTestingPage() {
           <div className="container-x grid gap-8 py-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:py-16">
             <div>
               <p className="label-mono">03 — Blends</p>
-              <h2 id="blends-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
+              <h2 id="blends-heading" className="mt-3 text-balance break-words text-[1.75rem] uppercase sm:text-[2.25rem]">
                 Tested per component
               </h2>
               <p className="mt-4 text-[14px] leading-relaxed text-muted">
@@ -301,7 +301,7 @@ export default function LabTestingPage() {
             </p>
             <div className="mt-6 grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4">
               {[
-                { part: "AV", label: "Brand", body: `${BRAND.name} — every lot we release starts here.` },
+                { part: "AV", label: "Brand", body: `${BRAND.range.name} — the manufacturer prefix on every lot we stock.` },
                 { part: "TES", label: "Pen code", body: "Three characters per pen: TES Tesamorelin, MOT MOTS-C, GHK GHK-Cu, NAD NAD+, WOL Wolverine, KLW Klow." },
                 { part: "2609", label: "Release", body: "Year and month the lot was released: 26 = 2026, 09 = September." },
                 { part: "A", label: "Lot letter", body: "Sequential within the month. A is the first lot released, B the second." },

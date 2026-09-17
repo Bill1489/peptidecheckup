@@ -180,10 +180,11 @@ export function StatTile({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2 p-4 break-inside-avoid sm:p-5", className)}>
-      <MonoLabel>{label}</MonoLabel>
+      <MonoLabel className="[overflow-wrap:anywhere]">{label}</MonoLabel>
       <div
         className={cn(
-          "font-display text-[2.25rem] leading-none tnum sm:text-[2.6rem]",
+          "min-w-0 break-words font-display leading-none tnum",
+          typeof value === "string" && value.length > 5 ? "text-[1.35rem] leading-[1.05] sm:text-[1.6rem]" : "text-[2.25rem] sm:text-[2.6rem]",
           tone === "neutral" && "text-ink",
           tone === "brand" && "text-brand-600",
           tone === "danger" && "text-accent-500",
@@ -240,8 +241,8 @@ export function DataTable<T>({
   breakpoint?: TableBreakpoint;
 }) {
   return (
-    <div className={cn("rounded-none border border-ink bg-white break-inside-avoid", className)}>
-      <table className={cn("w-full border-collapse text-left text-[13.5px]", TABLE_AT[breakpoint])}>
+    <div className={cn("overflow-x-auto rounded-none border border-ink bg-white break-inside-avoid [contain:paint]", className)}>
+      <table className={cn("w-full table-fixed border-collapse text-left text-[13.5px] [&_td]:break-words [&_th]:break-words", TABLE_AT[breakpoint])}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr className="border-b border-ink bg-paper-2">

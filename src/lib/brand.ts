@@ -1,40 +1,52 @@
 /**
  * Single source of truth for brand identity.
- * The store is the client's brand (AERVYN · Performance Science); the
- * assessment product keeps its own name ("Peptide Checkup").
+ *
+ * PeptideCheckup is the store and the assessment. It is an independent UK
+ * retailer of the AERVYN range of pre-filled peptide pens — AERVYN is the
+ * manufacturer's brand (on the cartons and in the photography), not ours.
  */
 export const BRAND = {
-  name: "AERVYN",
+  name: "PeptideCheckup",
   /** Display form used in prose. */
-  displayName: "Aervyn",
-  /** Wordmark split around the helix glyph that replaces the "Y". */
-  wordmark: { a: "AERV", b: "N" },
-  descriptor: "Performance Science",
-  /** Name of the assessment / quiz product. */
+  displayName: "Peptide Checkup",
+  /** Wordmark split for two-tone logo rendering. */
+  wordmark: { a: "Peptide", b: "Checkup" },
+  /** Short line under the wordmark / in mono labels. */
+  descriptor: "Batch-tested peptide pens",
+  /** Name of the assessment / quiz product (same as the store name). */
   assessmentName: "Peptide Checkup",
-  domain: "aervyn.com",
+  domain: "peptidecheckup.com",
   /** Canonical origin. Overridable at build time (e.g. a preview host) via NEXT_PUBLIC_SITE_URL. */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://aervyn.com").replace(/\/+$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://peptidecheckup.com").replace(/\/+$/, ""),
   tagline: "Peptide pens. Matched to you.",
   description:
-    "Aervyn peptide pens — pre-filled, dose-dial, batch-tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
-  shortDescription: "Batch-tested peptide pens, matched to your goal by the Peptide Checkup assessment.",
-  supportEmail: "hello@aervyn.com",
+    "Official UK stockist of the AERVYN range — six pre-filled, dose-dial peptide pens, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
+  shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the Peptide Checkup assessment.",
+  supportEmail: "hello@peptidecheckup.com",
   social: {
-    x: "https://x.com/aervyn",
-    instagram: "https://instagram.com/aervyn",
-    tiktok: "https://tiktok.com/@aervyn",
+    x: "https://x.com/peptidecheckup",
+    instagram: "https://instagram.com/peptidecheckup",
+    tiktok: "https://tiktok.com/@peptidecheckup",
   },
   /** Used in JSON-LD and metadata. */
-  legalName: "Aervyn Ltd",
-  foundedYear: 2025,
+  legalName: "PeptideCheckup Ltd",
+  foundedYear: 2026,
   /** Where the business operates from — drives default currency, jurisdiction and shipping copy. */
   homeCountry: "GB",
+  /** The manufacturer whose range we stock. Use for product/range references, never for the site itself. */
+  range: {
+    name: "AERVYN",
+    displayName: "Aervyn",
+    descriptor: "Performance Science",
+    url: "https://aervyn.com",
+    /** How we describe our relationship to the manufacturer. */
+    relationship: "Official UK stockist",
+  },
 } as const;
 
 /** Shared social-preview image (1200×630) for every page's Open Graph / Twitter card. */
 export const OG_IMAGES = [
-  { url: `${BRAND.url}/og.png`, width: 1200, height: 630, alt: `${BRAND.name} — ${BRAND.tagline}` },
+  { url: `${BRAND.url}/og.png`, width: 1200, height: 630, alt: `${BRAND.displayName} — ${BRAND.tagline}` },
 ];
 
 /** Standard disclaimer shown across the site and in every report. */

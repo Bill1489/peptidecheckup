@@ -73,7 +73,7 @@ type SortKey = "range" | "evidence" | "name" | "regulatory" | "family";
 
 /** "Range" is the default: the compounds in the Aervyn range first, then evidence. */
 const SORT_OPTIONS: { value: SortKey; label: string; title: string }[] = [
-  { value: "range", label: "Range", title: `${BRAND.displayName} range first, then evidence` },
+  { value: "range", label: "Range", title: `${BRAND.range.name} range first, then evidence` },
   { value: "evidence", label: "Evidence", title: "Evidence (strongest first)" },
   { value: "name", label: "Name", title: "Name (A–Z)" },
   { value: "regulatory", label: "Regulatory", title: "Regulatory (authorised first)" },
@@ -167,8 +167,8 @@ function FilterGroup({
   const id = React.useId();
   return (
     <div role="group" aria-labelledby={id} className="min-w-0">
-      <div className="flex h-10 items-center justify-between gap-3 border-b border-line bg-paper-2 px-3">
-        <p id={id} className="label-mono truncate text-ink">
+      <div className="flex min-h-10 items-center justify-between gap-3 border-b border-line bg-paper-2 px-3 py-2">
+        <p id={id} className="label-mono break-words text-ink">
           {label}
         </p>
         <p className="label-mono tnum" aria-live="polite">
@@ -253,7 +253,7 @@ export function CompoundDirectory() {
   };
 
   const activeChips: { key: string; label: string; remove: () => void }[] = [
-    ...(rangeOnly ? [{ key: "range", label: `${BRAND.displayName} range`, remove: () => setRangeOnly(false) }] : []),
+    ...(rangeOnly ? [{ key: "range", label: `${BRAND.range.name} range`, remove: () => setRangeOnly(false) }] : []),
     ...goals.map((g) => ({
       key: `goal-${g}`,
       label: GOALS.find((x) => x.id === g)?.short ?? g,
@@ -317,7 +317,7 @@ export function CompoundDirectory() {
               onClick={() => setRangeOnly((v) => !v)}
               className={cn("border-ink sm:h-11 sm:px-3.5", !rangeOnly && "hover:bg-paper-2")}
             >
-              {BRAND.displayName} range
+              {BRAND.range.name} range
             </Chip>
             <div className="flex items-center gap-3">
               <span className="label-mono hidden sm:inline">Jurisdiction</span>

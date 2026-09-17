@@ -149,14 +149,14 @@ function IntroBody({ entry }: { entry: EntryContext }) {
           {/* Left: headline + action */}
           <div>
             <p className="label-mono text-ink">
-              {BRAND.name} · {BRAND.assessmentName}
+              {BRAND.assessmentName} · {BRAND.range.name} pens
             </p>
             <h1 className="mt-5 text-balance font-display text-[2.6rem] uppercase leading-[0.95] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
               Seven minutes. Six pens. One honest answer.
             </h1>
             <p className="mt-6 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[17px]">
               Tell us what you want to change, then a short screen of your history, medicines and safety questions. The{" "}
-              {BRAND.assessmentName} scores every {BRAND.name} pen against your answers and the published evidence, sends you
+              {BRAND.assessmentName} scores every {BRAND.range.name} pen against your answers and the published evidence, sends you
               to the one that fits — and tells you when none of them should be bought.
             </p>
 
@@ -215,7 +215,7 @@ function IntroBody({ entry }: { entry: EntryContext }) {
                   <ProductImage product={p} prefer="pack" frame="square" sizes="(min-width: 1024px) 12vw, 30vw" className="w-full" />
                   <span className="mt-2 flex items-center gap-1.5">
                     <ProductSwatch product={p} />
-                    <span className="truncate font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink">{p.name}</span>
+                    <span className="break-words font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink">{p.name}</span>
                   </span>
                 </li>
               ))}

@@ -109,7 +109,7 @@ function buildRows(goals: GoalId[], jurisdiction: SelectableJurisdiction): Row[]
     {
       id: "price",
       label: "Price",
-      hint: `${BRAND.displayName} range · per pen`,
+      hint: `${BRAND.range.name} range · per pen`,
       render: (c) => {
         const k = commerceForCompound(c.slug);
         return (
@@ -261,7 +261,7 @@ export function CompareTable({
 
   return (
     <div className="-mx-4 sm:mx-0">
-      <div className="snap-x snap-proximity overflow-x-auto border-y border-ink bg-white scroll-pl-[8.5rem] [scrollbar-width:thin] sm:border sm:scroll-pl-[11rem]">
+      <div className="snap-x snap-proximity overflow-x-auto border-y border-ink bg-white scroll-pl-[8.5rem] [contain:paint] [scrollbar-width:thin] sm:border sm:scroll-pl-[11rem]">
         <div
           role="group"
           aria-label={`Comparison of ${compounds.map((c) => c.name).join(", ")}`}
@@ -277,7 +277,7 @@ export function CompareTable({
             </div>
             {rows.map((row) => (
               <div key={row.id} className={cn(CELL, "text-[12px]")}>
-                <span className="block font-mono font-medium uppercase tracking-[0.06em] text-ink">{row.label}</span>
+                <span className="block break-words font-mono font-medium uppercase tracking-[0.06em] text-ink [overflow-wrap:anywhere]">{row.label}</span>
                 {row.hint && <span className="label-mono mt-0.5 block text-[10px]">{row.hint}</span>}
               </div>
             ))}
@@ -306,7 +306,7 @@ export function CompareTable({
                       >
                         {c.name}
                       </Link>
-                      <p className="label-mono mt-2 truncate" title={c.classLabel}>
+                      <p className="label-mono mt-2 break-words" title={c.classLabel}>
                         {c.classLabel}
                       </p>
                     </div>

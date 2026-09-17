@@ -100,7 +100,8 @@ function buildJsonLd(product: Product): JsonLdObject {
     description: product.description,
     sku: variant.sku,
     category: "Pre-filled peptide pens",
-    brand: { "@type": "Brand", name: BRAND.displayName },
+    brand: { "@type": "Brand", name: BRAND.range.name },
+    manufacturer: { "@type": "Organization", name: BRAND.range.name, url: BRAND.range.url },
     url,
     ...(images.length ? { image: images } : {}),
     additionalProperty: [

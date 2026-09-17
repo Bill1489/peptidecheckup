@@ -95,7 +95,7 @@ export function Review({
       <div className="grid gap-3 border border-ink bg-paper-2 p-4 text-xs leading-relaxed text-muted sm:p-5">
         <p className="text-ink-2">
           Your match is produced on this device by a deterministic, clinician-reviewable rules engine. It screens every
-          compound in the six {BRAND.name} pens against your answers and our maintained evidence and regulatory database —
+          compound in the six {BRAND.range.name} pens against your answers and our maintained evidence and regulatory database —
           nothing is guessed — then scores each pen for fit. A safety flag can rule a pen out entirely.
         </p>
         <p>{DISCLAIMER_SHORT}</p>

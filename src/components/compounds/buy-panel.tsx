@@ -79,7 +79,7 @@ export function BuyPanel({ compound }: { compound: Compound }) {
           <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">
             Available in <span className="font-medium text-ink">{product.name}</span>
             {blendPartners && blendPartners.length > 0 && <> (with {joinNames(blendPartners)})</>}. {compound.name} is not sold on its own
-            in the {BRAND.displayName} range.
+            in the {BRAND.range.name} range.
           </p>
         )}
 
@@ -205,7 +205,7 @@ export function BuyPanel({ compound }: { compound: Compound }) {
       <PanelHead title="In the range" meta={availabilityLabel} />
       <p className="mt-4 text-[1.15rem] uppercase leading-none">Not in the range</p>
       <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">
-        No {BRAND.displayName} pen contains {compound.name}. The record on this page stands on its own; the shop lists the pens that have
+        No {BRAND.range.name} pen contains {compound.name}. The record on this page stands on its own; the shop lists the pens that have
         passed batch testing.
       </p>
       <Button href={href} variant="secondary" className="mt-4 w-full">

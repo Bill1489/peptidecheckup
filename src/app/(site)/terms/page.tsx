@@ -7,7 +7,7 @@ import { CHECKUP, CHECKUP_SHORT, numberWord } from "@/components/marketing/copy"
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, Prose, TrustPage } from "@/components/marketing/page-shell";
 
-const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing, cold-chain returns, liability and the law of England and Wales.`;
+const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.range.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing, cold-chain returns, liability and the law of England and Wales.`;
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -48,8 +48,9 @@ export default function TermsPage() {
         <h2 id="acceptance">Agreement</h2>
         <p>
           These terms govern your use of {BRAND.domain} and everything on it — compound pages, comparison tools, landing pages, the {CHECKUP} and any
-          report or match it generates, the shop and any order you place (together, “the site”). The site and the {BRAND.name} range are operated by{" "}
-          {BRAND.legalName} (“we”, “us”), a company registered in England and Wales. By using the site you agree to these terms and to the{" "}
+          report or match it generates, the shop and any order you place (together, “the site”). The site is operated by{" "}
+          {BRAND.legalName} (“we”, “us”), a company registered in England and Wales and an independent stockist of pens manufactured by{" "}
+          {BRAND.range.name}. By using the site you agree to these terms and to the{" "}
           <Link href="/privacy">privacy notice</Link>. If you do not agree, please do not use the site.
         </p>
       </Prose>

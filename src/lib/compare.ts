@@ -317,7 +317,7 @@ export interface CompoundCommerce {
   blendPartners?: string[];
 }
 
-export const NOT_IN_RANGE_LABEL = `Not in the ${BRAND.displayName} range`;
+export const NOT_IN_RANGE_LABEL = `Not in the ${BRAND.range.name} range`;
 
 const STATE_RANK: Record<CommerceState, number> = { buy: 0, consultation: 1, not_sold: 2, unstocked: 3 };
 

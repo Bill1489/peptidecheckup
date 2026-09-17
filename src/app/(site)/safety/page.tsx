@@ -7,7 +7,7 @@ import { blendProducts, CHECKUP, CHECKUP_SHORT, numberWord, wadaListedProducts }
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, Prose, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
 
-const DESCRIPTION = `${BRAND.displayName} pens are research-use products and the ${CHECKUP} is educational information, not medical advice. What the label means, how the pens are stored and shipped, what lot testing does and does not tell you, tested athletes, pregnancy and under-18s.`;
+const DESCRIPTION = `${BRAND.range.name} pens are research-use products and the ${CHECKUP} is educational information, not medical advice. What the label means, how the pens are stored and shipped, what lot testing does and does not tell you, tested athletes, pregnancy and under-18s.`;
 
 export const metadata: Metadata = {
   title: "Safety & labelling",
@@ -66,7 +66,7 @@ export default function SafetyPage() {
         <h2 id="research-use">Research-use labelling</h2>
         <blockquote>{RESEARCH_USE_LABEL}</blockquote>
         <p>
-          None of the {numberWord(PRODUCTS.length)} pens in the {BRAND.name} range is authorised as a medicine in any jurisdiction. They are supplied as
+          None of the {numberWord(PRODUCTS.length)} pens in the {BRAND.range.name} range is authorised as a medicine in any jurisdiction. They are supplied as
           laboratory reagents under research-use labelling, which means exactly what it says: not a medicine, not for human consumption, not manufactured
           or licensed for use in people. We ask you to confirm that you are 18 or over and that you understand the intended use at checkout, and the
           statement is printed on the pen page, in the cart and on the carton. Lot testing does not change any of this.
@@ -146,7 +146,7 @@ export default function SafetyPage() {
         </p>
         <ul>
           <li>
-            An {BRAND.name} pen carries a lot number on the carton and a certificate for that lot in the box and online. If either is missing, it is not
+            An {BRAND.range.name} pen carries a lot number on the carton and a certificate for that lot in the box and online. If either is missing, it is not
             ours.
           </li>
           <li>Be suspicious of sellers with no published testing, no labelling, and no willingness to say what a product is not for.</li>
