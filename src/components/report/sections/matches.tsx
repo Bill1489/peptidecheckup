@@ -23,6 +23,8 @@ import type { ReportSectionDef } from "../sections";
 
 const PROMO_CODE = "CHECKUP10";
 const PROMO_MIN_COMPLETENESS = 60;
+/** Ruled-out pens shown before the "show all" toggle — a person-level flag can rule out the whole range. */
+const NOT_RECOMMENDED_PREVIEW = 4;
 
 const KIND_LABELS: Record<MatchReasonKind, string> = {
   goal: "Goal",
@@ -96,7 +98,14 @@ export function MatchesSection({ report, match, def }: { report: Report; match: 
               {match.alternatives.length} pen{match.alternatives.length === 1 ? "" : "s"}
             </MonoLabel>
           </div>
-          <ul className={cn("cell-grid", match.alternatives.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+          <ul
+            className={cn(
+              "cell-grid",
+              match.alternatives.length === 1 && "sm:grid-cols-1",
+              match.alternatives.length === 2 && "sm:grid-cols-2",
+              match.alternatives.length >= 3 && "sm:grid-cols-2 lg:grid-cols-3",
+            )}
+          >
             {match.alternatives.map((m) => (
               <li key={m.productId} className="flex flex-col p-4 sm:p-5">
                 <AlternativeCard match={m} />
@@ -106,23 +115,7 @@ export function MatchesSection({ report, match, def }: { report: Report; match: 
         </div>
       )}
 
-      {match.notRecommended.length > 0 && (
-        <div>
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="font-display text-[1.2rem] uppercase leading-none text-ink">{VERDICT_LABELS.not_recommended}</h3>
-            <MonoLabel className="tnum">
-              {match.notRecommended.length} pen{match.notRecommended.length === 1 ? "" : "s"}
-            </MonoLabel>
-          </div>
-          <ul className="space-y-3">
-            {match.notRecommended.map((m) => (
-              <li key={m.productId}>
-                <NotRecommendedCard match={m} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {match.notRecommended.length > 0 && <NotRecommendedList matches={match.notRecommended} />}
 
       {unlocked && <PromoPanel />}
 
@@ -182,7 +175,55 @@ function Breakdown({ match }: { match: ProductMatch }) {
     <p className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted tnum">
       Goal {b.goal} · Focus {b.focus} · Evidence {b.evidence} · Format {b.experience}
       {b.antiDoping !== 0 ? ` · Anti-doping ${b.antiDoping}` : ""}
+      {b.body ? ` · BMI ${b.body}` : ""}
     </p>
+  );
+}
+
+/** Ruled-out pens: the first few in full, the rest behind a toggle when a person-level flag rules out the whole range. */
+function NotRecommendedList({ matches }: { matches: ProductMatch[] }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const collapsible = matches.length > NOT_RECOMMENDED_PREVIEW + 1;
+  const shown = collapsible && !expanded ? matches.slice(0, NOT_RECOMMENDED_PREVIEW) : matches;
+  const hidden = matches.length - shown.length;
+  return (
+    <div>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3 className="font-display text-[1.2rem] uppercase leading-none text-ink">{VERDICT_LABELS.not_recommended}</h3>
+        <MonoLabel className="tnum">
+          {matches.length} pen{matches.length === 1 ? "" : "s"}
+        </MonoLabel>
+      </div>
+      <ul className="space-y-3">
+        {shown.map((m) => (
+          <li key={m.productId}>
+            <NotRecommendedCard match={m} />
+          </li>
+        ))}
+      </ul>
+      {collapsible && (
+        <div className="no-print mt-3 flex flex-wrap items-center gap-3">
+          <Button variant="secondary" size="sm" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+            {expanded ? "Show fewer" : `Show all ${matches.length} pens`}
+          </Button>
+          {hidden > 0 && (
+            <p className="text-xs leading-relaxed text-muted">
+              {hidden} more {hidden === 1 ? "pen was" : "pens were"} ruled out — expand to see each one&apos;s reasons. The printed
+              report lists them all.
+            </p>
+          )}
+        </div>
+      )}
+      {hidden > 0 && (
+        <ul className="hidden space-y-3 print:block">
+          {matches.slice(NOT_RECOMMENDED_PREVIEW).map((m) => (
+            <li key={m.productId} className="mt-3">
+              <NotRecommendedCard match={m} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -218,11 +259,13 @@ function PrimaryCard({ match, result }: { match: ProductMatch; result: MatchResu
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="font-display text-[1.6rem] uppercase leading-none text-ink sm:text-[1.9rem]">{product.name}</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-balance break-words font-display text-[1.6rem] uppercase leading-[1.02] text-ink sm:text-[1.9rem]">
+                {product.name}
+              </h3>
               <p className="mt-1.5 text-[13px] text-muted">{product.subtitle}</p>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <p className="font-mono text-[1.1rem] font-medium leading-none tnum text-ink">{priceLabel(product)}</p>
               <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted">{variant.label}</p>
             </div>
@@ -298,12 +341,12 @@ function AlternativeCard({ match }: { match: ProductMatch }) {
           <ProductImage product={product} prefer="pack" frame="square" sizes="80px" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h4 className="flex items-center gap-2 font-display text-[1.15rem] uppercase leading-none text-ink">
-              <ProductSwatch product={product} />
-              {product.name}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
+            <h4 className="flex min-w-0 items-start gap-2 font-display text-[1.15rem] uppercase leading-[1.05] text-ink">
+              <ProductSwatch product={product} className="mt-[0.3rem]" />
+              <span className="min-w-0 break-words">{product.name}</span>
             </h4>
-            <span className="font-mono text-[12px] tnum text-ink">{match.score}/100</span>
+            <span className="shrink-0 font-mono text-[12px] tnum text-ink">{match.score}/100</span>
           </div>
           <p className="mt-1 truncate text-[12.5px] text-muted">{product.subtitle}</p>
           <p className="mt-1.5 label-mono text-muted">{review ? "Review first" : "Fit"}</p>
@@ -336,7 +379,7 @@ function NotRecommendedCard({ match }: { match: ProductMatch }) {
         </div>
         <div className="min-w-0 flex-1">
           <MonoLabel className="text-accent-600">{VERDICT_LABELS.not_recommended}</MonoLabel>
-          <h4 className="mt-1.5 font-display text-[1.2rem] uppercase leading-none text-ink">Not adding {product.name} to your cart</h4>
+          <h4 className="mt-1.5 break-words font-display text-[1.2rem] uppercase leading-[1.05] text-ink">Not adding {product.name} to your cart</h4>
           <ul className="mt-3 space-y-1.5">
             {match.reasons.map((r) => (
               <li key={r.text} className="flex items-start gap-3 text-sm leading-snug text-ink">

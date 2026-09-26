@@ -7,7 +7,6 @@ import { ArrowRight, ChevronDown, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SpecRow } from "@/components/ui/card";
-import { COUNTRY_MAP } from "@/data/countries";
 import { useAssessmentStore } from "@/lib/assessment/store";
 import { RESEARCH_USE_LABEL } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
@@ -17,7 +16,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { estimateDelivery } from "./delivery-estimate";
 import { NoticePanel } from "./fields";
 import { OrderLines, Totals, displayLinesFromOrder } from "./order-lines";
-import { getShippingOption } from "./shipping-options";
+import { getShippingOption, shipToCountryName } from "./shipping-options";
 import { useMounted } from "./use-mounted";
 
 /**
@@ -54,7 +53,7 @@ function OrderDetail({ order, showAssessmentCta }: { order: Order; showAssessmen
   const status = STATUS_LABEL[order.status];
   const option = getShippingOption(order.shippingOptionId);
   const estimate = option ? estimateDelivery(option, order.createdAt) : undefined;
-  const country = COUNTRY_MAP[order.shippingAddress.countryCode]?.name ?? order.shippingAddress.countryCode;
+  const country = shipToCountryName(order.shippingAddress.countryCode);
   const research = orderHasResearchItems(order);
   const lines = displayLinesFromOrder(order.lines);
   const itemCount = order.lines.reduce((n, l) => n + l.qty, 0);
@@ -109,14 +108,14 @@ function OrderDetail({ order, showAssessmentCta }: { order: Order; showAssessmen
               <ol className="cell-grid sm:grid-cols-3">
                 <NextStep index="01" title="Packed">
                   {option?.id === "express"
-                    ? "Packed for next-working-day dispatch."
-                    : "Packed today if you ordered before 2 pm on a working day, otherwise the next working day."}
+                    ? `Packed chilled for same-day courier collection if you ordered before 2 pm ${COMMERCE.market.timezone} on a working day, otherwise the next working day.`
+                    : `Packed chilled today if you ordered before 2 pm ${COMMERCE.market.timezone} on a working day, otherwise the next working day.`}
                 </NextStep>
                 <NextStep index="02" title="Tracked">
-                  Tracking number by email to {order.email} as soon as the parcel leaves the lab.
+                  Tracking number by email to {order.email} as soon as the parcel leaves us. Refrigerate the pen as soon as it arrives.
                 </NextStep>
                 <NextStep index="03" title="Certified">
-                  The certificate of analysis for each batch is in the box and published against the lot number on the vial.
+                  The certificate of analysis for each lot is in the box and published against the lot number on the carton.
                 </NextStep>
               </ol>
             </section>

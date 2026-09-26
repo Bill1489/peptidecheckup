@@ -1,3 +1,4 @@
+import { shipToCountryName } from "@/components/checkout/shipping-options";
 import { COMPOUNDS } from "@/data/compounds";
 import { PRODUCTS } from "@/data/products";
 import { JURISDICTION_LABELS } from "@/data/types";
@@ -8,9 +9,13 @@ import { SUITABILITY_DESCRIPTIONS } from "@/lib/engine/types";
 import { titleCase } from "@/lib/utils";
 import {
   ASSESSMENT_MINUTES,
+  authorisedElsewhereNames,
+  blendNames,
   blendProducts,
   CHECKUP,
   CHECKUP_SHORT,
+  investigationalNames,
+  joinNames,
   NAMED_JURISDICTIONS,
   numberWord,
   penComponents,
@@ -26,27 +31,32 @@ export interface FaqItem {
 }
 
 const jurisdictionList = NAMED_JURISDICTIONS.map((j) => JURISDICTION_LABELS[j]).join(", ");
-const standard = COMMERCE.shippingOptions[0];
-const express = COMMERCE.shippingOptions[1];
-const international = COMMERCE.shippingOptions[2];
+const option = (id: string) => COMMERCE.shippingOptions.find((o) => o.id === id);
+const standard = option("standard") ?? COMMERCE.shippingOptions[0];
+const express = option("express");
+const gcc = option("gcc");
+const international = option("international") ?? COMMERCE.shippingOptions[COMMERCE.shippingOptions.length - 1];
+const gccCountries = gcc ? joinNames((gcc.regions as readonly string[]).map((c) => shipToCountryName(c))) : "";
 const freeFrom = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 const checkupPromo = COMMERCE.promoCodes.CHECKUP10;
 const blends = blendProducts();
 const wada = wadaListedProducts();
 const nonPeptide = PRODUCTS.find((p) => p.slug === "nad");
+const authorisedElsewhere = authorisedElsewhereNames();
+const investigational = investigationalNames();
 
 /** Eight store + assessment questions shown on the home page (and first on /faq). */
 export const HOME_FAQ: FaqItem[] = [
   {
     id: "research-use",
     question: "What does “research use only” mean?",
-    answer: `None of the compounds in the ${BRAND.displayName} range is authorised as a medicine in the United Kingdom. UK law lets them be supplied as laboratory reagents for research, not for human use, so the label says exactly that: not a medicine, not for human consumption. Purchasers must be 18 or over and confirm the intended use at checkout. Lot testing tells you what is in the pen; it does not change the legal status of the compound or make it a medicine.`,
+    answer: `None of the pens in the ${BRAND.displayName} range is supplied as a medicine. They are laboratory reagents for research, not for human use, and the label says exactly that: not a medicine, not for human consumption. ${authorisedElsewhere.length > 0 ? `Some of the compounds inside them — ${joinNames(authorisedElsewhere)} — are authorised medicines in other countries; the pens are research products of the same compounds, not those medicines, and are not supplied as treatment. ` : ""}Purchasers must be 18 or over and confirm the intended use at checkout. Lot testing tells you what is in the pen; it does not change the legal status of the compound or make it a medicine.`,
     link: { href: "/safety", label: "Safety and labelling" },
   },
   {
     id: "pre-filled",
     question: "Is the pen pre-filled?",
-    answer: `Yes. Every pen in the range holds 3 mL of solution in a multi-dose pen with a numbered dial window; the dial sets the volume delivered per actuation. There is no powder, no diluent and no drawing up. The amount of compound in the pen is stated on the carton, on the product page and on the certificate for the lot. ${titleCase(numberWord(blends.length))} of the ${numberWord(PRODUCTS.length)} pens — ${blends.map((b) => b.name).join(" and ")} — are blends, with the component split stated on the certificate.`,
+    answer: `Yes. Every pen in the range holds 3 mL of solution in a multi-dose pen with a numbered dial window; the dial sets the volume delivered per actuation. There is no powder, no diluent and no drawing up. The amount of compound in the pen is stated on the carton, on the product page and on the certificate for the lot. ${titleCase(numberWord(blends.length))} of the ${PRODUCTS.length} pens — ${blendNames()} — are blends, with the component split stated on the certificate.`,
     link: { href: "/shop", label: "See the range" },
   },
   {
@@ -66,13 +76,13 @@ export const HOME_FAQ: FaqItem[] = [
   {
     id: "not-a-fit",
     question: `What does the ${CHECKUP_SHORT} do if I’m not a fit?`,
-    answer: `It says so. ${SUITABILITY_DESCRIPTIONS.higher_concern} When that happens the verdict is “not recommended”: the report names the answer that caused it, nothing is added to your cart, and you are pointed to a clinician instead. Where no pen in the range is researched for your goal — sleep or libido, for example — the ${CHECKUP_SHORT} tells you that too rather than landing on something adjacent.`,
+    answer: `It says so. ${SUITABILITY_DESCRIPTIONS.higher_concern} When that happens the verdict is “not recommended”: the report names the answer that caused it, nothing is added to your cart, and you are pointed to a clinician instead. Where no pen in the range is researched for your goal, or the only one has evidence too thin to stand behind — sleep, for example — the ${CHECKUP_SHORT} tells you that too rather than landing on something adjacent.`,
     link: { href: "/how-it-works", label: `How the ${CHECKUP_SHORT} works` },
   },
   {
     id: "shipping",
     question: "When will my order ship?",
-    answer: `${COMMERCE.market.short} orders placed before 2 pm on a working day are dispatched the same day. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta}). ${international.label} is ${formatMoney(international.price)} (${international.eta}) to ${COMMERCE.shipTo.length - 1} other countries. Pens travel in insulated packaging and go in the fridge on arrival.`,
+    answer: `${COMMERCE.market.short} orders placed before 2 pm ${COMMERCE.market.timezone} on a working day are dispatched the same day, chilled. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more${express ? `; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta.toLowerCase()})` : ""}.${gcc ? ` ${gcc.label} is ${formatMoney(gcc.price)} (${gcc.eta}) to ${gccCountries}.` : ""} ${international.label} is ${formatMoney(international.price)} (${international.eta}) to the other countries we ship to. Every option is a chilled service; put the pen in the fridge on arrival.`,
     link: { href: "/shipping", label: "Shipping and returns" },
   },
   {
@@ -102,8 +112,14 @@ export const MORE_FAQ: FaqItem[] = [
   {
     id: "blends",
     question: "How are the blends graded?",
-    answer: `${blends.map((b) => `${b.name} (${penComponents(b)})`).join(" and ")} are graded per component: each compound inside the pen has its own evidence record, and the report shows each grade. The combinations themselves have not been studied in people, and the report says so rather than averaging the components into something that looks better.`,
+    answer: `${joinNames(blends.map((b) => `${b.name} (${penComponents(b)})`))} are graded per component: each compound inside the pen has its own evidence record, and the report shows each grade. The combinations themselves have not been studied in people as sold here, and the report says so rather than averaging the components into something that looks better.`,
     link: { href: "/peptides", label: "Compound directory" },
+  },
+  {
+    id: "licensed-medicines",
+    question: "Are these the same as the licensed weight-loss or other medicines?",
+    answer: `No. ${authorisedElsewhere.length > 0 ? `${joinNames(authorisedElsewhere)} are authorised medicines in one or more of the jurisdictions we track, as branded, prescription-only products made under GMP and dispensed by a pharmacy. ` : ""}The pens in the range are research products containing the same compounds: not made or licensed as medicines, not supplied as treatment, and not interchangeable with a prescription. ${investigational.length > 0 ? `${joinNames(investigational)} are investigational — in late-stage trials and not authorised anywhere. ` : ""}The pen page states this under the research-use label, and the ${CHECKUP_SHORT} repeats it on the result.`,
+    link: { href: "/shop", label: "See the range" },
   },
   ...(nonPeptide
     ? [
@@ -144,13 +160,13 @@ export const MORE_FAQ: FaqItem[] = [
   {
     id: "countries",
     question: "Which countries do you ship to?",
-    answer: `The ${COMMERCE.market.name} and ${COMMERCE.shipTo.length - 1} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
+    answer: `The ${COMMERCE.market.name}${gcc ? `, the GCC (${gccCountries})` : ""} and ${COMMERCE.shipTo.length - 1 - (gcc ? gcc.regions.length : 0)} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
     link: { href: "/shipping", label: "Shipping" },
   },
   {
     id: "regulatory-source",
     question: "Where does the regulatory status come from?",
-    answer: `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”.`,
+    answer: `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”. The ${COMMERCE.market.name} is not yet one of the named jurisdictions: the pen page says so, and the report uses the general entry and tells you to check with the local regulator.`,
     link: { href: "/methodology", label: "Methodology" },
   },
   {

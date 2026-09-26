@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
-import { productPath } from "@/components/commerce/product-utils";
+import { ILLUSTRATION_CAPTION, hasPhoto, productPath } from "@/components/commerce/product-utils";
 import type { Product } from "@/data/products";
 import { cn } from "@/lib/utils";
 import { penDose, penPrice } from "./copy";
@@ -9,7 +9,9 @@ import { penDose, penPrice } from "./copy";
 /**
  * One pen as a bordered cell: the pack photo on white, then swatch, name,
  * contents and price. The whole cell links to the pen page and inverts on
- * hover; the photo keeps its white ground so the pen stays visible.
+ * hover; the photo keeps its white ground so the pen stays visible. A pen
+ * without a photograph shows the illustration in its packaging colour with a
+ * caption that says so.
  */
 export function PenCell({
   product,
@@ -29,8 +31,11 @@ export function PenCell({
       className={cn("hover-invert flex flex-1 flex-col bg-white text-ink", className)}
       aria-label={`${product.name} — ${penDose(product)} — ${penPrice(product)}`}
     >
-      <div className="border-b border-current">
-        <ProductImage product={product} prefer="pack" frame="square" priority={priority} sizes="(min-width: 1280px) 16vw, (min-width: 768px) 33vw, 50vw" />
+      <div className="relative border-b border-current">
+        <ProductImage product={product} prefer="pack" frame="square" priority={priority} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw" />
+        {!hasPhoto(product) && (
+          <span className="absolute bottom-0 right-0 bg-white/90 px-2 py-1 font-mono text-[8.5px] uppercase tracking-[0.12em] text-muted">{ILLUSTRATION_CAPTION}</span>
+        )}
       </div>
       <span className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
         <span className="flex items-center gap-2">
@@ -65,7 +70,7 @@ export function PenCaption({ product, className }: { product: Product; className
   return (
     <span className={cn("flex min-w-0 items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em]", className)}>
       <ProductSwatch product={product} />
-      <span className="truncate">
+      <span className="min-w-0 break-words">
         {product.name} · {penDose(product)} · <span className="tnum">{penPrice(product)}</span>
       </span>
     </span>

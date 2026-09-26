@@ -9,10 +9,11 @@ import { elamipretide } from "./elamipretide";
 import { thymosinAlpha1 } from "./thymosin-alpha-1";
 import { ll37 } from "./ll-37";
 import { kpv } from "./kpv";
+import { foxo4Dri } from "./foxo4-dri";
 
 /**
  * Group: cognition/sleep, longevity & immune compounds
- * (selank, semax, dsip, epitalon, mots-c, nad, elamipretide, thymosin-alpha-1, ll-37, kpv).
+ * (selank, semax, dsip, epitalon, mots-c, nad, foxo4-dri, elamipretide, thymosin-alpha-1, ll-37, kpv).
  * Each compound lives in its own file in this folder and is registered here.
  */
 export const NEURO_LONGEVITY_IMMUNE_COMPOUNDS: Compound[] = [
@@ -22,6 +23,7 @@ export const NEURO_LONGEVITY_IMMUNE_COMPOUNDS: Compound[] = [
   epitalon,
   motsC,
   nad,
+  foxo4Dri,
   elamipretide,
   thymosinAlpha1,
   ll37,

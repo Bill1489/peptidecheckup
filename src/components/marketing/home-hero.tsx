@@ -5,8 +5,7 @@ import { productPath } from "@/components/commerce/product-utils";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, type Product } from "@/data/products";
 import { BRAND } from "@/lib/brand";
-import { titleCase } from "@/lib/utils";
-import { ASSESSMENT_MINUTES, CHECKUP, numberWord } from "./copy";
+import { ASSESSMENT_MINUTES, CHECKUP } from "./copy";
 import { PenCaption } from "./pen-cell";
 
 /**
@@ -19,22 +18,22 @@ export function HomeHero({ product }: { product: Product }) {
 
   return (
     <section className="rule-b">
-      <div className="container-x grid gap-10 py-10 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:items-center lg:gap-16 lg:py-16">
+      <div className="container-x grid grid-cols-[minmax(0,1fr)] gap-10 py-10 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:items-center lg:gap-16 lg:py-16">
         <div className="min-w-0">
           <p className="label-mono text-ink">
-            {BRAND.range.relationship} · {BRAND.range.name} pens
+            {BRAND.range.relationship} · {BRAND.range.name} pens · {count} in the range
           </p>
-          <h1 className="mt-6 text-[2.75rem] uppercase leading-[0.95] sm:text-[4rem] lg:text-[3.5rem] xl:text-[4.5rem] 2xl:text-[5.25rem]">
-            {numberWord(count)} pens.
+          <h1 className="mt-6 break-words text-[2.5rem] uppercase leading-[0.95] sm:text-[4rem] lg:text-[3.5rem] xl:text-[4.5rem] 2xl:text-[5.25rem]">
+            The pen.
             <br />
-            One honest
+            The paperwork.
             <br />
-            answer.
+            The right one.
           </h1>
           <p className="mt-6 max-w-lg text-pretty text-[15px] leading-relaxed text-ink-3 sm:text-[17px]">
-            {titleCase(numberWord(count))} pre-filled 3 mL dose-dial pens, each lot tested by an
-            independent laboratory with the certificate published against the lot number. The {ASSESSMENT_MINUTES}-minute {CHECKUP} matches you to
-            one of them — or tells you not to buy.
+            {count} pre-filled 3 mL dose-dial pens at the manufacturer&apos;s list prices, each lot tested by an independent laboratory with the
+            certificate published against the lot number. The {ASSESSMENT_MINUTES}-minute {CHECKUP} matches you to one of them — or tells you not to
+            buy.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/assessment" size="xl" variant="primary">
@@ -42,7 +41,7 @@ export function HomeHero({ product }: { product: Product }) {
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
             <Button href="/shop" size="xl" variant="secondary">
-              Shop the range
+              Shop all {count}
             </Button>
           </div>
         </div>

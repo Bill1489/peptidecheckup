@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { COUNTRY_MAP } from "@/data/countries";
 import { RESEARCH_USE_LABEL } from "@/lib/brand";
 import type { CheckoutAcknowledgements, CheckoutAddress, CheckoutContact, CheckoutStep } from "@/lib/commerce/checkout-store";
 import type { ShippingOption } from "@/lib/commerce/config";
@@ -10,6 +9,7 @@ import { formatMoney } from "@/lib/commerce/money";
 import type { PaymentProvider } from "@/lib/commerce/payments";
 import { cardBrand, last4, type CardDetails } from "../card-format";
 import { Checkbox, ErrorPanel, NoticePanel } from "../fields";
+import { shipToCountryName } from "../shipping-options";
 import type { AckField, Errors } from "../validation";
 
 function ReviewBlock({
@@ -72,7 +72,7 @@ export function ReviewStep({
   payError?: string;
 }) {
   const err = (k: AckField) => (showErrors ? errors[k] : undefined);
-  const country = COUNTRY_MAP[address.countryCode]?.name ?? address.countryCode;
+  const country = shipToCountryName(address.countryCode);
   const brand = cardBrand(card.number);
 
   return (

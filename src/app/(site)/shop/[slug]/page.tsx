@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/commerce/product-detail";
-import { productCompounds, productPath } from "@/components/commerce/product-utils";
+import { productCompounds, productPath, rangeCategory, rangeCategoryDef, regulatoryNote } from "@/components/commerce/product-utils";
 import { JsonLd, type JsonLdObject } from "@/components/marketing/json-ld";
 import { PRODUCTS, defaultVariant, getProductBySlug, purchasable, type Availability, type Product } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
@@ -92,6 +92,7 @@ function buildJsonLd(product: Product): JsonLdObject {
     : undefined;
 
   const images = imageUrls(product);
+  const regulatory = regulatoryNote(product);
 
   const productNode: JsonLdObject = {
     "@type": "Product",
@@ -106,6 +107,8 @@ function buildJsonLd(product: Product): JsonLdObject {
     ...(images.length ? { image: images } : {}),
     additionalProperty: [
       { "@type": "PropertyValue", name: "Sale channel", value: product.channel },
+      { "@type": "PropertyValue", name: "Manufacturer's category", value: rangeCategoryDef(rangeCategory(product)).label },
+      ...(regulatory ? [{ "@type": "PropertyValue", name: "Regulatory position", value: regulatory.short }] : []),
       { "@type": "PropertyValue", name: "Format", value: product.pen ? `Pre-filled dose-dial pen, ${product.pen.volumeMl} mL` : product.form },
       ...(product.pen ? [{ "@type": "PropertyValue", name: "Contents", value: product.pen.composition }] : []),
       ...(product.coa

@@ -4,12 +4,15 @@ import { EvidenceMeter } from "@/components/ui/badge";
 import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
 import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
 import {
+  ILLUSTRATION_CAPTION,
   WADA_LABELS,
   formatLine,
   goalLabel,
+  hasPhoto,
   priceLine,
   primaryGoalEvidence,
   productPath,
+  regulatoryNote,
   wadaStatus,
 } from "@/components/commerce/product-utils";
 import { PRODUCTS, purchasable, type Product } from "@/data/products";
@@ -69,6 +72,19 @@ const ROWS: Row[] = [
       );
     },
   },
+  {
+    id: "regulatory",
+    label: "Regulatory",
+    cell: (p) => {
+      const note = regulatoryNote(p);
+      return (
+        <span className="flex flex-col gap-1 text-[12.5px] leading-snug text-ink-3">
+          <span>Research use only</span>
+          {note && <span className={cn("font-mono text-[10.5px] uppercase tracking-[0.1em]", note.kind === "investigational" ? "text-accent-600" : "text-ink")}>{note.short}</span>}
+        </span>
+      );
+    },
+  },
   { id: "price", label: "Price", cell: (p) => <span className="font-mono text-[15px] tnum text-ink">{priceLine(p) ?? "—"}</span> },
   {
     id: "add",
@@ -83,14 +99,20 @@ const ROWS: Row[] = [
 ];
 
 /**
- * "Compare the range": one column per pen, the row labels stuck to the left
- * so the table can scroll horizontally on a phone without losing context.
+ * Side-by-side comparison: one column per pen, the row labels stuck to the
+ * left so the table can scroll horizontally on a phone without losing
+ * context. Meant for a handful of pens at a time — the shop page feeds it one
+ * manufacturer's category per tab (see `RangeCompareTabs`).
  */
-export function RangeCompare({ products = PRODUCTS, className }: { products?: Product[]; className?: string }) {
+export function RangeCompare({ products = PRODUCTS, caption, className }: { products?: Product[]; caption?: string; className?: string }) {
+  const names = products.map((p) => p.name);
+  const label = caption ?? `${products.length} pens compared`;
   return (
     <div className={cn("overflow-x-auto border border-ink", className)}>
-      <table className="w-full min-w-[72rem] border-collapse text-left">
-        <caption className="sr-only">The six pens compared: contents, concentration, format, best for, human evidence, WADA status and price.</caption>
+      <table className="w-full border-collapse text-left" style={{ minWidth: `${9 + products.length * 11}rem` }}>
+        <caption className="sr-only">
+          {label}: {names.join(", ")} — contents, concentration, format, best for, human evidence, WADA status, regulatory position and price.
+        </caption>
         <thead>
           <tr className="border-b border-ink">
             <th scope="col" className="sticky left-0 z-[1] w-[9rem] min-w-[9rem] border-r border-ink bg-white p-4 align-bottom">
@@ -101,6 +123,7 @@ export function RangeCompare({ products = PRODUCTS, className }: { products?: Pr
                 <div className="border-t-[3px]" style={{ borderTopColor: p.visual.color ?? "#0b0b0c" }}>
                   <Link href={productPath(p.slug)} className="group block p-3" aria-label={`${p.name} — view product`}>
                     <ProductImage product={p} prefer="pack" frame="square" className="mx-auto w-24" sizes="96px" />
+                    {!hasPhoto(p) && <span className="mt-1 block text-center font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted">{ILLUSTRATION_CAPTION}</span>}
                     <span className="mt-3 flex items-center gap-2">
                       <ProductSwatch product={p} />
                       <span className="font-display text-[14px] uppercase leading-none tracking-[-0.02em] text-ink transition-colors group-hover:text-brand-600">

@@ -1,11 +1,23 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { EvidenceBadge, EvidenceMeter, RegulatoryBadge } from "@/components/ui/badge";
-import { assessmentPath, blendStackNotes, isBlend, productComponents, type ProductComponent } from "@/components/commerce/product-utils";
+import {
+  assessmentPath,
+  blendStackNotes,
+  headlineRegulatoryStatus,
+  isBlend,
+  joinNames,
+  productComponents,
+  regulatorySummary,
+  type ProductComponent,
+} from "@/components/commerce/product-utils";
 import type { Product } from "@/data/products";
-import type { Compound, StackEvidence, StackNote } from "@/data/types";
-import { HUMAN_EVIDENCE_LABELS } from "@/data/types";
+import type { Compound, RegulatoryStatus, StackEvidence, StackNote } from "@/data/types";
+import { HUMAN_EVIDENCE_LABELS, REGULATORY_LABELS } from "@/data/types";
+import { COMMERCE } from "@/lib/commerce/config";
 import { formatDate } from "@/lib/utils";
+
+const STATUS_ORDER: RegulatoryStatus[] = ["authorised", "investigational", "not_authorised", "unclear"];
 
 function wadaLine(compound: Compound) {
   if (compound.wadaProhibited === true) return "Prohibited at all times";
@@ -83,7 +95,8 @@ export function EvidencePanel({ product, className }: { product: Product; classN
 }
 
 function CompoundRecord({ compound, compact }: { compound: Compound; compact: boolean }) {
-  const uk = compound.regulatory.UK;
+  const headline = headlineRegulatoryStatus(compound);
+  const { byStatus, other } = regulatorySummary(compound);
   return (
     <article className="border border-ink" aria-label={`${compound.name} — evidence record`}>
       {compact && (
@@ -106,10 +119,24 @@ function CompoundRecord({ compound, compact }: { compound: Compound; compact: bo
           <dd className="mt-2 text-[13px] leading-snug text-ink">{HUMAN_EVIDENCE_LABELS[compound.humanEvidenceLevel]}</dd>
         </div>
         <div className="bg-white p-4">
-          <dt className="label-mono">Regulatory · UK</dt>
+          <dt className="label-mono">Regulatory · jurisdictions on record</dt>
           <dd className="mt-2">
-            <RegulatoryBadge status={uk.status} size="xs" />
-            <p className="mt-2 text-[12.5px] leading-snug text-muted">{uk.summary}</p>
+            <RegulatoryBadge status={headline} size="xs" />
+            <ul className="mt-2 space-y-1 text-[12.5px] leading-snug text-muted">
+              {STATUS_ORDER.filter((s) => byStatus[s]?.length).map((s) => (
+                <li key={s}>
+                  <span className="text-ink">{REGULATORY_LABELS[s]}</span> · {joinNames(byStatus[s] ?? [])}
+                </li>
+              ))}
+              {other.status !== "unclear" && (
+                <li>
+                  <span className="text-ink">Other jurisdictions</span> · {other.summary}
+                </li>
+              )}
+              <li>
+                <span className="text-ink">{COMMERCE.market.name}</span> · no entry on record — check with the local regulator before you rely on any status.
+              </li>
+            </ul>
           </dd>
         </div>
         <div className="bg-white p-4">

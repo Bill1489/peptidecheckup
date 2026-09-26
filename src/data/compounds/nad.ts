@@ -254,6 +254,12 @@ export const nad: Compound = {
       overlap: "Both are promoted for healthy ageing and body composition.",
       note: "No human studies of tesamorelin combined with NAD+ or its precursors.",
     },
+    {
+      with: "foxo4-dri",
+      evidence: "none",
+      overlap: "Both are promoted for healthy ageing; NAD+ supports the DNA-repair and metabolic enzymes of cells that FOXO4-DRI is designed to remove.",
+      note: "No human data on the combination. The human evidence for NAD+ is for oral precursors, and FOXO4-DRI has none.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Coenzyme (nicotinamide adenine dinucleotide) — not a peptide" },

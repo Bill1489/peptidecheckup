@@ -194,6 +194,12 @@ export const motsC: Compound = {
       overlap: "Both are marketed for mitochondrial function and energy.",
       note: "Sold together in 'mitochondrial' stacks. No human data on the combination; MOTS-c has no human efficacy data, and the human data for NAD+ are for oral precursors.",
     },
+    {
+      with: "foxo4-dri",
+      evidence: "none",
+      overlap: "Both appear in 'cellular ageing' stacks; MOTS-c targets mitochondrial metabolism, FOXO4-DRI senescent cells.",
+      note: "No human data on the combination; neither has human efficacy data of its own.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Mitochondrial-derived peptide (16 amino acids)" },

@@ -4,11 +4,21 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpecRow } from "@/components/ui/card";
 import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
-import { componentSlugs, isBlend, productComponents, productPath, productsWithCoa } from "@/components/commerce/product-utils";
+import {
+  ILLUSTRATION_CAPTION,
+  componentSlugs,
+  hasPhoto,
+  isBlend,
+  joinNames,
+  productComponents,
+  productPath,
+  productsWithCoa,
+} from "@/components/commerce/product-utils";
+import { numberWord } from "@/components/marketing/copy";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
-import { formatDate } from "@/lib/utils";
+import { formatDate, titleCase } from "@/lib/utils";
 import { COMMERCE } from "@/lib/commerce/config";
 
 const certified = productsWithCoa();
@@ -18,7 +28,18 @@ const componentCount = certified.reduce((n, p) => n + Math.max(1, componentSlugs
 const purities = certified.map((p) => Number.parseFloat(p.coa!.purity.replace(/^[^\d]*/, ""))).filter((n) => Number.isFinite(n));
 const minPurity = purities.length ? Math.min(...purities).toFixed(1) : "—";
 const latest = certified[0]?.coa?.testedOn;
-const blendNames = blends.map((p) => p.name).join(" and ");
+const blendNames = joinNames(blends.map((p) => p.name));
+/** Pens that contain the copper peptide — they share its light-sensitivity note. */
+const copperPens = joinNames(PRODUCTS.filter((p) => componentSlugs(p).includes("ghk-cu")).map((p) => p.name));
+/** "TES Tesamorelin, MOT MOTS-C, …" — the pen code is the second field of the lot number. */
+const penCodeExamples = certified
+  .slice(0, 4)
+  .map((p) => {
+    const code = p.coa!.batch.split("-")[1];
+    return code ? `${code} ${p.name}` : undefined;
+  })
+  .filter((s): s is string => Boolean(s))
+  .join(", ");
 
 export const metadata: Metadata = {
   title: `Lab testing — ${certified.length} pens, ${certified.length} published certificates of analysis`,
@@ -114,7 +135,7 @@ const STORAGE: { label: string; value: string }[] = [
   { label: "In use", value: "2–8 °C between uses; cap on, out of direct light" },
   { label: "Freezing", value: "Do not freeze. A pen that has frozen should not be used" },
   { label: "Room temperature", value: "Short excursions in transit only — not for storage" },
-  { label: "Copper peptide (GHK-Cu, Klow)", value: "As above; keep out of direct light between uses" },
+  { label: `Copper peptide (${copperPens})`, value: "As above; keep out of direct light between uses" },
   { label: "In transit", value: "Insulated packaging with gel packs, tracked; shipped chilled" },
   { label: "Dispatch", value: `Same working day before 2 pm (${COMMERCE.market.short})` },
   { label: "Pen needles", value: "Not included; a pen-needle compatibility note is in the box" },
@@ -208,10 +229,11 @@ export default function LabTestingPage() {
             <div>
               <p className="label-mono">02 — Reading a certificate</p>
               <h2 id="reading-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
-                Six lines that matter
+                {titleCase(numberWord(READING.length))} lines that matter
               </h2>
               <p className="mt-4 text-[14px] leading-relaxed text-muted">
-                A specimen certificate for the current Tesamorelin lot, annotated. The same six fields appear on every pen page.
+                A specimen certificate for the current Tesamorelin lot, annotated. The same {numberWord(READING.length)} fields appear on every pen
+                page.
               </p>
             </div>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -243,7 +265,8 @@ export default function LabTestingPage() {
               </h2>
               <p className="mt-4 text-[14px] leading-relaxed text-muted">
                 {blendNames} put more than one compound in one pen. The certificate treats each as its own analyte: identity confirmed and purity
-                reported for every component, endotoxin on the finished solution.
+                reported for every component, endotoxin on the finished solution. Where the carton states only a combined amount, the per-component
+                split is on the certificate.
               </p>
             </div>
             <div className="cell-grid grid-cols-1 lg:grid-cols-2">
@@ -303,7 +326,11 @@ export default function LabTestingPage() {
             <div className="mt-6 grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4">
               {[
                 { part: "AV", label: "Brand", body: `${BRAND.range.name} — the manufacturer prefix on every lot we stock.` },
-                { part: "TES", label: "Pen code", body: "Three characters per pen: TES Tesamorelin, MOT MOTS-C, GHK GHK-Cu, NAD NAD+, WOL Wolverine, KLW Klow." },
+                {
+                  part: "TES",
+                  label: "Pen code",
+                  body: `Three characters per pen — ${penCodeExamples} and so on. Every pen's current lot, with its code, is in the certificates table below.`,
+                },
                 { part: "2609", label: "Release", body: "Year and month the lot was released: 26 = 2026, 09 = September." },
                 { part: "A", label: "Lot letter", body: "Sequential within the month. A is the first lot released, B the second." },
               ].map((b) => (
@@ -364,7 +391,7 @@ export default function LabTestingPage() {
                     <tr key={p.id} className="border-b border-line last:border-b-0 hover:bg-paper-2">
                       <th scope="row" className="px-4 py-3 font-semibold text-ink">
                         <Link href={productPath(p.slug)} className="group flex items-center gap-3">
-                          <span className="w-10 shrink-0 border border-line bg-white">
+                          <span className="w-10 shrink-0 border border-line bg-white" title={hasPhoto(p) ? undefined : ILLUSTRATION_CAPTION}>
                             <ProductImage product={p} prefer="pack" frame="square" sizes="40px" />
                           </span>
                           <span className="flex min-w-0 flex-col">

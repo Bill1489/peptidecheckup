@@ -327,6 +327,12 @@ export const tesamorelin: Compound = {
       overlap: "Both are promoted for healthy ageing and body composition.",
       note: "No human studies of tesamorelin combined with NAD+ or its precursors.",
     },
+    {
+      with: "gonadorelin",
+      evidence: "none",
+      overlap: "Both are hypothalamic releasing-hormone analogues (GHRH and GnRH) acting on different pituitary cells.",
+      note: "Marketed together in 'hormone optimisation' protocols. No human data on the combination; each stimulates a separate pituitary axis and there is no reason to expect one to help the other.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Synthetic GHRH analogue" },

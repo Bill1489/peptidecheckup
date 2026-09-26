@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BRAND, DISCLAIMER_SHORT } from "@/lib/brand";
+import { RANGE_SIZE } from "@/lib/assessment/derived";
 import type { SectionId } from "@/lib/assessment/types";
 import { buildReview, type ReviewStatus } from "@/lib/assessment/summary";
 import { Badge } from "@/components/ui/badge";
@@ -95,8 +96,8 @@ export function Review({
       <div className="grid gap-3 border border-ink bg-paper-2 p-4 text-xs leading-relaxed text-muted sm:p-5">
         <p className="text-ink-2">
           Your match is produced on this device by a deterministic, clinician-reviewable rules engine. It screens every
-          compound in the six {BRAND.range.name} pens against your answers and our maintained evidence and regulatory database —
-          nothing is guessed — then scores each pen for fit. A safety flag can rule a pen out entirely.
+          compound in the {RANGE_SIZE} {BRAND.range.name} pens against your answers and our maintained evidence and regulatory
+          database — nothing is guessed — then scores each pen for fit. A safety flag can rule a pen out entirely.
         </p>
         <p>{DISCLAIMER_SHORT}</p>
       </div>

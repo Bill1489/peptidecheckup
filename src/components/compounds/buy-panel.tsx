@@ -53,9 +53,10 @@ function PenName({ product }: { product: Product }) {
 
 /**
  * Detail-page "Buy" panel. Renders from the static catalogue, so the server and
- * first client render match; the cart is only touched on click. A compound that
- * is only stocked inside a blend (BPC-157 → Wolverine, KPV → Klow) resolves to
- * that pen and says so.
+ * first client render match; the cart is only touched on click. A compound with
+ * its own pen resolves to that pen even when it is also in a blend (BPC-157 →
+ * its own pen, not Wolverine); a compound only stocked inside a blend
+ * (cagrilintide → CagriSema) resolves to the blend and says so.
  */
 export function BuyPanel({ compound }: { compound: Compound }) {
   const commerce = commerceForCompound(compound.slug);
@@ -69,7 +70,7 @@ export function BuyPanel({ compound }: { compound: Compound }) {
   if (state === "buy" && product && variant) {
     const prices = product.variants.map((v) => v.price).filter((p) => p > 0);
     const multi = product.variants.length > 1;
-    // Only worth saying "from £x" when a cheaper size than the one shown exists.
+    // Only worth saying "from AED x" when a cheaper size than the one shown exists.
     const cheaperExists = multi && prices.some((p) => p < variant.price);
     return (
       <section className="p-5 sm:p-6" aria-label={`Buy ${product.name}`}>

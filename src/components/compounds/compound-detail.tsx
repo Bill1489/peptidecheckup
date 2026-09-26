@@ -630,7 +630,7 @@ export function CompoundDetail({ compound }: { compound: Compound }) {
         <div className="container-x grid gap-8 py-14 lg:grid-cols-[200px_minmax(0,1fr)_auto] lg:items-end lg:gap-12 lg:py-20">
           <p className="label-mono text-white/60">Personal assessment</p>
           <div className="max-w-2xl">
-            <h2 id="detail-cta-title" className="text-balance text-[2rem] uppercase leading-[0.95] sm:text-[2.8rem] lg:text-[3.4rem]">
+            <h2 id="detail-cta-title" className="text-balance break-words text-[2rem] uppercase leading-[0.95] sm:text-[2.6rem] xl:text-[3.4rem]">
               Check {compound.name} against your history
             </h2>
             <p className="mt-5 text-pretty text-[15px] leading-relaxed text-white/70 sm:text-[16px]">

@@ -8,7 +8,7 @@ import { EVIDENCE_LABELS } from "@/data/types";
 import { EvidenceMeter } from "@/components/ui/badge";
 import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
 import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
-import { goalLabel, primaryGoalEvidence, priceLine, productPath } from "@/components/commerce/product-utils";
+import { ILLUSTRATION_CAPTION, goalLabel, hasPhoto, primaryGoalEvidence, priceLine, productPath } from "@/components/commerce/product-utils";
 import { formatMoney } from "@/lib/commerce/money";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,8 @@ import { cn } from "@/lib/utils";
  * Range card. Photograph on white (never cropped), the packaging colour as a
  * 3px rule and a swatch, then name, contents, who it is for, price, the
  * human-evidence grade for its main goal, and two actions. `size="sm"` is the
- * compact version used for "Also in the range".
+ * compact version used for "Also in the range". Pens without a photograph
+ * show the illustration in the packaging colour with a caption saying so.
  */
 export function ProductCard({
   product,
@@ -35,6 +36,7 @@ export function ProductCard({
   const flag = product.isNew ? "New" : product.bestseller ? "Bestseller" : product.availability === "preorder" ? "Pre-order" : null;
   const color = product.visual.color ?? "#0b0b0c";
   const compact = size === "sm";
+  const photo = hasPhoto(product);
 
   return (
     <article className={cn("group relative flex h-full flex-col bg-white text-ink", className)}>
@@ -43,15 +45,25 @@ export function ProductCard({
 
       {/* Photograph */}
       <div className={cn("relative border-b border-ink bg-white", compact ? "p-2" : "p-3 sm:p-4")}>
-        <ProductImage
+          <ProductImage
           product={product}
           prefer="pack"
           frame="square"
           priority={priority}
-          sizes={compact ? "(min-width: 1024px) 20vw, 50vw" : "(min-width: 1024px) 33vw, 50vw"}
+          sizes={compact ? "(min-width: 1024px) 20vw, 50vw" : "(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"}
         />
         {flag && !compact && (
           <span className="absolute left-0 top-0 bg-ink px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-white">{flag}</span>
+        )}
+        {!photo && (
+          <span
+            className={cn(
+              "absolute bottom-0 right-0 bg-white/90 px-2 py-1 font-mono uppercase tracking-[0.12em] text-muted",
+              compact ? "text-[8.5px]" : "text-[9.5px]",
+            )}
+          >
+            {ILLUSTRATION_CAPTION}
+          </span>
         )}
       </div>
 

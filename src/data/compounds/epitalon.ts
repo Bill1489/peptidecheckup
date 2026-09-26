@@ -171,6 +171,12 @@ export const epitalon: Compound = {
       evidence: "none",
       note: "Marketed together as 'bioregulator' stacks; no combination data and neither compound has robust human evidence.",
     },
+    {
+      with: "foxo4-dri",
+      evidence: "none",
+      overlap: "Both are marketed for ageing — epitalon for telomeres and circadian rhythm, FOXO4-DRI as a senolytic.",
+      note: "Sold together in 'longevity' stacks. No human data on either compound alone, let alone in combination.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Synthetic pineal-derived tetrapeptide (Ala-Glu-Asp-Gly)" },

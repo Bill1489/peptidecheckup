@@ -295,6 +295,12 @@ export const pt141: Compound = {
       overlap: "Both slow gastric emptying and commonly cause nausea.",
       note: "No data on combined use; tolerability may be worse and absorption of oral medicines may be further delayed.",
     },
+    {
+      with: "gonadorelin",
+      evidence: "none",
+      overlap: "Both are sold for sexual health, but PT-141 acts on brain melanocortin receptors while gonadorelin acts on the hormonal axis.",
+      note: "No study has combined them. They address different problems — desire versus hormonal signalling — and there is no rationale or safety data for using both.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "Melanocortin-4 receptor agonist (α-MSH analogue)" },

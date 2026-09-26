@@ -1,9 +1,9 @@
-import { getCompounds } from "@/data/compounds";
+import { getCompound, getCompounds } from "@/data/compounds";
 import { BASE_CONDITIONS, CONDITION_MAP } from "@/data/conditions";
 import { COUNTRY_MAP, jurisdictionForCountry } from "@/data/countries";
 import { MEDICATION_CLASS_MAP } from "@/data/medications";
 import { PRODUCTS, type Product } from "@/data/products";
-import { JURISDICTION_LABELS, type Compound, type ConditionDef, type ConditionId } from "@/data/types";
+import { FAMILY_LABELS, JURISDICTION_LABELS, type Compound, type ConditionDef, type ConditionId, type GoalId } from "@/data/types";
 import { BRAND } from "@/lib/brand";
 import type { AssessmentAnswers } from "./types";
 
@@ -23,6 +23,100 @@ export function productCompoundSlugs(product: Product): string[] {
 
 /** Every compound slug that appears in the range, in catalogue order. */
 export const RANGE_COMPOUND_SLUGS: string[] = uniq(PRODUCTS.flatMap(productCompoundSlugs));
+
+/** How many pens the range holds — always read from the catalogue, never typed into copy. */
+export const RANGE_SIZE = PRODUCTS.length;
+
+const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+
+/** Small counts as words ("six"), digits above twelve ("24") — for prose that names the size of the range. */
+export function numberWord(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n);
+}
+
+/** "24 pens" / "six pens" — the range described by its size, for help text and labels. */
+export function penCount(): string {
+  return `${numberWord(RANGE_SIZE)} ${RANGE_SIZE === 1 ? "pen" : "pens"}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Range groups (product picker)                                       */
+/* ------------------------------------------------------------------ */
+
+const CATEGORY_SPEC_LABEL = "Manufacturer's category";
+
+/** Display order for the manufacturer's categories; anything else follows alphabetically. */
+const CATEGORY_ORDER = [
+  "Metabolic & weight",
+  "Growth & body",
+  "Recovery & repair",
+  "Skin & beauty",
+  "Longevity & energy",
+  "Immune & gut",
+  "Hormones & sexual health",
+];
+
+/** Fallback when a product carries no manufacturer's category: derived from its first goal. */
+const GOAL_CATEGORY: Record<GoalId, string> = {
+  weight_management: "Metabolic & weight",
+  fat_loss: "Growth & body",
+  muscle_recovery: "Growth & body",
+  athletic_performance: "Growth & body",
+  injury_recovery: "Recovery & repair",
+  skin_cosmetic: "Skin & beauty",
+  hair: "Skin & beauty",
+  sexual_health: "Hormones & sexual health",
+  sleep: "Longevity & energy",
+  general_wellbeing: "Longevity & energy",
+  longevity: "Longevity & energy",
+  other: "Other",
+};
+
+/** The manufacturer's category for a pen (from its spec sheet), or one derived from its first goal. */
+export function productCategory(product: Product): string {
+  const spec = product.specs.find((s) => s.label === CATEGORY_SPEC_LABEL)?.value.trim();
+  if (spec) return spec;
+  const goal = product.goals[0];
+  return goal ? GOAL_CATEGORY[goal] : "Other";
+}
+
+export interface ProductGroup {
+  id: string;
+  label: string;
+  products: Product[];
+}
+
+/** The range grouped by category, in a fixed category order, each group in catalogue order. */
+export function productGroups(products: Product[] = PRODUCTS): ProductGroup[] {
+  const map = new Map<string, Product[]>();
+  for (const p of products) {
+    const label = productCategory(p);
+    map.set(label, [...(map.get(label) ?? []), p]);
+  }
+  const rank = (label: string) => {
+    const i = CATEGORY_ORDER.indexOf(label);
+    return i === -1 ? CATEGORY_ORDER.length : i;
+  };
+  return Array.from(map.entries())
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+    .map(([label, items]) => ({ id: label.toLowerCase().replace(/[^a-z0-9]+/g, "-"), label, products: items }));
+}
+
+/** Plain-text search over a pen's name, subtitle, tags and the compounds inside it. */
+export function productMatchesQuery(product: Product, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const haystack = [
+    product.name,
+    product.subtitle,
+    ...product.tags,
+    ...productCompoundSlugs(product).map((slug) => getCompound(slug)?.name ?? slug),
+    productCategory(product),
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q);
+}
 
 /** Range compounds that resolve in the evidence database (records still being added are skipped). */
 export function rangeCompounds(): Compound[] {
@@ -147,12 +241,22 @@ export function conditionRows(a: AssessmentAnswers): { base: ConditionDef[]; ext
 /* ------------------------------------------------------------------ */
 
 const MAX_HINT_COMPOUNDS = 2;
+/** Name every compound up to this many; beyond it, name the first few and count the rest. */
+const MAX_NAMED_COMPOUNDS = 8;
+const NAMED_SAMPLE = 5;
+
+/** "A, B and C" for short lists; "22 compounds — A, B, C, D, E and 17 more" for the whole range. */
+function compoundList(names: string[]): string {
+  if (names.length <= MAX_NAMED_COMPOUNDS) return joinNatural(names);
+  const rest = names.length - NAMED_SAMPLE;
+  return `${names.length} compounds — ${names.slice(0, NAMED_SAMPLE).join(", ")} and ${rest} more`;
+}
 
 export function riskHint(stepId: string, a: AssessmentAnswers): string | undefined {
   const picked = selectedCompounds(a).length > 0;
   const compounds = relevantCompounds(a);
   const names = compounds.map((c) => c.name);
-  const scope = picked ? "The pens you picked contain" : "The six pens contain";
+  const scope = picked ? "The pens you picked contain" : `The ${penCount()} contain`;
 
   switch (stepId) {
     case "serious-allergy":
@@ -160,13 +264,17 @@ export function riskHint(stepId: string, a: AssessmentAnswers): string | undefin
 
     case "component-allergy":
       return names.length
-        ? `This covers the active compound and any excipients listed on the product leaflet. ${scope} ${joinNatural(names)}.`
+        ? `This covers the active compound and any excipients listed on the product leaflet. ${scope} ${compoundList(names)}.`
         : "This covers the active compound and any excipients listed on the product leaflet.";
 
     case "previous-reaction": {
-      const classes = uniq(compounds.map((c) => c.classLabel)).slice(0, 4);
+      // A few picked pens: name their classes. The whole range: name its families, so nothing is silently left out.
+      const classes =
+        compounds.length > MAX_NAMED_COMPOUNDS
+          ? uniq(compounds.map((c) => FAMILY_LABELS[c.family]))
+          : uniq(compounds.map((c) => c.classLabel)).slice(0, 4);
       return classes.length
-        ? `Similar treatments include anything in the same class as the compounds in the range: ${joinNatural(classes.map(lowerFirst))}.`
+        ? `Similar treatments include anything in the same class as the compounds in ${picked ? "the pens you picked" : "the range"}: ${joinNatural(classes.map(lowerFirst))}.`
         : "Similar treatments include other peptides, injectable medicines or products with the same mechanism.";
     }
 

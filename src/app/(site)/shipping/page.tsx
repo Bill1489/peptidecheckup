@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle } from "@/components/checkout/page-title";
-import { SHIP_TO_COUNTRIES } from "@/components/checkout/shipping-options";
+import { SHIP_TO_COUNTRIES, shipToCountryName } from "@/components/checkout/shipping-options";
+import { joinNames } from "@/components/commerce/product-utils";
 import { Button } from "@/components/ui/button";
 import { SpecRow } from "@/components/ui/card";
+import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney } from "@/lib/commerce/money";
@@ -11,6 +13,7 @@ import { formatMoney } from "@/lib/commerce/money";
 const FREE_THRESHOLD = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 const VAT_PERCENT = `${Math.round(COMMERCE.vatRate * 100)}%`;
 const CUT_OFF = "2 pm";
+const STORAGE_LINE = PRODUCTS.find((p) => p.pen)?.pen?.storage ?? "Refrigerate at 2–8 °C. Do not freeze.";
 
 export const metadata: Metadata = {
   title: "Shipping & returns",
@@ -24,9 +27,10 @@ export const metadata: Metadata = {
   },
 };
 
+/** "United Arab Emirates" · "Saudi Arabia, Qatar, Kuwait, Bahrain and Oman" · "All other destinations" — from the country catalogue. */
 function regionsLabel(regions: readonly string[]) {
   if (regions.includes("*")) return "All other destinations";
-  return regions.map((r) => (r === COMMERCE.market.countryCode ? COMMERCE.market.name : r === "GB" ? "United Kingdom" : r)).join(", ");
+  return joinNames(regions.map((r) => shipToCountryName(r)));
 }
 
 const SECTIONS = [
@@ -112,11 +116,11 @@ export default function ShippingPage() {
                 </table>
               </div>
               <p>
-                Estimates are working days from dispatch, not from the moment you order.{" "}
+                Estimates are working days from dispatch, not from the moment you order; the same-day courier delivers on the day of dispatch.{" "}
                 {standard && (
                   <>
-                    {standard.label} is free on {COMMERCE.market.short} orders of {FREE_THRESHOLD} or more after any discount; express and international rates are
-                    always charged.
+                    {standard.label} is free on {COMMERCE.market.short} orders of {FREE_THRESHOLD} or more after any discount; same-day, GCC and international rates
+                    are always charged. Every option is a chilled service.
                   </>
                 )}
               </p>
@@ -149,33 +153,35 @@ export default function ShippingPage() {
                 <SpecRow label="Cut-off" value={`${CUT_OFF} ${COMMERCE.market.timezone}, Monday to Friday`} />
                 <SpecRow label="Before cut-off" value="Dispatched the same working day" />
                 <SpecRow label="After cut-off / weekends" value="Dispatched the next working day" />
-                <SpecRow label="Tracking" value="Emailed when the parcel leaves the lab" />
-                <SpecRow label="Certificate of analysis" value="In the box, per batch, and published online" />
+                <SpecRow label="Packaging" value="Insulated box with gel packs · tracked · chilled" />
+                <SpecRow label="Tracking" value="Emailed when the parcel leaves us" />
+                <SpecRow label="Certificate of analysis" value="In the box, per lot, and published online" />
               </div>
               <p>
-                Lyophilised peptides are stable at ambient temperature for the duration of transit. Vials are argon-flushed and crimp-sealed,
-                packed in a rigid inner box with the batch certificate of analysis. Store as specified on the product page as soon as the parcel
-                arrives.
+                Every pen in the range is a pre-filled 3 mL solution and is temperature-sensitive. Pens travel in insulated packaging with gel
+                packs on a chilled courier service, with the lot-numbered carton and the certificate of analysis for that lot in the box. Put the
+                pen in the fridge as soon as the parcel arrives: {STORAGE_LINE}
               </p>
               <p>
-                Pre-filled pens are prescription-only medicines and are never dispatched by us. If a consultation with our partner prescriber
-                results in a prescription, the dispensing pharmacy ships the medicine in temperature-controlled packaging with a monitored cold
-                chain and its own tracking.
+                Pen needles are not included unless the listing says so. We sell no prescription-only medicines and run no consultation service;
+                everything we dispatch is a research-use pen from the {BRAND.range.name} range.
               </p>
             </Section>
 
             {/* Returns */}
             <Section id="returns" index="04" title="Returns">
               <ul className="cell-grid sm:grid-cols-3">
-                <ReturnCell title="Research products">
-                  Unopened, seal intact, within 14 days of delivery. Opened or reconstituted vials cannot be returned because sterility cannot
-                  be verified.
+                <ReturnCell title="Unopened pens">
+                  Seal intact, within 14 days of delivery, for a refund to the original payment method. Return postage is paid by you unless the
+                  pen was faulty or sent in error.
                 </ReturnCell>
-                <ReturnCell title="Prescription medicines">
-                  Supplied and handled by the dispensing pharmacy under its own returns policy. Medicines cannot be returned to us.
+                <ReturnCell title="Opened pens">
+                  Cannot be returned. Once the seal is broken neither sterility nor the cold chain can be verified, so the pen cannot be
+                  restocked.
                 </ReturnCell>
-                <ReturnCell title="Supplies, supplements and cosmetics">
-                  Unopened and unused, within 14 days of delivery. Sterile items with a broken seal are not returnable.
+                <ReturnCell title="Faulty or wrong lot">
+                  A pen that arrives warm, with a broken seal, or that does not match the certificate for its lot is replaced or refunded, including
+                  return postage where we ask for it back.
                 </ReturnCell>
               </ul>
               <p>
@@ -183,16 +189,16 @@ export default function ShippingPage() {
                 <a href={`mailto:${BRAND.supportEmail}`} className="link-rule">
                   {BRAND.supportEmail}
                 </a>{" "}
-                with your order number. We confirm the return address and refund to the original payment method within 5 working days of
-                receiving the goods. Return postage is paid by the customer unless the item was faulty or sent in error.
+                with your order number and the lot number on the carton. We confirm the return address and refund within 5 working days of
+                receiving the pen.
               </p>
             </Section>
 
             {/* Damaged or lost */}
             <Section id="damaged" index="05" title="Damaged or lost">
               <p>
-                If a parcel arrives damaged, keep the packaging and email a photo of the outer box and the contents within 48 hours of
-                delivery. We replace the affected items or refund them; you do not need to return damaged vials.
+                If a parcel arrives damaged or warm, keep the packaging and email a photo of the outer box and the contents within 48 hours of
+                delivery. We replace the affected pens or refund them; you do not need to return a damaged pen unless we ask.
               </p>
               <p>
                 A parcel is treated as lost when tracking shows no movement for 5 working days ({COMMERCE.market.short}) or 15 working days (international) after

@@ -34,12 +34,17 @@ export interface ScoreBreakdown {
   goal: number;
   /** Up to +25 from the focus areas picked */
   focus: number;
-  /** Up to +10, scaled by the human-evidence grade for the goal */
+  /**
+   * Up to +10, scaled by the human-evidence grade for the goal. Negative for a
+   * goal where nothing in the range has controlled human evidence (sleep).
+   */
   evidence: number;
   /** +5 when the pre-filled pen format suits a first-time user */
   experience: number;
-  /** −15 when a tested athlete would be using a WADA-prohibited compound */
+  /** −15 when a tested athlete would be using a WADA-listed compound, or one approved by no regulator (prohibited under S0) */
   antiDoping: number;
+  /** −10 for an incretin-class weight pen when BMI is below the licensed threshold (27). Absent in results stored before v3.1. */
+  body?: number;
 }
 
 export interface ProductMatch {
@@ -63,7 +68,7 @@ export interface MatchResult {
   goal?: GoalId;
   /** Best purchasable match, if any */
   primary?: ProductMatch;
-  /** Other fits, best first (max 2) */
+  /** Other fits, best first (max 3) */
   alternatives: ProductMatch[];
   /** Products the assessment ruled out, with reasons */
   notRecommended: ProductMatch[];

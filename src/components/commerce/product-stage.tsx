@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchPanel, useMatchForProduct } from "@/components/commerce/match-panel";
 import { ProductGallery } from "@/components/commerce/product-gallery";
+import { regulatoryNote } from "@/components/commerce/product-utils";
 import { QtyStepper } from "@/components/commerce/qty-stepper";
 import { VariantPicker } from "@/components/commerce/variant-picker";
 import { AVAILABILITY_LABELS, defaultVariant, purchasable, type Product } from "@/data/products";
@@ -14,6 +15,7 @@ import { BRAND } from "@/lib/brand";
 import { useCartStore } from "@/lib/commerce/cart-store";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney, percentOff } from "@/lib/commerce/money";
+import { cn } from "@/lib/utils";
 
 const MAX_QTY = 10;
 
@@ -48,6 +50,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
   const total = variant.price * qty;
   const off = percentOff(variant.price, variant.compareAtPrice);
   const buyLabel = preorder ? "Pre-order" : "Add to cart";
+  const regulatory = regulatoryNote(product);
 
   const onAdd = () => {
     if (!canBuy) return;
@@ -131,8 +134,13 @@ export function ProductStage({ product, intro, children }: { product: Product; i
             )}
           </div>
 
-          {/* Regulatory label — always visible */}
-          <p className="mt-5 border-l-2 border-ink pl-3 text-[12.5px] leading-relaxed text-ink-3">{product.regulatoryLabel}</p>
+          {/* Regulatory label — always visible, with the compound's position read from its record */}
+          <div className="mt-5 border-l-2 border-ink pl-3 text-[12.5px] leading-relaxed text-ink-3">
+            <p>{product.regulatoryLabel}</p>
+            {regulatory && (
+              <p className={cn("mt-1.5 font-medium", regulatory.kind === "investigational" ? "text-accent-600" : "text-ink")}>{regulatory.text}</p>
+            )}
+          </div>
 
           {/* Shipping facts */}
           <ul className="mt-5 grid grid-cols-2 gap-px border border-ink bg-ink font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink">
@@ -165,7 +173,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
           <div className="container-x flex h-16 items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-display text-[13px] uppercase leading-none">{product.name}</p>
-              <p className="mt-1 truncate font-mono text-[12px] tnum text-muted">
+              <p className="mt-1 break-words font-mono text-[11px] leading-snug tnum text-muted">
                 {hideBuy ? "Not recommended for you" : inStock ? `${formatMoney(variant.price)} · ${variant.label}` : AVAILABILITY_LABELS[product.availability]}
               </p>
             </div>

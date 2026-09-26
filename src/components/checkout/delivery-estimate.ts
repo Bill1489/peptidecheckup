@@ -1,9 +1,11 @@
 import type { ShippingOption } from "@/lib/commerce/config";
 
 /**
- * Working-day delivery estimate derived from a shipping option's `eta` text
- * ("2–3 working days", "5–10 working days", "Next working day"). Dispatch is
- * same day before the 2 pm cut-off on a working day, otherwise the next one.
+ * Working-day delivery estimate derived from a shipping option's `eta` and
+ * label ("1–2 working days", "3–7 working days", "Next working day",
+ * "Same-day … Order by 2 pm"). Dispatch is same day before the 2 pm cut-off
+ * on a working day, otherwise the next one; a same-day courier delivers on
+ * the dispatch day.
  */
 
 const CUTOFF_HOUR = 14;
@@ -31,9 +33,10 @@ export function dispatchDate(placedAt: Date): Date {
   return addWorkingDays(d, 1);
 }
 
-/** Parse "2–3 working days" → [2, 3]; "Next working day" → [1, 1]; unknown → undefined. */
+/** Parse "2–3 working days" → [2, 3]; "Next working day" → [1, 1]; "Same-day" → [0, 0]; unknown → undefined. */
 export function parseWorkingDays(option: Pick<ShippingOption, "eta" | "label">): [number, number] | undefined {
   const text = `${option.eta} ${option.label}`.toLowerCase();
+  if (/same[\s-]?day/.test(text)) return [0, 0];
   const range = text.match(/(\d+)\s*(?:[–-]\s*(\d+))?\s*working day/);
   if (range) {
     const a = Number(range[1]);

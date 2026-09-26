@@ -11,11 +11,12 @@ import { SUITABILITY_LABELS } from "@/lib/engine/types";
 import { VERDICT_LABELS } from "@/lib/match/types";
 import {
   ASSESSMENT_MINUTES,
-  blendProducts,
+  authorisedElsewhereNames,
+  blendNames,
   CHECKUP,
   CHECKUP_SHORT,
+  joinNames,
   NAMED_JURISDICTIONS,
-  numberWord,
   OPTIONAL_SECTION_COUNT,
   pluralise,
   REPORT_CONTENTS,
@@ -46,7 +47,8 @@ const TOC = [
 ];
 
 const checkupPromo = COMMERCE.promoCodes.CHECKUP10;
-const standard = COMMERCE.shippingOptions[0];
+const standard = COMMERCE.shippingOptions.find((o) => o.id === "standard") ?? COMMERCE.shippingOptions[0];
+const authorisedElsewhere = authorisedElsewhereNames();
 
 export default function HowItWorksPage() {
   return (
@@ -61,7 +63,7 @@ export default function HowItWorksPage() {
       <Prose>
         <h2 id="overview">Overview</h2>
         <p>
-          {BRAND.displayName} sells {numberWord(PRODUCTS.length)} pre-filled peptide pens. It also answers one question before you buy:{" "}
+          {BRAND.displayName} stocks {PRODUCTS.length} pre-filled {BRAND.range.name} peptide pens. It also answers one question before you buy:{" "}
           <strong>given your goal, your history and your medicines, which pen — if any — is worth discussing with a clinician?</strong> Four parts do the
           work.
         </p>
@@ -77,12 +79,19 @@ export default function HowItWorksPage() {
           </li>
           <li>
             <strong>A deterministic rules engine and matcher</strong> that maps your answers onto the database, produces a report, and then scores the{" "}
-            {numberWord(PRODUCTS.length)} pens against it. The same answers always give the same report and the same pen, and every label can be traced
-            to a field a clinician can inspect.
+            {PRODUCTS.length} pens against it. The same answers always give the same report and the same pen, and every label can be traced to a field a
+            clinician can inspect.
           </li>
           <li>
-            <strong>The range</strong>: {PRODUCTS.map((p) => p.name).join(", ")}. One format, every lot tested by an independent laboratory before it is
+            <strong>The range</strong>: {joinNames(PRODUCTS.map((p) => p.name))}. One format, every lot tested by an independent laboratory before it is
             listed, the certificate published against the lot number.
+            {authorisedElsewhere.length > 0 && (
+              <>
+                {" "}
+                {joinNames(authorisedElsewhere)} are authorised medicines in other countries; the pens are research products of the same compounds, not
+                those medicines.
+              </>
+            )}
           </li>
         </ol>
         <p>
@@ -142,8 +151,8 @@ export default function HowItWorksPage() {
             <strong>Expectations, source and previous experience</strong> — unrealistic timeframes and previous adverse reactions become flags.
           </li>
           <li>
-            <strong>Blend analysis</strong> — for {blendProducts().map((b) => b.name).join(" and ")}: combination evidence (there is none in people),
-            overlapping mechanisms and an uncertainty rating.
+            <strong>Blend analysis</strong> — for {blendNames()}: combination evidence, overlapping mechanisms and an uncertainty rating. No blend in the
+            range has been studied in people as the combination sold here.
           </li>
         </ul>
         <p>
@@ -193,12 +202,15 @@ export default function HowItWorksPage() {
 
       <Prose>
         <h2 id="checkout">04 · Checkout</h2>
-        <p>The cart is standard: pen count, a promo field and totals with VAT included. Two things are not standard.</p>
+        <p>
+          The cart is standard: pen count, a promo field and totals in {COMMERCE.currency} with {COMMERCE.market.short} VAT at {Math.round(COMMERCE.vatRate * 100)}%
+          included. Two things are not standard.
+        </p>
         <ul>
           <li>
             <strong>Research-use acknowledgement.</strong> Every pen in the range is a research-channel product, so you must confirm you are 18 or over
             and that the product is for research use, not human consumption. The label is printed on the pen page, in the cart, at checkout and on the
-            carton.
+            carton — with a further line where the compound is an authorised medicine elsewhere or still investigational.
           </li>
           <li>
             <strong>Nothing is added for you.</strong> The match panel offers; you add. A pen the {CHECKUP_SHORT} marked not recommended cannot be added
@@ -210,12 +222,12 @@ export default function HowItWorksPage() {
           {standard && (
             <>
               {" "}
-              {standard.label} shipping is {formatMoney(standard.price)} ({standard.eta}) and free on orders of{" "}
-              {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more; {COMMERCE.market.short} orders placed before 2 pm on a working day are dispatched the same day in
-              insulated packaging.
+              {standard.label} is {formatMoney(standard.price)} ({standard.eta}) and free on {COMMERCE.market.short} orders of{" "}
+              {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more; orders placed before 2 pm {COMMERCE.market.timezone} on a working day are
+              dispatched the same day, chilled, in insulated packaging.
             </>
           )}{" "}
-          The <Link href="/shipping">shipping page</Link> has every option and the returns policy.
+          The <Link href="/shipping">shipping page</Link> has every option — same-day, GCC and international — and the returns policy.
         </p>
       </Prose>
 

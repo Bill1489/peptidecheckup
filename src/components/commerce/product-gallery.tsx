@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { Product, ProductImage as ProductImageRecord } from "@/data/products";
 import { ProductImage, ProductSwatch } from "@/components/commerce/product-image";
+import { ILLUSTRATION_CAPTION, hasPhoto } from "@/components/commerce/product-utils";
 import { cn } from "@/lib/utils";
 
 const KIND_LABELS: Record<ProductImageRecord["kind"], string> = {
@@ -14,7 +15,9 @@ const KIND_LABELS: Record<ProductImageRecord["kind"], string> = {
 /**
  * Photograph gallery: the pack shot large in its 4:5 frame, with a thumbnail
  * row to switch to the in-hand shot where the product has one. Photos sit on
- * white, uncropped, so every pen in the range reads at the same scale.
+ * white, uncropped, so every pen in the range reads at the same scale. A pen
+ * without a photograph shows the illustration in its packaging colour and a
+ * caption that says so.
  */
 export function ProductGallery({ product, className }: { product: Product; className?: string }) {
   const kinds = React.useMemo(() => {
@@ -24,6 +27,7 @@ export function ProductGallery({ product, className }: { product: Product; class
   }, [product.images]);
   const [kind, setKind] = React.useState<ProductImageRecord["kind"]>(kinds[0] ?? "pack");
   const color = product.visual.color ?? "#0b0b0c";
+  const photo = hasPhoto(product);
 
   return (
     <div className={className}>
@@ -57,7 +61,7 @@ export function ProductGallery({ product, className }: { product: Product; class
         <p className="flex flex-col items-end gap-1 text-right font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
           <span className="inline-flex items-center gap-1.5">
             <ProductSwatch product={product} />
-            Photograph · {KIND_LABELS[kind]}
+            {photo ? `Photograph · ${KIND_LABELS[kind]}` : ILLUSTRATION_CAPTION}
           </span>
           {product.coa && <span>Lot {product.coa.batch}</span>}
         </p>

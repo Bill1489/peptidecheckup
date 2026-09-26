@@ -298,7 +298,14 @@ function FreeShipping({ remaining, progress }: { remaining: number; progress: nu
         </span>
         <span className="text-muted tnum">{pct}%</span>
       </div>
-      <div className="mt-2 h-1.5 w-full border border-ink bg-white" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Progress to free UK shipping">
+      <div
+        className="mt-2 h-1.5 w-full border border-ink bg-white"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+        aria-label={`Progress to free ${COMMERCE.market.short} shipping`}
+      >
         <div className={cn("h-full transition-[width] duration-200", unlocked ? "bg-brand-600" : "bg-ink")} style={{ width: `${pct}%` }} />
       </div>
     </div>

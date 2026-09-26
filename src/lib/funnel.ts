@@ -8,9 +8,11 @@ import { BRAND } from "@/lib/brand";
  * which names the pen(s) the Peptide Checkup most often lands on for that
  * symptom and hands off to `/assessment/?goal=…&symptom=…`.
  *
- * Copy rules (see docs/BRIEF.md §2): calm, honest, second person, UK English.
- * Never "X will fix Y" — only "researched for" / "the pen the Checkup usually
- * lands on". The answers decide, including whether to buy at all.
+ * Copy rules (see docs/BRIEF.md §2): calm, honest, second person, British
+ * spelling. Never "X will fix Y" — only "researched for" / "the pen the
+ * Checkup usually lands on". Where a compound is an authorised medicine
+ * elsewhere, say so and say the pen is a research product, not that medicine.
+ * The answers decide, including whether to buy at all.
  */
 export interface SymptomDef {
   /** URL slug used in `/start/[symptom]` and passed to the assessment as `symptom`. */
@@ -57,39 +59,39 @@ export const SYMPTOMS: readonly SymptomDef[] = [
     slug: "weight",
     goalId: "weight_management",
     label: "Weight management",
-    subheadline: `There is no incretin medicine in the range and we do not pretend otherwise. One pen — Tesamorelin — has human trial data for body composition, measured as visceral fat rather than scale weight. The ${CHECKUP} checks whether that is what you actually want, and whether your history allows it.`,
+    subheadline: `The incretin compounds with the largest weight-loss trials — tirzepatide, semaglutide and liraglutide — are in the range as research pens. They are authorised medicines in other countries; these pens are not those medicines and are not supplied as treatment. The ${CHECKUP} checks whether your history allows any of them, and which the evidence points to.`,
     checks: [
-      "Whether your goal is scale weight or body composition — the Tesamorelin trials measured visceral fat, not weight",
-      "Conditions that matter for a GHRH analogue, including active cancer, diabetes and pituitary history",
-      "Interactions with glucose-lowering medicines, corticosteroids and hormones",
-      "Anti-doping status if you compete, and the regulatory position of an unlicensed pen in your country",
+      "Which incretin the trials support for your starting point — weekly tirzepatide or semaglutide, or daily liraglutide — and the size of the effect measured",
+      "Conditions that matter for incretin compounds, including thyroid cancer history, pancreatitis, gallbladder disease and diabetic eye disease",
+      "Interactions with insulin, sulfonylureas and other glucose-lowering medicines, and with medicines absorbed from the gut",
+      "The regulatory position — authorised as a medicine elsewhere, a research product here — and what a clinician would monitor",
     ],
-    metaDescription: `Struggling to shift the weight? The ${CHECKUP} checks whether Tesamorelin — the one pen in the range with body-composition trials — fits your history, or says not.`,
-    pens: ["tesamorelin"],
+    metaDescription: `Struggling to shift the weight? The ${CHECKUP} checks tirzepatide, semaglutide and liraglutide — research pens, not the licensed medicines — against your history in 7 minutes.`,
+    pens: ["tirzepatide", "semaglutide", "liraglutide"],
     penNote:
-      "Tesamorelin’s trials measured abdominal fat in a specific population; they did not measure weight loss in the general population. If scale weight is the goal, the Checkup will say the range is not the answer.",
+      "Tirzepatide, semaglutide and liraglutide have large randomised trials for weight and are authorised medicines in several countries. The pens in the range are research products of the same compounds, not the licensed medicines, and the Checkup says so on the result.",
   },
   {
     slug: "fat-loss",
     goalId: "fat_loss",
     label: "Fat loss & body composition",
-    subheadline: `Body-composition claims are everywhere; controlled human data is rare. Tesamorelin has it — for visceral fat in a defined population. The ${CHECKUP} separates what the trials showed from what the adverts say, then checks your own history against it.`,
+    subheadline: `Body-composition claims are everywhere; controlled human data is rare. Tesamorelin has it — for visceral fat in a defined population — and tirzepatide has it for weight, with fat mass measured in a sub-study. The ${CHECKUP} separates what the trials showed from what the adverts say, then checks your own history against it.`,
     checks: [
-      "What the Tesamorelin trials measured — visceral fat by CT in a defined population — and how that maps onto your goal",
+      "What the Tesamorelin trials measured — visceral fat by CT in a defined population — against what the tirzepatide trials measured, and how each maps onto your goal",
       "Whether your timeframe is realistic against the trial durations",
-      "Medical history and medicines that change suitability, including hormonal and metabolic conditions",
-      "Anti-doping status if you compete, and regulatory status in your country",
+      "Medical history and medicines that change suitability, including hormonal, thyroid and metabolic conditions",
+      "Anti-doping status if you compete — Tesamorelin is prohibited — and the regulatory position of each pen",
     ],
-    metaDescription: `Training hard but not seeing the change? The ${CHECKUP} checks Tesamorelin’s body-composition evidence against your history in 7 minutes.`,
-    pens: ["tesamorelin"],
+    metaDescription: `Training hard but not seeing the change? The ${CHECKUP} checks Tesamorelin’s and tirzepatide’s body-composition evidence against your history in 7 minutes.`,
+    pens: ["tesamorelin", "tirzepatide"],
     penNote:
-      "Tesamorelin has the strongest human evidence in the range. That is a statement about the compound, not a promise about you; the Checkup grades the fit and lists what to review before you buy.",
+      "Both compounds have controlled human evidence, for different measures: Tesamorelin for visceral fat in a specific population, tirzepatide for weight — with fat mass measured in a sub-study and graded lower. Both are authorised medicines elsewhere; the pens are research products, not those medicines.",
   },
   {
     slug: "muscle",
     goalId: "muscle_recovery",
     label: "Muscle & recovery",
-    subheadline: `Nothing in the range is a growth-hormone secretagogue and nothing here builds muscle. For recovery, the ${CHECKUP} usually lands on Wolverine (BPC-157 + TB-500) for tissue repair or NAD+ for cellular energy — both graded honestly, both with thin human data.`,
+    subheadline: `Nothing here builds muscle, and the growth-hormone-axis pens in the range have only early human data. For recovery, the ${CHECKUP} usually lands on Wolverine (BPC-157 + TB-500) for tissue repair or NAD+ for cellular energy — both graded honestly, both with thin human data.`,
     checks: [
       "Whether recovery means tissue repair (Wolverine) or energy and fatigue (NAD+) — the two are matched differently",
       "Conditions that matter for repair peptides, including cancer history and active infection",
@@ -121,32 +123,33 @@ export const SYMPTOMS: readonly SymptomDef[] = [
     slug: "recovery",
     goalId: "injury_recovery",
     label: "Injury & recovery",
-    subheadline: `The best-known repair peptides have animal data and no human efficacy trials. The ${CHECKUP} usually lands on Wolverine (BPC-157 + TB-500) for a tendon, ligament or muscle injury, or Klow where skin and inflammation are part of the picture — and shows exactly where the evidence stands for each.`,
+    subheadline: `The best-known repair peptides have animal data and no human efficacy trials. The ${CHECKUP} usually lands on Wolverine (BPC-157 + TB-500) for a tendon, ligament or muscle injury, or on BPC-157 or TB-500 alone where one compound is the interest — and shows exactly where the evidence stands for each.`,
     checks: [
-      "Whether your injury is tendon, ligament or muscle (Wolverine) or involves skin, scarring or inflammation (Klow)",
+      "Whether your injury is tendon, ligament or muscle, and whether the blend or a single compound is the better fit for the question you have",
       "Factors in your history that matter for tissue-repair compounds, including cancer history and active infection",
       "Regulatory status — BPC-157 and TB-500 are not authorised as medicines in any jurisdiction",
       "Anti-doping status, and the questions to take to a physiotherapist or clinician first",
     ],
-    metaDescription: `Nagging injury that won’t heal? The ${CHECKUP} checks Wolverine and Klow against the evidence and your history — and says when not to buy.`,
-    pens: ["wolverine", "klow"],
+    metaDescription: `Nagging injury that won’t heal? The ${CHECKUP} checks Wolverine, BPC-157 and TB-500 against the evidence and your history — and says when not to buy.`,
+    pens: ["wolverine", "bpc-157", "tb-500"],
     penNote:
-      "Neither blend has been studied in people as a combination. The evidence record says so, the product page says so, and the Checkup grades it accordingly.",
+      "BPC-157 and TB-500 have animal data and no human efficacy trials, alone or together; the blend has not been studied in people as a combination. The evidence record says so, the product page says so, and the Checkup grades it accordingly.",
   },
   {
     slug: "skin",
     goalId: "skin_cosmetic",
     label: "Skin & cosmetic",
-    subheadline: `GHK-Cu has decades of topical cosmetic data and no human trials by injection. The ${CHECKUP} usually lands on the GHK-Cu pen for firmness and texture, or Klow where slow-healing marks, scars or irritation are part of it — and tells you which kind of evidence you are relying on.`,
+    subheadline: `GHK-Cu has decades of topical cosmetic data and no human trials by injection. The ${CHECKUP} usually lands on the GHK-Cu pen for firmness and texture, Glow where surface remodelling is the interest, or Klow where slow-healing marks, scars or irritation are part of it — and tells you which kind of evidence you are relying on.`,
     checks: [
-      "Whether your goal is firmness and texture (GHK-Cu) or skin plus repair and inflammation (Klow)",
+      "Whether your goal is firmness and texture (GHK-Cu), skin plus remodelling (Glow) or skin plus repair and inflammation (Klow)",
       "The difference between a cosmetic ingredient and an unlicensed injectable in your country",
       "Skin conditions, melanoma history and medicines that change the picture",
       "Better-evidenced options a dermatologist is likely to raise first",
     ],
-    metaDescription: `Want your skin to look how you feel? The ${CHECKUP} checks GHK-Cu and Klow against the evidence and your history in 7 minutes — and says if neither fits.`,
-    pens: ["ghk-cu", "klow"],
-    penNote: "The controlled GHK-Cu studies are topical. An injectable pen is supplied for research use and graded on that basis.",
+    metaDescription: `Want your skin to look how you feel? The ${CHECKUP} checks GHK-Cu, Glow and Klow against the evidence and your history in 7 minutes — and says if none fits.`,
+    pens: ["ghk-cu", "glow", "klow"],
+    penNote:
+      "The controlled GHK-Cu studies are topical. An injectable pen is supplied for research use and graded on that basis; neither blend has been studied in people as a combination.",
   },
   {
     slug: "hair",
@@ -167,47 +170,49 @@ export const SYMPTOMS: readonly SymptomDef[] = [
     slug: "libido",
     goalId: "sexual_health",
     label: "Sexual health",
-    subheadline: `Nothing in the ${BRAND.displayName} range is researched for libido or sexual function, and the ${CHECKUP} will tell you so. Take it anyway: the report still maps your history and medicines against the evidence and says what is worth raising with a clinician.`,
+    subheadline: `One pen in the range is researched for desire and arousal: PT-141 (bremelanotide), a melanocortin agonist licensed in the United States for low desire in premenopausal women and not authorised elsewhere. The pen is a research product, not that medicine. The ${CHECKUP} checks whether the trial population and your history line up — and says when a clinician is the right first call.`,
     checks: [
-      "Confirmation that no pen in the range has evidence for libido, arousal or sexual function",
-      "Cardiovascular history and blood-pressure medicines, which matter for the licensed options a clinician may raise",
-      "Interactions with PDE5 inhibitors, nitrates and other medicines",
-      "The licensed treatments and the questions worth taking to a doctor",
+      "Whether your situation resembles the population PT-141 was trialled in — desire in premenopausal women — or falls outside it, where the evidence is thin",
+      "Cardiovascular history and blood-pressure medicines: PT-141 raises blood pressure transiently and is not for uncontrolled hypertension",
+      "Interactions with PDE5 inhibitors, nitrates and other medicines a clinician would ask about",
+      "The regulatory position — a licensed medicine in one country, a research product here — and the licensed options a clinician may raise instead",
     ],
-    metaDescription: `Libido not what it was? Nothing in the range is researched for this — the ${CHECKUP} says so, then maps your history against the evidence for a clinician.`,
-    pens: [],
-    penNote: "No pen. The Checkup ends with the evidence and a list of questions for a clinician, not a product.",
+    metaDescription: `Libido not what it was? The ${CHECKUP} checks PT-141 — licensed in the US, a research pen here — against the trial evidence and your history, and says when to see a clinician instead.`,
+    pens: ["pt-141"],
+    penNote:
+      "PT-141 has randomised trial data for desire in premenopausal women and is licensed for that in the United States only. Outside that population the evidence is thin, and the Checkup says so rather than stretching the trial to fit.",
   },
   {
     slug: "sleep",
     goalId: "sleep",
     label: "Sleep",
-    subheadline: `Nothing in the ${BRAND.displayName} range is researched for sleep, and the ${CHECKUP} will tell you so rather than sell you something adjacent. The report still flags what in your history matters and points to what a clinician would look at first.`,
+    subheadline: `The only pen in the range listed for sleep is Epitalon, and its sleep and circadian data come from animal studies and uncontrolled human reports — nothing that would count as evidence in a clinic. The ${CHECKUP} shows that grade before anything else, and will point you to a clinician rather than sell you something adjacent.`,
     checks: [
-      "Confirmation that no pen in the range has evidence for falling asleep, staying asleep or sleep quality",
-      "Sleep apnoea, mental-health history and sedating medicines that a clinician would ask about",
+      "What the Epitalon record actually contains for sleep — animal and uncontrolled human data, no randomised trials — and what that grade means",
+      "Sleep apnoea, mental-health history and sedating medicines that a clinician would ask about first",
       "Interactions between sleep aids, antidepressants and alcohol",
-      "The established options a clinician is likely to raise first",
+      "The established options a clinician is likely to raise before any research compound",
     ],
-    metaDescription: `Tired of waking up tired? Nothing in the range is researched for sleep — the ${CHECKUP} says so and maps your history against the evidence instead.`,
-    pens: [],
-    penNote: "No pen. If sleep is the problem, the honest output is a list of questions for a clinician.",
+    metaDescription: `Tired of waking up tired? The one pen listed for sleep — Epitalon — has early, uncontrolled evidence only; the ${CHECKUP} says so and maps your history against it.`,
+    pens: ["epitalon"],
+    penNote:
+      "Epitalon is graded Insufficient: animal and uncontrolled human data only, no randomised trials for sleep or anything else. Expect the Checkup to be cautious and to end at a clinician more often than at this pen.",
   },
   {
     slug: "longevity",
     goalId: "longevity",
     label: "Longevity",
-    subheadline: `Longevity is where marketing runs furthest ahead of evidence. Two pens in the range are researched for healthy ageing — NAD+ and MOTS-C — with early human data at best. The ${CHECKUP} shows the grade before it shows the pen.`,
+    subheadline: `Longevity is where marketing runs furthest ahead of evidence. Three pens in the range are researched for healthy ageing — NAD+, MOTS-C and Epitalon — with early human data at best. The ${CHECKUP} shows the grade before it shows the pen.`,
     checks: [
-      "What human data exists for NAD+ and MOTS-C — oral precursors, small intravenous studies, animal models — and what does not",
+      "What human data exists for NAD+, MOTS-C and Epitalon — oral precursors, small intravenous studies, animal models, uncontrolled reports — and what does not",
       "Cardiovascular, metabolic and cancer history that changes the picture",
       "Interactions with long-term medicines such as statins, blood-pressure and diabetes medicines",
       "Anti-doping status of MOTS-C, and questions to ask a clinician about monitoring",
     ],
-    metaDescription: `Serious about ageing well? The ${CHECKUP} checks NAD+ and MOTS-C against the evidence and your history — and says how early that evidence is.`,
-    pens: ["nad", "mots-c"],
+    metaDescription: `Serious about ageing well? The ${CHECKUP} checks NAD+, MOTS-C and Epitalon against the evidence and your history — and says how early that evidence is.`,
+    pens: ["nad", "mots-c", "epitalon"],
     penNote:
-      "Human evidence for NAD+ exists mainly for oral precursors and small intravenous studies; MOTS-C has animal data. Neither has outcome data for ageing in people, and the Checkup says so.",
+      "Human evidence for NAD+ exists mainly for oral precursors and small intravenous studies; MOTS-C and Epitalon have animal data and little else. None has outcome data for ageing in people, and the Checkup says so.",
   },
 ];
 
@@ -250,9 +255,11 @@ interface ProblemDef {
 
 const PROBLEMS: readonly ProblemDef[] = [
   { title: "Belly fat that won’t move", symptom: "fat-loss", pen: "tesamorelin", line: 0 },
+  { title: "Weight that won’t shift", symptom: "weight", pen: "tirzepatide", line: 0 },
   { title: "Tired all the time", symptom: "tired", pen: "nad", line: 0 },
   { title: "A tendon that won’t settle", symptom: "recovery", pen: "wolverine", line: 0 },
   { title: "Skin firmness and texture", symptom: "skin", pen: "ghk-cu", line: 0 },
+  { title: "Libido that’s dropped", symptom: "libido", pen: "pt-141", line: 0 },
   { title: "Slow recovery", symptom: "muscle", pen: "nad", line: 1 },
   { title: "Healthy ageing", symptom: "longevity", pen: "mots-c", line: 1 },
 ];

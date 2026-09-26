@@ -338,6 +338,11 @@ export const semaglutide: Compound = {
       evidence: "none",
       note: "No human data on this combination.",
     },
+    {
+      with: "gonadorelin",
+      evidence: "none",
+      note: "No human data on the combination. Weight loss with a GLP-1 medicine can itself raise testosterone in men with obesity, which complicates interpreting any gonadorelin effect.",
+    },
   ],
   keyFacts: [
     { label: "Class", value: "GLP-1 receptor agonist" },

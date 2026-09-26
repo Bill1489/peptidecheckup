@@ -6,7 +6,7 @@ import type { ShippingOption } from "@/lib/commerce/config";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney } from "@/lib/commerce/money";
 import { RadioRows, SelectField, TextField } from "../fields";
-import { NO_POSTCODE_COUNTRIES, SHIP_TO_COUNTRIES, isDomestic } from "../shipping-options";
+import { NO_POSTCODE_COUNTRIES, SHIP_TO_COUNTRIES, isDomestic, isRegional, zoneLabel } from "../shipping-options";
 import type { AddressField, Errors } from "../validation";
 
 export interface PricedShippingOption {
@@ -36,7 +36,9 @@ export function DeliveryStep({
 }) {
   const err = (k: AddressField) => (showErrors ? errors[k] : undefined);
   const domestic = isDomestic(address.countryCode);
+  const regional = isRegional(address.countryCode);
   const postcodeOptional = NO_POSTCODE_COUNTRIES.includes(address.countryCode);
+  const gbPostcode = address.countryCode === "GB";
 
   return (
     <div className="grid gap-8">
@@ -80,11 +82,12 @@ export function DeliveryStep({
           />
           <TextField
             id="delivery-postcode"
-            label={domestic ? "Postcode" : "Postal code"}
+            label={gbPostcode ? "Postcode" : postcodeOptional ? "P.O. box or postal code" : "Postal code"}
             autoComplete="postal-code"
             autoCapitalize="characters"
             optional={postcodeOptional}
-            placeholder={domestic ? "EC1A 1BB" : undefined}
+            placeholder={gbPostcode ? "EC1A 1BB" : undefined}
+            hint={postcodeOptional ? "No postal codes here — a P.O. box or Makani number helps the courier, but is not required." : undefined}
             value={address.postcode}
             onChange={(v) => onAddressChange({ postcode: v.toUpperCase() })}
             error={err("postcode")}
@@ -96,7 +99,7 @@ export function DeliveryStep({
       <div className="grid gap-3">
         <div className="flex items-baseline justify-between gap-4">
           <p className="label-mono text-ink">Delivery method</p>
-          <p className="label-mono">{domestic ? COMMERCE.market.name : "International"}</p>
+          <p className="label-mono">{zoneLabel(address.countryCode)}</p>
         </div>
         <RadioRows
           name="delivery-method"
@@ -112,8 +115,10 @@ export function DeliveryStep({
         />
         <p className="text-[12.5px] leading-relaxed text-muted">
           {domestic
-            ? `Orders placed before 2 pm on a working day are dispatched the same day. Standard tracked delivery is free on orders of ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more.`
-            : "Dispatched within one working day. Duties and local taxes may be charged on arrival and are the recipient’s responsibility."}
+            ? `Orders placed before 2 pm ${COMMERCE.market.timezone} on a working day are dispatched the same day, chilled. Standard tracked delivery is free on orders of ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more.`
+            : regional
+              ? "Dispatched chilled within one working day by the GCC courier. Duties and local taxes may be charged on arrival and are the recipient’s responsibility."
+              : "Dispatched chilled within one working day. Duties and local taxes may be charged on arrival and are the recipient’s responsibility; we decline orders where import of the product is prohibited."}
         </p>
       </div>
     </div>

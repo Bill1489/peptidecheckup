@@ -3,12 +3,23 @@ import Link from "next/link";
 import { COMPOUNDS } from "@/data/compounds";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
-import { titleCase } from "@/lib/utils";
-import { blendProducts, CHECKUP, CHECKUP_SHORT, coaLabs, NAMED_JURISDICTIONS, numberWord, pluralise } from "@/components/marketing/copy";
+import { COMMERCE } from "@/lib/commerce/config";
+import { rangeCategoriesWithProducts } from "@/components/commerce/product-utils";
+import {
+  authorisedElsewhereNames,
+  blendNames,
+  blendProducts,
+  CHECKUP,
+  CHECKUP_SHORT,
+  coaLabs,
+  joinNames,
+  NAMED_JURISDICTIONS,
+  pluralise,
+} from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, NumberedRows, Prose, ProseH2, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
 
-const DESCRIPTION = `${BRAND.displayName} is an independent retailer — the ${BRAND.range.relationship.toLowerCase()} of the ${BRAND.range.name} range — ${numberWord(PRODUCTS.length)} pre-filled peptide pens, each lot tested and certified, matched by the ${CHECKUP}. The principles it is built on, what it is not, and who maintains it.`;
+const DESCRIPTION = `${BRAND.displayName} is an independent retailer — the ${BRAND.range.relationship.toLowerCase()} of the ${BRAND.range.name} range — ${PRODUCTS.length} pre-filled peptide pens, each lot tested and certified, matched by the ${CHECKUP}. The principles it is built on, what it is not, and who maintains it.`;
 
 export const metadata: Metadata = {
   title: "About",
@@ -29,7 +40,7 @@ const TOC = [
 const PRINCIPLES: { title: string; body: string }[] = [
   {
     title: "One format",
-    body: "Every product is the same object: a pre-filled 3 mL dose-dial pen. No vials, no diluent, no kits, no supplies. If a compound does not suit the format, it is not in the range.",
+    body: "Every product is the same object: a pre-filled 3 mL dose-dial pen from one manufacturer, at the manufacturer's list price. No vials, no diluent, no kits, no supplies. If a compound does not suit the format, it is not in the range.",
   },
   {
     title: "Test every lot",
@@ -52,13 +63,15 @@ const PRINCIPLES: { title: string; body: string }[] = [
 export default function AboutPage() {
   const labs = coaLabs();
   const blends = blendProducts();
+  const categories = rangeCategoriesWithProducts();
+  const authorisedElsewhere = authorisedElsewhereNames();
 
   return (
     <TrustPage
       label="About"
-      meta={[BRAND.legalName, `Est. ${BRAND.foundedYear}`]}
+      meta={[BRAND.legalName, `Est. ${BRAND.foundedYear}`, COMMERCE.market.name]}
       title={`The independent stockist of the ${BRAND.range.name} range.`}
-      description={`${BRAND.displayName} stocks ${numberWord(PRODUCTS.length)} pre-filled ${BRAND.range.name} peptide pens, publishes the independent laboratory certificate for every lot, and puts a ${CHECKUP_SHORT} in front of the shop that can end at no pen at all. We sell what we grade — so the rules that keep the two apart are written down here.`}
+      description={`${BRAND.displayName} stocks ${PRODUCTS.length} pre-filled ${BRAND.range.name} peptide pens in the ${COMMERCE.market.name}, publishes the independent laboratory certificate for every lot, and puts a ${CHECKUP_SHORT} in front of the shop that can end at no pen at all. We sell what we grade — so the rules that keep the two apart are written down here.`}
       toc={TOC}
       after={<CtaBand secondary={{ href: "/methodology", label: "Read the methodology" }} />}
     >
@@ -81,11 +94,19 @@ export default function AboutPage() {
       <Prose>
         <h2 id="range">The range</h2>
         <p>
-          {titleCase(numberWord(PRODUCTS.length))} pens, all pre-filled, all 3 mL, all dose-dial:{" "}
-          {PRODUCTS.map((p) => p.name).join(", ")}. {titleCase(numberWord(PRODUCTS.length - blends.length))} are single compounds and{" "}
-          {numberWord(blends.length)} — {blends.map((b) => b.name).join(" and ")} — are blends, graded per component. Everything in the range is
-          supplied for research use; nothing is a licensed medicine and the labelling says so. There are no other products, no supplies and no
-          consultation services. The <Link href="/shop">shop</Link> shows the current price and lot for each pen.
+          {PRODUCTS.length} pens, all pre-filled, all 3 mL, all dose-dial, in {categories.length} of the manufacturer&apos;s categories (
+          {joinNames(categories.map((c) => c.category.label.toLowerCase()))}): {joinNames(PRODUCTS.map((p) => p.name))}.{" "}
+          {PRODUCTS.length - blends.length} are single compounds and {blends.length} — {blendNames()} — are blends, graded per component. Everything in
+          the range is supplied for research use and the labelling says so.
+          {authorisedElsewhere.length > 0 && (
+            <>
+              {" "}
+              Some compounds — {joinNames(authorisedElsewhere)} — are authorised medicines in other countries; the pens are research products of the same
+              compounds, not those medicines, and the pen page says so.
+            </>
+          )}{" "}
+          There are no other products, no supplies and no consultation services. The <Link href="/shop">shop</Link> shows the current price in{" "}
+          {COMMERCE.currency} and the lot for each pen.
         </p>
       </Prose>
 
@@ -100,12 +121,13 @@ export default function AboutPage() {
             professional relationship. See the <Link href="/terms">terms</Link>.
           </li>
           <li>
-            <strong>Not a pharmacy.</strong> Nothing in the range is a licensed medicine and we sell no prescription-only products. Where the{" "}
-            {CHECKUP_SHORT} points you to a clinician, that is a recommendation to see one, not an introduction to one.
+            <strong>Not a pharmacy.</strong> Nothing in the range is supplied as a licensed medicine and we sell no prescription-only products. Where a
+            compound is an authorised medicine elsewhere, the pen is a research product, not that medicine. Where the {CHECKUP_SHORT} points you to a
+            clinician, that is a recommendation to see one, not an introduction to one.
           </li>
           <li>
-            <strong>Not a marketplace.</strong> Every pen is ours, tested by a laboratory we chose and pay for. There are no third-party sellers,
-            affiliate links or sponsored placements.
+            <strong>Not a marketplace, and not the manufacturer.</strong> Every pen is made by {BRAND.range.name}, stocked by us and tested by a laboratory
+            we chose and pay for. There are no third-party sellers, affiliate links or sponsored placements.
           </li>
           <li>
             <strong>Not an AI chatbot.</strong> There is no language model in the pipeline. Reports and matches are assembled from database fields by
@@ -141,7 +163,8 @@ export default function AboutPage() {
       <SpecSheet
         items={[
           { label: "Legal entity", value: BRAND.legalName },
-          { label: "Range", value: `${pluralise(PRODUCTS.length, "pen")} · one format` },
+          { label: "Market", value: `${COMMERCE.market.name} · prices in ${COMMERCE.currency}` },
+          { label: "Range", value: `${pluralise(PRODUCTS.length, "pen")} · ${categories.length} categories · one format` },
           { label: "Database", value: `${pluralise(COMPOUNDS.length, "compound")} · ${NAMED_JURISDICTIONS.length} jurisdictions` },
           { label: "Testing", value: labs.length > 0 ? labs.join(", ") : "Independent laboratory" },
           { label: "Business model", value: "We sell what we test. No commissions." },

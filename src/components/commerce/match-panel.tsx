@@ -169,6 +169,7 @@ export function MatchPanel({ product }: { product: Product }) {
             Goal {match.breakdown.goal} · Focus {match.breakdown.focus} · Evidence {match.breakdown.evidence} · Format{" "}
             {match.breakdown.experience}
             {match.breakdown.antiDoping !== 0 ? ` · Anti-doping ${match.breakdown.antiDoping}` : ""}
+            {match.breakdown.body ? ` · BMI ${match.breakdown.body}` : ""}
           </p>
         )}
       </div>
@@ -201,21 +202,23 @@ export function MatchPanel({ product }: { product: Product }) {
       </div>
 
       {others.length > 0 && (
-        <p className="border-t border-line px-4 py-3 text-[12.5px] leading-relaxed text-ink-2">
-          <span className="label-mono mr-2 text-muted">Also considered</span>
-          {others.map((m, i) => {
-            const p = getProductBySlug(m.slug);
-            return (
-              <React.Fragment key={m.slug}>
-                {i > 0 && <span className="mx-1.5 text-muted-2">·</span>}
-                <Link href={`/shop/${m.slug}/?match=1`} className="link-rule inline-flex items-center gap-1.5 text-ink">
-                  {p && <ProductSwatch product={p} className="h-2 w-2" />}
-                  {m.name} <span className="font-mono tnum">{m.score}/100</span>
-                </Link>
-              </React.Fragment>
-            );
-          })}
-        </p>
+        <div className="border-t border-line px-4 py-3 text-[12.5px] leading-relaxed text-ink-2">
+          <p className="label-mono text-muted">Also considered</p>
+          <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
+            {others.map((m) => {
+              const p = getProductBySlug(m.slug);
+              return (
+                <li key={m.slug} className="min-w-0 max-w-full">
+                  <Link href={`/shop/${m.slug}/?match=1`} className="link-rule inline text-ink">
+                    {p && <ProductSwatch product={p} className="mr-1.5 inline-block h-2 w-2 align-[0.05em]" />}
+                    <span className="break-words">{m.name}</span>{" "}
+                    <span className="whitespace-nowrap font-mono tnum">{m.score}/100</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       <Footer />

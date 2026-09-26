@@ -132,10 +132,10 @@ export interface SuggestedComparison {
 
 /** Default comparisons: the range's compounds, paired by the question a visitor is likely to be asking. */
 const RANGE_COMPARISONS: { slugs: [string, string]; reason: string }[] = [
+  { slugs: ["semaglutide", "tirzepatide"], reason: "Weight management · the two licensed incretin medicines" },
   { slugs: ["tesamorelin", "mots-c"], reason: "Body composition · licensed medicine vs mouse-data peptide" },
-  { slugs: ["bpc-157", "tb-500"], reason: "Repair · the two Wolverine components" },
-  { slugs: ["ghk-cu", "kpv"], reason: "Skin & repair · two Klow components" },
-  { slugs: ["nad", "mots-c"], reason: "Energy & healthy ageing · coenzyme vs peptide" },
+  { slugs: ["bpc-157", "tb-500"], reason: "Repair · sold singly and together in Wolverine" },
+  { slugs: ["ghk-cu", "kpv"], reason: "Skin & repair · sold singly and together in Klow" },
 ];
 
 /**
@@ -246,6 +246,8 @@ export function pensCompounds(product: Product): string[] {
 /**
  * Every compound in the catalogue — on its own pen or inside a blend — in
  * catalogue order. This is what "in the Aervyn range" means across the site.
+ * Derived from PRODUCTS, so adding a pen to the catalogue is enough to bring
+ * its compound(s) into the range; nothing is listed by hand here.
  */
 export const RANGE_SLUGS: readonly string[] = Array.from(new Set(PRODUCTS.flatMap(pensCompounds)));
 
@@ -299,9 +301,9 @@ export interface CompoundCommerce {
   /** Only set for `buy`: the variant "Add to cart" should use. */
   variant?: ProductVariant;
   state: CommerceState;
-  /** Plain price of the variant to buy, e.g. "£139" or "from £139". Only set for `buy`. */
+  /** Plain price of the variant to buy, e.g. "AED 1,250" or "from AED 1,250". Only set for `buy`. */
   price?: string;
-  /** "£149" · "In Wolverine · £139" · "Consultation" · "Not sold" · "Out of stock" · "Not in the Aervyn range" */
+  /** "AED 1,250" · "In CagriSema · AED 1,750" · "Consultation" · "Not sold" · "Out of stock" · "Not in the Aervyn range" */
   priceLabel: string;
   /** Availability wording from the catalogue, or "Not in the Aervyn range" when nothing is linked. */
   availabilityLabel: string;
@@ -351,7 +353,7 @@ function variantToBuy(product: Product): ProductVariant {
   return product.variants.find((v) => v.stock > 0 && v.price > 0) ?? preferred;
 }
 
-/** "£139" for the variant on offer; "from £139" only when a cheaper size exists. */
+/** "AED 1,250" for the variant on offer (via formatMoney); "from AED 1,250" only when a cheaper size exists. */
 export function variantPriceLabel(product: Product, variant: ProductVariant): string {
   const prices = product.variants.map((v) => v.price).filter((p) => p > 0);
   if (prices.length === 0 || variant.price <= 0) return AVAILABILITY_LABELS[product.availability];
@@ -362,12 +364,16 @@ export function variantPriceLabel(product: Product, variant: ProductVariant): st
  * Resolve the shop position for a compound. Pure; safe in server and client code.
  *
  * A compound resolves to a pen that carries it — its own single-compound pen or
- * a blend it is part of (Wolverine, Klow). When several pens qualify, the most
- * actionable wins: buy → consultation → not sold → out of stock; then a
- * single-compound pen beats a blend, a single product beats a kit, and catalogue
- * order breaks remaining ties. A compound resolved through a blend is labelled
- * "In Wolverine · £139" and carries `inBlend`, `blendName` and `blendPartners`.
- * Compounds in no pen at all are "Not in the Aervyn range".
+ * a blend it is part of (Wolverine, Klow, Glow, CagriSema). When several pens
+ * qualify, the most actionable wins: buy → consultation → not sold → out of
+ * stock; then a single-compound pen beats a blend, a single product beats a kit,
+ * and catalogue order breaks remaining ties. So BPC-157, TB-500 and GHK-Cu
+ * resolve to their own pens rather than to Wolverine, Klow or Glow while those
+ * pens are purchasable, and semaglutide to its own pen rather than CagriSema.
+ * Only a compound with no single-compound pen — cagrilintide — resolves through
+ * a blend; it is labelled "In CagriSema · AED 1,750" and carries `inBlend`,
+ * `blendName` and `blendPartners`. Compounds in no pen at all are "Not in the
+ * Aervyn range".
  */
 export function commerceForCompound(slug: string): CompoundCommerce {
   const candidates = rangeProductsFor(slug);

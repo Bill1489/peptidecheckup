@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CompoundDirectory } from "@/components/compounds/compound-directory";
 import { CellGrid, IndexHeader } from "@/components/compounds/primitives";
 import { COMPOUNDS } from "@/data/compounds";
+import { PRODUCTS } from "@/data/products";
 import { FAMILY_LABELS } from "@/data/types";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { RANGE_SLUGS } from "@/lib/compare";
@@ -10,12 +11,15 @@ import { formatDate } from "@/lib/utils";
 const count = COMPOUNDS.length;
 const familyCount = new Set(COMPOUNDS.map((c) => c.family)).size;
 const studyCount = COMPOUNDS.reduce((sum, c) => sum + c.dosingResearch.length, 0);
+/** Compounds carried by at least one pen (own pen or blend) — derived from the catalogue, never hard-coded. */
 const rangeCount = RANGE_SLUGS.length;
+const penCount = PRODUCTS.length;
+const blendCount = PRODUCTS.filter((p) => p.blend && p.blend.length > 1).length;
 const latestReview = COMPOUNDS.map((c) => c.lastReviewed).sort().at(-1);
 
 export const metadata: Metadata = {
   title: `Peptide directory — evidence & regulatory status for ${count} compounds`,
-  description: `Browse ${count} peptides and related compounds graded on the same structured record: human evidence by goal, regulatory status in the UK, US, EU, Australia and Canada, published dosing research, safety and interactions — and which ${rangeCount} of them are in the ${BRAND.range.name} range of batch-tested pens.`,
+  description: `Browse ${count} peptides and related compounds graded on the same structured record: human evidence by goal, regulatory status in the UK, US, EU, Australia and Canada, published dosing research, safety and interactions — and which ${rangeCount} of them are in the ${BRAND.range.name} range of ${penCount} batch-tested pens.`,
   alternates: { canonical: "/peptides/" },
   openGraph: {
     images: OG_IMAGES,
@@ -39,7 +43,7 @@ export default function PeptidesPage() {
       <IndexHeader
         label={`Directory · ${count} compounds`}
         title="Every compound. Same scale."
-        description={`${count} compounds graded the same way — ${rangeCount} of them are in the ${BRAND.range.name} range. Each is assessed on one structured record: human evidence for every goal it has been researched for, regulatory status taken from our maintained database rather than inferred, published dosing research, safety and interactions. Where a compound is in the range — on its own pen or inside a blend — the card names the pen and its price.`}
+        description={`${count} compounds graded the same way — ${rangeCount} of them are in the ${BRAND.range.name} range, carried by ${penCount} pre-filled pens (${blendCount} of them blends). Each is assessed on one structured record: human evidence for every goal it has been researched for, regulatory status taken from our maintained database rather than inferred, published dosing research, safety and interactions. Where a compound is in the range — on its own pen or inside a blend — the card names the pen and its price.`}
       >
         <CellGrid as="dl" cols={[2, 3, 5]} count={STATS.length} className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Directory statistics">
           {STATS.map((s) => (

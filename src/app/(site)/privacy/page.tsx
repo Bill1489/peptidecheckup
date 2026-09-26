@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: { images: OG_IMAGES, title: `Privacy notice · ${BRAND.displayName}`, description: DESCRIPTION, url: "/privacy/" },
 };
 
-const LAST_UPDATED = "2026-09-16";
+const LAST_UPDATED = "2026-09-26";
 
 const TOC = [
   { id: "summary", label: "In one paragraph" },
@@ -180,9 +180,10 @@ export default function PrivacyPage() {
       <Prose>
         <h2 id="rights">Your rights</h2>
         <p>
-          Where applicable data-protection law applies to information you send us, you have the right to access it, correct it, have it deleted, and object to or
-          restrict its processing. Because assessment data stays in your browser, you exercise those rights over it directly, by deleting it. To exercise
-          any right over an order or an email address, email us. You also have the right to complain to the Information Commissioner’s Office.
+          Where applicable data-protection law — including the {COMMERCE.market.name}&apos;s Personal Data Protection Law and the law where you live —
+          applies to information you send us, you have the right to access it, correct it, have it deleted, and object to or restrict its processing.
+          Because assessment data stays in your browser, you exercise those rights over it directly, by deleting it. To exercise any right over an order or
+          an email address, email us. You also have the right to complain to the data-protection authority where you live.
         </p>
       </Prose>
 
@@ -205,7 +206,7 @@ export default function PrivacyPage() {
       </Prose>
       <SpecSheet
         items={[
-          { label: "Controller", value: BRAND.legalName },
+          { label: "Controller", value: `${BRAND.legalName} · ${COMMERCE.market.name}` },
           { label: "Sent by default", value: "Nothing" },
           { label: "Cookies", value: "None" },
           { label: "Contact", value: <a href={`mailto:${BRAND.supportEmail}`} className="link-rule">{BRAND.supportEmail}</a> },

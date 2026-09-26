@@ -7,13 +7,14 @@ import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { SUITABILITY_LABELS } from "@/lib/engine/types";
 import { VERDICT_LABELS } from "@/lib/match/types";
 import { formatDate } from "@/lib/utils";
+import { COMMERCE } from "@/lib/commerce/config";
 import {
+  blendNames,
   blendProducts,
   CHECKUP,
   CHECKUP_SHORT,
   latestReviewDate,
   NAMED_JURISDICTIONS,
-  numberWord,
   pluralise,
   productCompoundSlugs,
 } from "@/components/marketing/copy";
@@ -112,7 +113,7 @@ export default function MethodologyPage() {
           </li>
           <li>
             <strong>The same grade whether or not we sell it.</strong> Grades are assigned to compounds, not pens, and a pen page shows the compound’s grade
-            unchanged. The {numberWord(PRODUCTS.length)} pens are graded by the same criteria as the {COMPOUNDS.length - withRecord} compounds we do not sell.
+            unchanged. The {PRODUCTS.length} pens are graded by the same criteria as the {COMPOUNDS.length - withRecord} compounds we do not sell.
           </li>
           <li>
             <strong>The matcher can return nothing.</strong> A match is a product of the rules, not a guarantee of one. When the rules rule everything out,
@@ -176,8 +177,9 @@ export default function MethodologyPage() {
             inferred from a compound’s class.
           </li>
           <li>
-            The report uses the jurisdiction for the country you enter. Where that is not one of the {NAMED_JURISDICTIONS.length} named jurisdictions, it uses
-            the general entry and tells you to check with your national regulator.
+            The report uses the jurisdiction for the country you enter. Where that is not one of the {NAMED_JURISDICTIONS.length} named jurisdictions — the{" "}
+            {COMMERCE.market.name}, our home market, is not yet one of them — it uses the general entry and tells you to check with your national regulator.
+            The pen page says the same.
           </li>
           <li>
             Anti-doping status under the World Anti-Doping Code is recorded separately — prohibited at all times, in competition only, or not listed — and
@@ -239,8 +241,8 @@ export default function MethodologyPage() {
       <Prose>
         <p>
           The matcher runs after the report and reads only two things: the report and the catalogue. It is deterministic — the same answers always land on
-          the same pen — and it knows nothing about price, margin or stock. Each of the {numberWord(PRODUCTS.length)} pens is scored on five inputs, in
-          this order of weight:
+          the same pen — and it knows nothing about price, margin or stock. Each of the {PRODUCTS.length} pens is scored on five inputs, in this order of
+          weight:
         </p>
       </Prose>
       <NumberedRows className="mt-6" items={MATCHER_INPUTS} />
@@ -274,12 +276,12 @@ export default function MethodologyPage() {
       <Prose>
         <h2 id="blends">Blends and stacks</h2>
         <p>
-          {blends.length > 0 ? `${blends.map((b) => b.name).join(" and ")} are blends.` : "Some pens combine more than one compound."} The report treats each
+          {blends.length > 0 ? `${blendNames()} are blends.` : "Some pens combine more than one compound."} The report treats each
           component as a compound in its own right — its own record, grade, contraindications and interactions — and then checks each pair against the
           database’s stack notes: whether the combination has been studied in humans (studied, limited or none), whether two components act on the same
           pathway, and any overlapping considerations. It counts the evidence gaps and returns an uncertainty rating — low, moderate, moderate–high or
-          high — with a plain-English summary. No blend in the range has human data as a combination, and the report says so rather than averaging the
-          components into a grade that looks better than any of them.
+          high — with a plain-English summary. No blend in the range has human data as the combination sold here, and the report says so rather than
+          averaging the components into a grade that looks better than any of them.
         </p>
       </Prose>
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { GridFillers } from "@/components/commerce/grid-fillers";
 import { ProductSwatch } from "@/components/commerce/product-image";
 import { resolveProblems } from "@/lib/funnel";
 import { CHECKUP_SHORT, index } from "./copy";
@@ -7,9 +8,10 @@ import { IndexHead } from "./index-head";
 import { PenThumb } from "./pen-cell";
 
 /**
- * "Start from the problem": six problems, each naming the pen the Checkup
- * usually lands on — in the catalogue's own words — and handing off to the
- * assessment with the goal and symptom pre-selected. The answers decide.
+ * "Start from the problem": the everyday problems the range is researched
+ * for, each naming the pen the Checkup usually lands on — in the catalogue's
+ * own words — and handing off to the assessment with the goal and symptom
+ * pre-selected. The answers decide.
  */
 export function ProblemGrid() {
   const cells = resolveProblems();
@@ -20,12 +22,12 @@ export function ProblemGrid() {
       <div className="container-x py-14 lg:py-20">
         <IndexHead
           index="03"
-          label="Start from the problem"
+          label={`Start from the problem · ${cells.length} problems`}
           title="Say what’s wrong. The Checkup says which pen — or none."
-          description={`Each cell names the pen the ${CHECKUP_SHORT} usually lands on for that problem, quoting the catalogue’s own description of who the pen is for. It is a starting point, not a verdict: the assessment checks your history and medicines first and can end at no pen at all.`}
+          description={`Each cell names the pen the ${CHECKUP_SHORT} usually lands on for that problem, quoting the catalogue’s own description of who the pen is for. It is a starting point, not a verdict: the assessment checks your history and medicines first and can end at no pen at all. Where the compound is an authorised medicine elsewhere, the pen is a research product, not that medicine.`}
           action={{ href: "/start", label: "All entry points" }}
         />
-        <ul className="cell-grid mt-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="cell-grid mt-10 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
           {cells.map((cell, i) => (
             <li key={`${cell.symptom.slug}-${cell.product.slug}`} className="flex">
               <Link
@@ -60,6 +62,7 @@ export function ProblemGrid() {
               </Link>
             </li>
           ))}
+          <GridFillers count={cells.length} cols={{ base: 1, sm: 2, lg: 2, xl: 4 }} />
         </ul>
       </div>
     </section>

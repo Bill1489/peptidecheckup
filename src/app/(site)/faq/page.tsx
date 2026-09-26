@@ -25,7 +25,7 @@ const GROUPS = [
     id: "pens",
     title: "The pens, testing, shipping",
     description: "What the label means, what is in the box, how the pen is stored, what the certificate says, and how orders move.",
-    items: pick(["research-use", "pre-filled", "needles", "storage", "shipping", "returns", "who-tests", "blends", "nad", "countries"]),
+    items: pick(["research-use", "licensed-medicines", "pre-filled", "needles", "storage", "shipping", "returns", "who-tests", "blends", "nad", "countries"]),
   },
   {
     id: "assessment",

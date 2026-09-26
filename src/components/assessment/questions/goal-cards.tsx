@@ -8,9 +8,10 @@ import { useAnswers } from "../hooks";
 import { OptionCards } from "./option-cards";
 
 /**
- * Step 1 — "What do you want to change?" Ten problem statements, each mapped
- * to at least one pen. Changing the goal clears the focus areas (they are
- * goal-specific) and drops the new goal from the secondary list.
+ * Step 1 — "What do you want to change?" One problem statement per goal the
+ * range serves (`QUIZ_GOALS`), each mapped to at least one pen. Changing the
+ * goal clears the focus areas (they are goal-specific) and drops the new goal
+ * from the secondary list.
  */
 export function GoalCards({ onAdvance }: { onAdvance?: () => void }) {
   const answers = useAnswers();

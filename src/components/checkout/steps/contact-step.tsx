@@ -49,7 +49,7 @@ export function ContactStep({
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          placeholder="+44 7700 900000"
+          placeholder="+971 50 123 4567"
           optional
           value={value.phone}
           onChange={(v) => onChange({ phone: v })}

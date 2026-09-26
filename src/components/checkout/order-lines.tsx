@@ -8,6 +8,7 @@ import { SpecRow } from "@/components/ui/card";
 import { getProduct, getVariant } from "@/data/products";
 import { CHANNEL_LABELS, type SaleChannel } from "@/data/products/types";
 import type { CartLine } from "@/lib/commerce/cart-store";
+import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney, vatIncluded } from "@/lib/commerce/money";
 import type { OrderLine } from "@/lib/commerce/orders";
 import { cn } from "@/lib/utils";
@@ -119,7 +120,9 @@ export function Totals({ subtotal, discount, shipping, shippingLabel, total, pro
         <span className="label-mono text-ink">Total</span>
         <span className={cn("font-mono font-semibold tnum text-ink", emphasis ? "text-[1.5rem]" : "text-[1.15rem]")}>{formatMoney(total)}</span>
       </div>
-      <p className="mt-1.5 text-right font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">Includes {formatMoney(vatIncluded(total))} VAT</p>
+      <p className="mt-1.5 text-right font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+        Includes {formatMoney(vatIncluded(total))} {COMMERCE.market.short} VAT at {Math.round(COMMERCE.vatRate * 100)}%
+      </p>
     </div>
   );
 }

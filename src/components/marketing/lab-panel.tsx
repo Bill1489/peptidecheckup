@@ -1,4 +1,4 @@
-import { blendProducts, coaLabs, numberWord, productsWithCoa } from "./copy";
+import { blendNames, blendProducts, coaLabs, numberWord, productsWithCoa } from "./copy";
 import { IndexHead } from "./index-head";
 
 const TESTS: { label: string; method: string; figure: string; body: string }[] = [
@@ -36,7 +36,7 @@ export function LabPanel() {
           index="06"
           label="What we test"
           title="Every lot. Three tests. One certificate."
-          description={`Testing is done by an independent laboratory, not by us. ${blends.length > 0 ? `The ${numberWord(blends.length)} blends — ${blends.map((b) => b.name).join(" and ")} — are tested per component, with the split stated on the certificate. ` : ""}The certificate is published as issued against the lot number printed on the carton.`}
+          description={`Testing is done by an independent laboratory, not by us. ${blends.length > 0 ? `The ${numberWord(blends.length)} blends — ${blendNames()} — are tested per component, with the split stated on the certificate. ` : ""}The certificate is published as issued against the lot number printed on the carton.`}
           action={{ href: "/lab-testing", label: "Look up a lot number" }}
         />
         <ul className="mt-10 grid border-t border-white/25 md:grid-cols-3 md:divide-x md:divide-white/25">

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { toast } from "sonner";
-import { countryName, RANGE_COMPOUND_SLUGS } from "@/lib/assessment/derived";
+import { countryName, RANGE_COMPOUND_SLUGS, RANGE_SIZE } from "@/lib/assessment/derived";
 import {
   AUTO_COMPLETE_SECTIONS,
   STEPS,
@@ -389,10 +389,10 @@ export function AssessmentWizard() {
           <GeneratingScreen
             key="generating"
             lines={[
-              "Mapping your goal and focus areas to the six pens",
+              `Mapping your goal and focus areas to the ${RANGE_SIZE} pens`,
               `Checking regulatory status for ${country}`,
               `Screening ${RANGE_COMPOUND_SLUGS.length} compounds in the range against your history`,
-              "Scoring each pen 0–100 for fit",
+              `Scoring each of the ${RANGE_SIZE} pens 0–100 for fit`,
               "Applying your safety screen to the result",
             ]}
             onDone={() => setPhase("email")}

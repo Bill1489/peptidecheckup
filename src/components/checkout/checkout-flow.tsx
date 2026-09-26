@@ -429,8 +429,8 @@ function EmptyCart() {
         <p className="label-mono text-brand-600">Checkout</p>
         <h2 className="mt-3 text-[2rem] uppercase sm:text-[2.5rem]">Your cart is empty</h2>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">
-          Add a product to check out. Every research peptide ships with the certificate of analysis for its batch, and the assessment tells
-          you when not to buy.
+          Add a pen to check out. Every pen ships chilled with the certificate of analysis for its lot, and the assessment tells you when not to
+          buy.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href="/shop" size="lg">

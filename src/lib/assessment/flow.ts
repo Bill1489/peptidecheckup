@@ -1,7 +1,7 @@
 import { GOALS, type GoalDef } from "@/data/goals";
 import type { GoalId } from "@/data/types";
 import { BRAND } from "@/lib/brand";
-import { filled, plausibleBody, PREGNANCY_NOTICE, selectedProducts, wadaHint } from "./derived";
+import { filled, penCount, plausibleBody, PREGNANCY_NOTICE, selectedProducts, wadaHint } from "./derived";
 import { SECTION_META, SECTION_ORDER, TIMEFRAME_LABELS, type AssessmentAnswers, type SectionId } from "./types";
 
 /**
@@ -11,7 +11,8 @@ import { SECTION_META, SECTION_ORDER, TIMEFRAME_LABELS, type AssessmentAnswers, 
  * conditional steps appear or disappear). Visibility is evaluated live.
  *
  * v3: every question feeds the product matcher (`src/lib/match/engine.ts`) —
- * the goal cards, focus areas and secondary goals score the six pens; the
+ * the goal cards, focus areas and secondary goals score every pen in the
+ * range (the catalogue, `PRODUCTS`, is the source of truth for how many); the
  * basics, history, medicines and safety screen feed the rules engine whose
  * flags decide whether a pen may be matched at all. Sections that no longer
  * ask anything (experience, source, wants) keep their ids for the store and
@@ -142,7 +143,11 @@ export type StepKind = Step["kind"];
 /* Goals as problems (step 1)                                          */
 /* ------------------------------------------------------------------ */
 
-/** Goals the quiz offers — every one maps to at least one pen, except sleep, which the matcher answers honestly. */
+/**
+ * Goals the quiz offers — every one maps to at least one pen in the range.
+ * Sleep is the weakest: the pens listed for it have animal or uncontrolled
+ * data only, and the matcher says so on the result.
+ */
 export const QUIZ_GOALS = [
   "fat_loss",
   "weight_management",
@@ -152,6 +157,7 @@ export const QUIZ_GOALS = [
   "muscle_recovery",
   "skin_cosmetic",
   "hair",
+  "sexual_health",
   "longevity",
   "sleep",
 ] as const satisfies readonly GoalId[];
@@ -165,15 +171,16 @@ export function isQuizGoal(goal: GoalId | undefined): goal is QuizGoal {
 /** The problem statement shown on each goal card, and the hint under it. */
 export const GOAL_PROBLEMS: Record<QuizGoal, { label: string; hint: string }> = {
   fat_loss: { label: "Stubborn belly fat or body composition", hint: "Fat that does not move with diet and training" },
-  weight_management: { label: "My weight overall", hint: "Losing weight, or holding a healthier weight" },
-  general_wellbeing: { label: "Tired all the time", hint: "Low energy even when you sleep" },
+  weight_management: { label: "My weight overall", hint: "Significant weight to lose, appetite, or holding a healthier weight" },
+  general_wellbeing: { label: "Tired all the time", hint: "Low energy even when you sleep; slow to bounce back" },
   athletic_performance: { label: "Slow recovery or flagging endurance", hint: "Stamina and bounce-back in training" },
   injury_recovery: { label: "A tendon, ligament or joint injury", hint: "Something that will not settle" },
   muscle_recovery: { label: "Muscle recovery between sessions", hint: "Sore for longer than you used to be" },
   skin_cosmetic: { label: "Skin ageing, firmness or texture", hint: "Fine lines, tone, slow-healing marks" },
   hair: { label: "Hair thinning", hint: "Thinning or shedding more than usual" },
-  longevity: { label: "Healthy ageing", hint: "Long-term energy, metabolic and skin health" },
-  sleep: { label: "Sleep", hint: "Falling asleep, staying asleep, waking rested" },
+  sexual_health: { label: "Libido or arousal has dropped", hint: "Desire and response — not blood flow" },
+  longevity: { label: "Healthy ageing", hint: "Long-term energy, metabolic and cellular health" },
+  sleep: { label: "Sleep", hint: "Falling asleep, staying asleep, waking rested — early evidence only" },
 };
 
 export function goalProblemLabel(goal: GoalId | undefined): string | undefined {
@@ -197,14 +204,22 @@ export const GOAL_OPTIONS: StepOption[] = QUIZ_GOALS.map((id) => ({
  * weights each id against the pens in `src/lib/match/engine.ts`.
  */
 const FOCUS_DEF_ENTRIES = {
+  /* weight & body composition */
   belly_fat: { label: "Belly fat that will not move", hint: "Around the middle, whatever the scales say" },
   overall_weight: { label: "Overall weight on the scales" },
+  high_bmi: { label: "A lot of weight to lose", hint: "BMI of 30 or more, or 27+ with a weight-related condition" },
+  appetite: { label: "Appetite or cravings that undermine every plan" },
+  regain: { label: "Weight that comes back after every diet" },
   muscle_preserve: { label: "Keeping muscle while losing fat" },
   metabolic: { label: "Metabolic health", hint: "Blood sugar, energy after meals, waistline" },
+  /* energy, immunity & gut */
   tired_despite_sleep: { label: "Tired even after a full night's sleep" },
   low_stamina: { label: "Stamina and endurance have dropped" },
   brain_fog: { label: "Brain fog or poor focus" },
   post_illness: { label: "Slow to recover after illness" },
+  immune: { label: "Catching every bug going around", hint: "Immune resilience" },
+  gut: { label: "Gut irritation or an inflammatory pattern", hint: "A reactive gut, barrier symptoms, flare-ups" },
+  /* recovery & injury */
   recovery_between: { label: "Recovery between sessions is slow" },
   soreness: { label: "Soreness lasts longer than it used to" },
   recurring: { label: "Recurring strains or niggles" },
@@ -212,15 +227,25 @@ const FOCUS_DEF_ENTRIES = {
   ligament: { label: "A ligament injury", hint: "Knee, ankle, wrist" },
   muscle_strain: { label: "A muscle tear or strain" },
   joint: { label: "A joint problem", hint: "Pain, stiffness or swelling" },
+  gh_recovery: { label: "Slower overnight recovery as I age", hint: "Growth-hormone axis — early human data only" },
+  /* skin & hair */
   scars_marks: { label: "Slow-healing marks or scars" },
   firmness: { label: "Loss of firmness or fine lines" },
   texture: { label: "Texture, tone or dullness" },
   irritation: { label: "Redness or irritation-prone skin" },
   hair_thinning: { label: "Hair thinning" },
   shedding: { label: "Shedding more than usual" },
+  /* sexual health */
+  libido: { label: "Desire or libido has dropped" },
+  arousal: { label: "Arousal or response, not blood flow" },
+  erectile: { label: "Erection problems", hint: "Usually blood flow — nothing in the range is licensed for this" },
+  hormonal_axis: { label: "Hormone levels or fertility signalling", hint: "Testosterone, cycle, the reproductive axis" },
+  /* healthy ageing */
   energy: { label: "Long-term energy" },
   skin_ageing: { label: "Skin ageing" },
   repair: { label: "Recovery and repair as I age" },
+  cellular_ageing: { label: "Cellular ageing", hint: "Mitochondrial, telomere and senescence research" },
+  /* sleep */
   falling_asleep: { label: "Falling asleep" },
   staying_asleep: { label: "Staying asleep" },
   waking_unrefreshed: { label: "Waking unrefreshed" },
@@ -235,14 +260,15 @@ export const FOCUS_NONE = "none";
 
 export const FOCUS_BY_GOAL: Record<QuizGoal, FocusId[]> = {
   fat_loss: ["belly_fat", "overall_weight", "muscle_preserve", "metabolic"],
-  weight_management: ["overall_weight", "belly_fat", "metabolic", "muscle_preserve"],
-  general_wellbeing: ["tired_despite_sleep", "low_stamina", "brain_fog", "post_illness"],
+  weight_management: ["overall_weight", "high_bmi", "appetite", "regain", "belly_fat", "metabolic"],
+  general_wellbeing: ["tired_despite_sleep", "low_stamina", "post_illness", "immune", "gut", "brain_fog"],
   athletic_performance: ["low_stamina", "recovery_between", "recurring", "soreness"],
   injury_recovery: ["tendon", "ligament", "muscle_strain", "joint", "recurring", "scars_marks"],
-  muscle_recovery: ["recovery_between", "soreness", "muscle_strain", "recurring"],
+  muscle_recovery: ["recovery_between", "soreness", "muscle_strain", "recurring", "gh_recovery"],
   skin_cosmetic: ["firmness", "texture", "scars_marks", "irritation", "hair_thinning"],
   hair: ["hair_thinning", "shedding"],
-  longevity: ["energy", "metabolic", "skin_ageing", "repair"],
+  sexual_health: ["libido", "arousal", "erectile", "hormonal_axis"],
+  longevity: ["energy", "metabolic", "skin_ageing", "repair", "cellular_ageing", "gh_recovery"],
   sleep: ["falling_asleep", "staying_asleep", "waking_unrefreshed"],
 };
 
@@ -403,7 +429,7 @@ const considering: Step[] = [
     section: "considering",
     kind: "products",
     title: "Have you got a specific pen in mind?",
-    help: "Optional. Pick any of the six and every compound inside it is assessed against your history — whether or not it ends up as your match.",
+    help: `Optional. Pick any of the ${penCount()} and every compound inside it is assessed against your history — whether or not it ends up as your match.`,
     optional: true,
     valid: () => true,
     isEmpty: (a) => selectedProducts(a).length === 0,
@@ -492,7 +518,7 @@ const medical: Step[] = [
     section: "medical",
     kind: "conditions",
     title: "Have you been diagnosed with any of the following?",
-    help: "Choose one answer per row. The rows below the line are there because a compound in one of the six pens references them.",
+    help: `Choose one answer per row. The rows below the line are there because a compound in one of the ${penCount()} references them.`,
     valid: () => true,
   },
   {

@@ -8,7 +8,8 @@ export type Errors<K extends string> = Partial<Record<K, string>>;
 export const hasErrors = (errors: object) => Object.keys(errors).length > 0;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+/** Format check applied to British (GB) addresses only; every other destination gets a length check or none. */
+const GB_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const PHONE_RE = /^\+?[\d\s().-]{7,20}$/;
 
 export type ContactField = "email" | "name" | "phone";
@@ -35,7 +36,7 @@ export function validateAddress(a: CheckoutAddress): Errors<AddressField> {
   const postcodeOptional = NO_POSTCODE_COUNTRIES.includes(a.countryCode);
   if (!postcodeOptional) {
     if (!postcode) errors.postcode = a.countryCode === "GB" ? "Enter the postcode." : "Enter the postal code.";
-    else if (a.countryCode === "GB" && !UK_POSTCODE_RE.test(postcode)) errors.postcode = "Enter a valid UK postcode, e.g. EC1A 1BB.";
+    else if (a.countryCode === "GB" && !GB_POSTCODE_RE.test(postcode)) errors.postcode = "Enter a valid British postcode, e.g. EC1A 1BB.";
     else if (postcode.length < 3) errors.postcode = "Enter a valid postal code.";
   }
   return errors;

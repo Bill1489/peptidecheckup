@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { ConditionDef, ConditionId, ConditionStatus } from "@/data/types";
-import { conditionRows, joinNatural } from "@/lib/assessment/derived";
+import { conditionRows, joinNatural, penCount } from "@/lib/assessment/derived";
 import { useAssessmentStore } from "@/lib/assessment/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,11 @@ export function ConditionGrid() {
           <div>
             <MonoLabel>Specific to the range</MonoLabel>
             <p className="mt-1 text-sm text-muted">
-              Added because {extended.length === 1 ? "a compound in one of the six pens references it" : "compounds in the six pens reference them"}.
+              Added because{" "}
+              {extended.length === 1
+                ? `a compound in one of the ${penCount()} references it`
+                : `compounds across the ${penCount()} reference them`}
+              . Answer for anything that applies — the matcher screens every pen, not just the ones you had in mind.
             </p>
           </div>
           <ul className="border border-ink" aria-label="Conditions specific to the range">

@@ -8,6 +8,7 @@ import { GOAL_MAP } from "@/data/goals";
 import { PRODUCTS } from "@/data/products";
 import type { GoalId } from "@/data/types";
 import { BRAND, DISCLAIMER_SHORT } from "@/lib/brand";
+import { RANGE_SIZE } from "@/lib/assessment/derived";
 import { ESTIMATED_MINUTES, progressPercent, resolveStep } from "@/lib/assessment/flow";
 import { hasProgress, useAssessmentStore } from "@/lib/assessment/store";
 import { SECTION_META, type EntryContext } from "@/lib/assessment/types";
@@ -23,7 +24,7 @@ import { useMounted } from "./hooks";
 const BENEFITS = [
   {
     title: "One pen, with a fit score",
-    body: "Each of the six pens is scored 0–100 against your goal, focus areas and evidence. You land on the one that fits, with the reasons spelled out.",
+    body: `Every one of the ${RANGE_SIZE} pens is scored 0–100 against your goal, focus areas and evidence. You land on the one that fits, with the reasons spelled out.`,
   },
   {
     title: "Evidence grade for your goal",
@@ -38,6 +39,15 @@ const BENEFITS = [
     body: "A safety flag or a Higher concern label rules a pen out. Nothing goes in the cart; you get the reasons and a clinician link instead.",
   },
 ];
+
+/** How many pens the intro strip shows before the "+N more" cell. */
+const STRIP_SIZE = 8;
+
+/** Bestsellers first, then featured pens, then the rest of the range — each in catalogue order. */
+const STRIP: typeof PRODUCTS = Array.from(
+  new Set([...PRODUCTS.filter((p) => p.bestseller), ...PRODUCTS.filter((p) => p.featured), ...PRODUCTS]),
+).slice(0, STRIP_SIZE);
+const STRIP_REST = Math.max(0, RANGE_SIZE - STRIP.length);
 
 /* ------------------------------------------------------------------ */
 /* Entry params                                                        */
@@ -152,7 +162,7 @@ function IntroBody({ entry }: { entry: EntryContext }) {
               {BRAND.assessmentName} · {BRAND.range.name} pens
             </p>
             <h1 className="mt-5 text-balance font-display text-[2.6rem] uppercase leading-[0.95] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
-              Seven minutes. Six pens. One honest answer.
+              Seven minutes. One honest answer.
             </h1>
             <p className="mt-6 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[17px]">
               Tell us what you want to change, then a short screen of your history, medicines and safety questions. The{" "}
@@ -204,21 +214,36 @@ function IntroBody({ entry }: { entry: EntryContext }) {
           {/* Right: the range + what you'll get */}
           <aside className="lg:pt-8">
             <div className="mb-3 flex items-baseline justify-between gap-3">
-              <p className="label-mono text-ink">The range · six pre-filled pens</p>
+              <p className="label-mono text-ink">The range · {RANGE_SIZE} pre-filled pens</p>
               <Link href="/shop/" className="link-rule font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
                 Shop
               </Link>
             </div>
-            <ul className="cell-grid grid-cols-3" aria-label="The six pens">
-              {PRODUCTS.map((p) => (
+            <ul className="cell-grid grid-cols-3" aria-label={`The range: ${RANGE_SIZE} pens`}>
+              {STRIP.map((p) => (
                 <li key={p.id} className="flex flex-col p-3 sm:p-4">
                   <ProductImage product={p} prefer="pack" frame="square" sizes="(min-width: 1024px) 12vw, 30vw" className="w-full" />
-                  <span className="mt-2 flex items-center gap-1.5">
-                    <ProductSwatch product={p} />
-                    <span className="break-words font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink">{p.name}</span>
+                  <span className="mt-2 flex items-start gap-1.5">
+                    <ProductSwatch product={p} className="mt-[0.2rem]" />
+                    <span className="min-w-0 break-words font-mono text-[10.5px] uppercase leading-snug tracking-[0.08em] text-ink">{p.name}</span>
                   </span>
                 </li>
               ))}
+              {STRIP_REST > 0 && (
+                <li className="flex">
+                  <Link
+                    href="/shop/"
+                    className="hover-invert flex w-full flex-col items-start justify-between p-3 sm:p-4"
+                    aria-label={`${STRIP_REST} more pens in the shop`}
+                  >
+                    <span className="font-display text-[1.6rem] uppercase leading-none tnum sm:text-[2rem]">+{STRIP_REST}</span>
+                    <span className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.08em]">
+                      more pens
+                      <ArrowRight className="ml-1 inline h-3 w-3 align-[-0.1em]" aria-hidden />
+                    </span>
+                  </Link>
+                </li>
+              )}
             </ul>
 
             <p className="label-mono mb-3 mt-8 text-ink">What you&apos;ll get</p>

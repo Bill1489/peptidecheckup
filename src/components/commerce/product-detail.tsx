@@ -9,8 +9,8 @@ import { PenSpec } from "@/components/commerce/pen-spec";
 import { ProductCard } from "@/components/commerce/product-card";
 import { ProductSwatch } from "@/components/commerce/product-image";
 import { ProductStage } from "@/components/commerce/product-stage";
-import { assessmentPath, componentSlugs, otherProducts } from "@/components/commerce/product-utils";
-import { AVAILABILITY_LABELS, CHANNEL_LABELS, type Availability, type Product } from "@/data/products";
+import { assessmentPath, componentSlugs, rangeCategoryDef, rangeCategory, relatedProducts } from "@/components/commerce/product-utils";
+import { AVAILABILITY_LABELS, CHANNEL_LABELS, PRODUCTS, type Availability, type Product } from "@/data/products";
 import { BRAND } from "@/lib/brand";
 
 const AVAILABILITY_TONE: Record<Availability, "success" | "warning" | "neutral" | "info" | "brand" | "danger"> = {
@@ -43,8 +43,9 @@ const PEN_STEPS: { title: string; body: string }[] = [
 ];
 
 export function ProductDetail({ product }: { product: Product }) {
-  const others = otherProducts(product);
+  const related = relatedProducts(product, 5);
   const components = componentSlugs(product);
+  const category = rangeCategoryDef(rangeCategory(product));
 
   const intro = (
     <header>
@@ -69,6 +70,11 @@ export function ProductDetail({ product }: { product: Product }) {
         <Badge tone="outline" size="xs">
           {CHANNEL_LABELS[product.channel]}
         </Badge>
+        <Link href={`/shop/?category=${category.id}`} className="inline-flex" aria-label={`${category.label} — see the category`}>
+          <Badge tone="neutral" size="xs" className="transition-colors hover:bg-ink hover:text-white">
+            {category.label}
+          </Badge>
+        </Link>
         {product.isNew && (
           <Badge tone="ink" size="xs">
             New
@@ -170,29 +176,29 @@ export function ProductDetail({ product }: { product: Product }) {
         </ProductStage>
       </div>
 
-      {/* Also in the range */}
-      {others.length > 0 && (
+      {/* Also in the range — the pens that share this one's goals */}
+      {related.length > 0 && (
         <section className="rule-t bg-paper-2" aria-labelledby="range-heading">
           <div className="container-x py-12 lg:py-16">
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="label-mono">Also in the range</p>
+                <p className="label-mono">Also in the range · by shared goal, then bestsellers</p>
                 <h2 id="range-heading" className="mt-2 text-[1.75rem] uppercase sm:text-[2.25rem]">
-                  The other {others.length}
+                  {related.length} related pens
                 </h2>
               </div>
-              <Link href="/shop/" className="link-rule hidden items-center gap-1.5 text-[14px] font-medium text-ink sm:inline-flex">
-                Compare the range
+              <Link href="/shop/" className="link-rule inline-flex items-center gap-1.5 text-[14px] font-medium text-ink">
+                View all {PRODUCTS.length}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden />
               </Link>
             </div>
-            <ul className="cell-grid mt-6 grid-cols-2 lg:grid-cols-5" aria-label="Other pens in the range">
-              {others.map((p) => (
+            <ul className="cell-grid mt-6 grid-cols-2 lg:grid-cols-5" aria-label="Related pens in the range">
+              {related.map((p) => (
                 <li key={p.id} className="flex">
                   <ProductCard product={p} size="sm" className="w-full" />
                 </li>
               ))}
-              <GridFillers count={others.length} cols={{ base: 2, lg: 5, xl: 5 }} />
+              <GridFillers count={related.length} cols={{ base: 2, lg: 5, xl: 5 }} />
             </ul>
           </div>
         </section>

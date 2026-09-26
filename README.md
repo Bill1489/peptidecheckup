@@ -2,7 +2,7 @@
 
 **Peptide pens. Matched to you.**
 
-The e-commerce site for AERVYN's range of six pre-filled, dose-dial peptide pens (Tesamorelin, MOTS-C, GHK-Cu, NAD+, Wolverine, Klow), fed by an evidence-led assessment funnel — the **Peptide Checkup**. Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup"), complete a structured 10-section questionnaire, and are matched deterministically to the right pen — with the reasons shown on the product page — or told not to buy when their answers raise a safety flag. Every claim traces back to a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research.
+An independent stockist's e-commerce site for the AERVYN range of pre-filled, dose-dial peptide pens (24 pens, priced in AED at the manufacturer's list prices — UAE market), fed by an evidence-led assessment funnel — the **Peptide Checkup**. Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup"), complete a structured 10-section questionnaire, and are matched deterministically to the right pen — with the reasons shown on the product page — or told not to buy when their answers raise a safety flag. Every claim traces back to a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research.
 
 Live demo: **https://bill1489.github.io/peptidecheckup/**
 

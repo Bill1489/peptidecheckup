@@ -1,9 +1,10 @@
 import { ArrowRight } from "lucide-react";
+import { GridFillers } from "@/components/commerce/grid-fillers";
 import { Button } from "@/components/ui/button";
 import type { GoalDef } from "@/data/goals";
 import { PRODUCTS, type Product } from "@/data/products";
 import type { SymptomDef } from "@/lib/funnel";
-import { CHECKUP_SHORT, numberWord, pluralise } from "./copy";
+import { CHECKUP_SHORT, pluralise } from "./copy";
 import { IndexHead } from "./index-head";
 import { PenCell } from "./pen-cell";
 
@@ -54,7 +55,7 @@ export function LandingPens({ symptom, goal, pens, href }: { symptom: SymptomDef
           description={`${symptom.penNote} ${HONEST_LINE}`}
         />
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-10">
-          <ul className="cell-grid grid-cols-1 sm:grid-cols-2" aria-label="Pens named for this goal">
+          <ul className={pens.length > 2 ? "cell-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "cell-grid grid-cols-1 sm:grid-cols-2"} aria-label="Pens named for this goal">
             {pens.map((p, i) => (
               <li key={p.id} className="flex">
                 <PenCell product={p} bestFor priority={i === 0} />
@@ -66,14 +67,15 @@ export function LandingPens({ symptom, goal, pens, href }: { symptom: SymptomDef
                   <div>
                     <p className="label-mono text-ink">Why only one</p>
                     <p className="mt-3 text-[14px] leading-relaxed text-ink-3">
-                      The range is {numberWord(PRODUCTS.length)} pens and the matcher does not pad the list. If your answers rule this one out, the{" "}
-                      {CHECKUP_SHORT} ends at no pen rather than the next-nearest thing.
+                      The range is {PRODUCTS.length} pens and the matcher does not pad the list. If your answers rule this one out, the {CHECKUP_SHORT}{" "}
+                      ends at no pen rather than the next-nearest thing.
                     </p>
                   </div>
                   <p className="label-mono">{HONEST_LINE}</p>
                 </div>
               </li>
             )}
+            {pens.length > 2 && <GridFillers count={pens.length} cols={{ base: 1, sm: 2, lg: 3, xl: 3 }} />}
           </ul>
           <aside className="flex flex-col justify-between border border-ink p-5 sm:p-6">
             <div>

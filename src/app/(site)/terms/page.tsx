@@ -1,13 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { COUNTRY_MAP } from "@/data/countries";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES, RESEARCH_USE_LABEL } from "@/lib/brand";
+import { COMMERCE } from "@/lib/commerce/config";
 import { formatDate } from "@/lib/utils";
-import { CHECKUP, CHECKUP_SHORT, numberWord } from "@/components/marketing/copy";
+import { authorisedElsewhereNames, CHECKUP, CHECKUP_SHORT, joinNames } from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, Prose, TrustPage } from "@/components/marketing/page-shell";
 
-const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.range.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing, cold-chain returns, liability and the law of England and Wales.`;
+/** Jurisdiction follows the brand's home country (see BRAND.homeCountry); falls back to the store market. */
+const HOME = COUNTRY_MAP[BRAND.homeCountry]?.name ?? COMMERCE.market.name;
+const VAT_PERCENT = `${Math.round(COMMERCE.vatRate * 100)}%`;
+
+/** "United Arab Emirates dirhams (AED)" — from the currency code, so the terms follow the store configuration. */
+function currencyName(code: string): string {
+  try {
+    const name = new Intl.DisplayNames(["en"], { type: "currency" }).of(code);
+    if (!name || name === code) return code;
+    const words = name.split(" ");
+    const unit = words.pop() ?? "";
+    return `${[...words, `${unit.toLowerCase()}s`].join(" ")} (${code})`;
+  } catch {
+    return code;
+  }
+}
+const CURRENCY = currencyName(COMMERCE.currency);
+
+const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.range.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing in ${COMMERCE.currency}, cold-chain returns, liability and the law of the ${HOME}.`;
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -16,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: { images: OG_IMAGES, title: `Terms · ${BRAND.displayName}`, description: DESCRIPTION, url: "/terms/" },
 };
 
-const LAST_UPDATED = "2026-09-16";
+const LAST_UPDATED = "2026-09-26";
 
 const TOC = [
   { id: "acceptance", label: "Agreement" },
@@ -35,6 +55,7 @@ const TOC = [
 ];
 
 export default function TermsPage() {
+  const authorisedElsewhere = authorisedElsewhereNames();
   return (
     <TrustPage
       label="Terms"
@@ -49,9 +70,8 @@ export default function TermsPage() {
         <p>
           These terms govern your use of {BRAND.domain} and everything on it — compound pages, comparison tools, landing pages, the {CHECKUP} and any
           report or match it generates, the shop and any order you place (together, “the site”). The site is operated by{" "}
-          {BRAND.legalName} (“we”, “us”), a company registered in England and Wales and an independent stockist of pens manufactured by{" "}
-          {BRAND.range.name}. By using the site you agree to these terms and to the{" "}
-          <Link href="/privacy">privacy notice</Link>. If you do not agree, please do not use the site.
+          {BRAND.legalName} (“we”, “us”), a company operating from the {HOME} and an independent stockist of pens manufactured by {BRAND.range.name}. By
+          using the site you agree to these terms and to the <Link href="/privacy">privacy notice</Link>. If you do not agree, please do not use the site.
         </p>
       </Prose>
 
@@ -84,8 +104,15 @@ export default function TermsPage() {
         <h2 id="research-sale">Research-use terms of sale</h2>
         <blockquote>{RESEARCH_USE_LABEL}</blockquote>
         <p>
-          All {numberWord(PRODUCTS.length)} pens in the range are supplied for research use. They are sold on the following conditions, which you accept
-          at checkout:
+          All {PRODUCTS.length} pens in the range are supplied for research use.
+          {authorisedElsewhere.length > 0 && (
+            <>
+              {" "}
+              Where a compound in a pen is an authorised medicine in another country — {joinNames(authorisedElsewhere)} — the pen is a research product of
+              that compound, not the licensed medicine, and is not supplied as treatment.
+            </>
+          )}{" "}
+          They are sold on the following conditions, which you accept at checkout:
         </p>
         <ul>
           <li>You are 18 years of age or over.</li>
@@ -113,7 +140,9 @@ export default function TermsPage() {
         <h2 id="orders">Orders, pricing and delivery</h2>
         <ul>
           <li>
-            <strong>Prices</strong> are shown in pounds sterling and include VAT where applicable. Delivery charges are shown at checkout before you pay.
+            <strong>Prices</strong> are the manufacturer&apos;s list prices, shown in {CURRENCY} and inclusive of {COMMERCE.market.short} VAT at {VAT_PERCENT}.
+            Delivery charges are shown at checkout before you pay; duties and taxes on deliveries outside the {COMMERCE.market.short} are the recipient&apos;s
+            responsibility.
           </li>
           <li>
             <strong>Acceptance.</strong> Your order is an offer to buy. We accept it when we dispatch the goods and send the dispatch confirmation; until
@@ -186,7 +215,7 @@ export default function TermsPage() {
           To the fullest extent permitted by law, we are not liable for any loss or damage arising from your use of, or reliance on, the site, any report
           or any match, or from any use of a pen contrary to its labelling. Our total liability in connection with any order is limited to the price paid
           for that order. Nothing in these terms excludes or limits liability for death or personal injury caused by negligence, for fraud, for breach of
-          terms implied by consumer law, or for anything else that cannot be excluded or limited under the law of England and Wales.
+          terms implied by consumer law, or for anything else that cannot be excluded or limited under the law of the {HOME}.
         </p>
       </Prose>
 
@@ -212,9 +241,9 @@ export default function TermsPage() {
       <Prose>
         <h2 id="law">Governing law</h2>
         <p>
-          These terms are governed by the law of <strong>England and Wales</strong>, and the courts of England and Wales have exclusive jurisdiction over any
-          dispute arising from them, except that if you are a consumer resident elsewhere you may also rely on mandatory protections of your local law and
-          bring proceedings in your local courts.
+          These terms are governed by the law of the <strong>{HOME}</strong>, and the courts of the {HOME} have exclusive jurisdiction over any dispute
+          arising from them, except that if you are a consumer resident elsewhere you may also rely on mandatory protections of your local law and bring
+          proceedings in your local courts.
         </p>
       </Prose>
 

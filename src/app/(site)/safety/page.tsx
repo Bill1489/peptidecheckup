@@ -2,8 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, DISCLAIMER_REPORT, DISCLAIMER_SHORT, OG_IMAGES, RESEARCH_USE_LABEL } from "@/lib/brand";
+import { COMMERCE } from "@/lib/commerce/config";
 import { ComplianceStrip } from "@/components/marketing/compliance-strip";
-import { blendProducts, CHECKUP, CHECKUP_SHORT, numberWord, wadaListedProducts } from "@/components/marketing/copy";
+import {
+  authorisedElsewhereNames,
+  blendProducts,
+  CHECKUP,
+  CHECKUP_SHORT,
+  investigationalNames,
+  joinNames,
+  numberWord,
+  wadaListedProducts,
+} from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Note, Prose, SpecSheet, TrustPage } from "@/components/marketing/page-shell";
 
@@ -34,6 +44,8 @@ export default function SafetyPage() {
   const wada = wadaListedProducts();
   const blends = blendProducts();
   const storage = PRODUCTS.find((p) => p.pen)?.pen?.storage ?? "Refrigerate at 2–8 °C. Do not freeze.";
+  const authorisedElsewhere = authorisedElsewhereNames();
+  const investigational = investigationalNames();
 
   return (
     <TrustPage
@@ -66,11 +78,23 @@ export default function SafetyPage() {
         <h2 id="research-use">Research-use labelling</h2>
         <blockquote>{RESEARCH_USE_LABEL}</blockquote>
         <p>
-          None of the {numberWord(PRODUCTS.length)} pens in the {BRAND.range.name} range is authorised as a medicine in any jurisdiction. They are supplied as
-          laboratory reagents under research-use labelling, which means exactly what it says: not a medicine, not for human consumption, not manufactured
-          or licensed for use in people. We ask you to confirm that you are 18 or over and that you understand the intended use at checkout, and the
-          statement is printed on the pen page, in the cart and on the carton. Lot testing does not change any of this.
+          None of the {PRODUCTS.length} pens in the {BRAND.range.name} range is supplied as an authorised medicine. They are laboratory reagents under
+          research-use labelling, which means exactly what it says: not a medicine, not for human consumption, not manufactured or licensed for use in
+          people. We ask you to confirm that you are 18 or over and that you understand the intended use at checkout, and the statement is printed on the
+          pen page, in the cart and on the carton. Lot testing does not change any of this.
         </p>
+        {(authorisedElsewhere.length > 0 || investigational.length > 0) && (
+          <p>
+            {authorisedElsewhere.length > 0 && (
+              <>
+                Some of the compounds inside the pens — {joinNames(authorisedElsewhere)} — are authorised medicines in other countries, as branded
+                prescription products made under GMP. The pens are research products of the same compounds, not those medicines, and are not supplied
+                as treatment; the pen page says so under the research-use label.{" "}
+              </>
+            )}
+            {investigational.length > 0 && <>{joinNames(investigational)} are investigational: in late-stage trials and not authorised anywhere.</>}
+          </p>
+        )}
         <p>
           We sell no prescription-only medicines and offer no consultation service. Where the {CHECKUP_SHORT} points you to a clinician, that is advice to
           see one — not an introduction to one.
@@ -105,8 +129,8 @@ export default function SafetyPage() {
         <h2 id="tested">Tested is not licensed</h2>
         <p>
           Products sold online labelled “for research use” are usually not tested at all: nobody checks what is in them, how much, or what else is
-          present. Ours are tested by an independent laboratory every lot — per component for the {numberWord(blends.length)} blends — and the certificate
-          is published against the lot number. It is worth being precise about what that does and does not tell you.
+          present. The pens we stock are tested by an independent laboratory every lot — per component for the {numberWord(blends.length)} blends — and
+          the certificate is published against the lot number. It is worth being precise about what that does and does not tell you.
         </p>
         <ul>
           <li>
@@ -194,9 +218,10 @@ export default function SafetyPage() {
       <Prose>
         <h2 id="adverse">Reporting side effects</h2>
         <p>
-          If you experience a suspected side effect from any medicine or product, tell a healthcare professional and report it to your national scheme —
-          the MHRA Yellow Card scheme in the United Kingdom, MedWatch in the United States, or the equivalent where you live. Reporting helps regulators
-          identify problems, including with unregulated and falsified products.
+          If you experience a suspected side effect from any medicine or product, tell a healthcare professional and report it to your national
+          pharmacovigilance scheme — in the {COMMERCE.market.name}, the Ministry of Health and Prevention&apos;s adverse drug reaction reporting; elsewhere
+          the MHRA Yellow Card scheme, MedWatch, or the equivalent where you live. Reporting helps regulators identify problems, including with
+          unregulated and falsified products.
         </p>
       </Prose>
 

@@ -1,6 +1,7 @@
 import { COMPOUNDS, getCompound } from "@/data/compounds";
 import { defaultVariant, PRODUCTS, type Product } from "@/data/products";
 import { JURISDICTION_LABELS, type Jurisdiction } from "@/data/types";
+import { joinNames } from "@/components/commerce/product-utils";
 import { SECTION_META, SECTION_ORDER } from "@/lib/assessment/types";
 import { BRAND } from "@/lib/brand";
 import { formatMoney } from "@/lib/commerce/money";
@@ -37,10 +38,13 @@ export function index(n: number) {
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
 
-/** Small counts as words for headlines ("Six pens"); falls back to digits above twelve. */
+/** Small counts as words for headlines ("Four blends"); falls back to digits above twelve. */
 export function numberWord(n: number) {
   return WORDS[n] ?? String(n);
 }
+
+/** "A, B and C" — re-exported from the commerce helpers so marketing copy uses one list style. */
+export { joinNames } from "@/components/commerce/product-utils";
 
 /** Most recent `lastReviewed` across the compound registry (ISO date). */
 export function latestReviewDate(): string | undefined {
@@ -82,14 +86,45 @@ export function penComponents(product: Product): string {
   return slugs.map((slug) => getCompound(slug)?.name ?? slug.toUpperCase()).join(" + ");
 }
 
-/** Single-pen price with trailing zeros trimmed, e.g. "£149". */
+/** Single-pen price with trailing zeros trimmed, e.g. "AED 1,250". */
 export function penPrice(product: Product): string {
   return formatMoney(defaultVariant(product).price, { trimZeros: true });
 }
 
-/** The two blends in the range (products with more than one compound). */
+/** The blends in the range (products with more than one compound). */
 export function blendProducts(): Product[] {
   return PRODUCTS.filter((p) => (p.blend?.length ?? 0) > 1);
+}
+
+/** "Wolverine, Klow, Glow and CagriSema" — the blends by name, in the house list style. */
+export function blendNames(): string {
+  return joinNames(blendProducts().map((b) => b.name));
+}
+
+/** Unique compound names across the range that are authorised medicines in at least one jurisdiction on record, catalogue order. */
+export function authorisedElsewhereNames(): string[] {
+  const names: string[] = [];
+  for (const p of PRODUCTS) {
+    for (const slug of productCompoundSlugs(p)) {
+      const c = getCompound(slug);
+      if (c && Object.values(c.regulatory).some((r) => r.status === "authorised") && !names.includes(c.name)) names.push(c.name);
+    }
+  }
+  return names;
+}
+
+/** Unique compound names across the range whose status anywhere on record is investigational (and authorised nowhere). */
+export function investigationalNames(): string[] {
+  const names: string[] = [];
+  for (const p of PRODUCTS) {
+    for (const slug of productCompoundSlugs(p)) {
+      const c = getCompound(slug);
+      if (!c) continue;
+      const statuses = Object.values(c.regulatory).map((r) => r.status);
+      if (statuses.includes("investigational") && !statuses.includes("authorised") && !names.includes(c.name)) names.push(c.name);
+    }
+  }
+  return names;
 }
 
 /**

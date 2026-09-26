@@ -1,0 +1,24 @@
+ghk-cu             GHK-Cu             AED  1050  100 mg / 3 mL  Skin & beauty              GHK-Cu 100 mg
+glow               Glow™              AED  1450  70 mg / 3 mL   Skin & beauty              GHK-Cu 50 mg + BPC-157 10 mg + TB-500 10 mg
+klow               KLOW™              AED  1650  80 mg / 3 mL   Recovery & repair          GHK-Cu 50 mg + BPC-157 10 mg + TB-500 10 mg + KPV 10 mg
+kpv                KPV                AED   850  10 mg / 3 mL   Immune & gut               KPV 10 mg
+mots-c             MOTS-C             AED  1250  60 mg / 3 mL   Longevity & energy         MOTS-C 60 mg
+nad-plus           NAD+               AED  1400  500 mg / 3 mL  Longevity & energy         Nicotinamide adenine dinucleotide 500 mg
+retatrutide        R3T                AED  1800  40 mg / 3 mL   Metabolic & weight         R3T 40 mg
+tesamorelin        Tesamorelin        AED  1250  20 mg / 3 mL   Growth & body              Tesamorelin 20 mg
+wolverine          Wolverine™         AED  1150  40 mg / 3 mL   Recovery & repair          BPC-157 20 mg + TB-500 20 mg
+bpc-157            BPC-157            AED   820  10 mg / 3 mL   Recovery & repair          BPC-157 10 mg
+cagrisema          CagriSema          AED  1750  20 mg / 3 mL   Metabolic & weight         Cagrilintide + semaglutide 20 mg
+cjc-1295           CJC-1295 no DAC    AED   880  10 mg / 3 mL   Growth & body              CJC-1295 no DAC 10 mg
+epitalon           Epitalon           AED  1080  50 mg / 3 mL   Longevity & energy         Epitalon 50 mg
+foxo4-dri          FOXO4-DRI          AED  1600  10 mg / 3 mL   Longevity & energy         FOXO4-DRI 10 mg
+gonadorelin        Gonadorelin        AED   980  10 mg / 3 mL   Hormones & sexual health   Gonadorelin 10 mg
+ipamorelin         Ipamorelin         AED   850  10 mg / 3 mL   Growth & body              Ipamorelin 10 mg
+liraglutide        Liraglutide        AED  1150  18 mg / 3 mL   Metabolic & weight         Liraglutide 18 mg
+ll-37              LL-37              AED   980  10 mg / 3 mL   Immune & gut               LL-37 10 mg
+pt-141             PT-141             AED   950  10 mg / 3 mL   Hormones & sexual health   Bremelanotide 10 mg
+semaglutide        Semaglutide        AED  1300  10 mg / 3 mL   Metabolic & weight         Semaglutide 10 mg
+sermorelin         Sermorelin         AED   920  10 mg / 3 mL   Growth & body              Sermorelin 10 mg
+tb-500             TB-500             AED   880  10 mg / 3 mL   Recovery & repair          TB-500 10 mg
+thymosin-alpha-1   Thymosin Alpha-1   AED  1020  10 mg / 3 mL   Immune & gut               Thymosin Alpha-1 10 mg
+tirzepatide        Tirzepatide        AED  1550  30 mg / 3 mL   Metabolic & weight         Tirzepatide 30 mg

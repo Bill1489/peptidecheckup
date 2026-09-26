@@ -29,7 +29,7 @@ export default function StartIndexPage() {
     <>
       <PageHeader
         label="Start here"
-        meta={[`${SYMPTOMS.length} entry points · ${withPen} with a pen`, `≈${ASSESSMENT_MINUTES} min · no account`]}
+        meta={[`${SYMPTOMS.length} entry points · ${withPen === SYMPTOMS.length ? "each with a pen" : `${withPen} with a pen`}`, `≈${ASSESSMENT_MINUTES} min · no account`]}
         title="What brought you here?"
         description={`Pick the goal closest to yours. Each page names the pen the ${CHECKUP_SHORT} usually lands on for that goal and what it checks before it does — and where nothing in the range is researched for the goal, it says so.`}
       />

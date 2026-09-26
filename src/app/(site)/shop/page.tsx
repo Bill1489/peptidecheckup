@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
-import { RangeCompare } from "@/components/commerce/range-compare";
+import { RangeCompareTabs, RangeCompareTabsSkeleton } from "@/components/commerce/range-compare-tabs";
 import { ShopGrid, ShopGridSkeleton } from "@/components/commerce/shop-grid";
-import { productPath } from "@/components/commerce/product-utils";
+import { joinNames, productPath, rangeCategoriesWithProducts } from "@/components/commerce/product-utils";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS } from "@/data/products";
@@ -15,12 +15,14 @@ import { asset } from "@/lib/utils";
 const count = PRODUCTS.length;
 const coaCount = PRODUCTS.filter((p) => p.coa).length;
 const blends = PRODUCTS.filter((p) => (p.blend?.length ?? 0) > 1).length;
-const names = PRODUCTS.map((p) => p.name);
-const nameList = `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+const categories = rangeCategoriesWithProducts();
+const nameList = joinNames(PRODUCTS.map((p) => p.name));
+const categoryList = joinNames(categories.map((c) => c.category.label.toLowerCase()));
+const freeFrom = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 
 export const metadata: Metadata = {
   title: `The range — ${count} pre-filled peptide pens, every lot tested`,
-  description: `${nameList}: ${count} pre-filled 3 mL dose-dial pens from ${BRAND.range.name}, stocked by ${BRAND.displayName}, ${blends} of them blends, each with a published certificate of analysis. UK pricing, VAT included, free UK shipping over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
+  description: `${count} pre-filled 3 mL dose-dial pens from ${BRAND.range.name}, stocked by ${BRAND.displayName} at the manufacturer's list prices in ${COMMERCE.currency}, ${blends} of them blends, each with a published certificate of analysis. ${categories.length} categories: ${categoryList}. VAT included, free ${COMMERCE.market.short} shipping over ${freeFrom}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
   alternates: { canonical: "/shop/" },
   openGraph: {
     images: OG_IMAGES,
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
 const STATS: { label: string; value: string }[] = [
   { label: "Pens in the range", value: String(count) },
   { label: "Certificates published", value: String(coaCount) },
-  { label: `Free ${COMMERCE.market.short} shipping`, value: `over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}` },
+  { label: `Free ${COMMERCE.market.short} shipping`, value: `over ${freeFrom}` },
   { label: "Dispatch", value: "Same day before 2 pm · chilled" },
 ];
 
@@ -66,12 +68,14 @@ export default function ShopPage() {
       <section className="rule-b">
         <div className="container-x grid gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
-            <p className="label-mono">Six pens · One format · CoA per lot</p>
+            <p className="label-mono">
+              {count} pens · {categories.length} categories · One format · CoA per lot
+            </p>
             <h1 className="mt-4 break-words text-[2.75rem] uppercase leading-[0.92] sm:text-[4rem] lg:text-[5.5rem]">The range</h1>
             <p className="mt-5 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[16px]">
-              Six pre-filled 3 mL dose-dial pens. No vials, no reconstitution, no drawing up. Every lot is tested by an independent laboratory
-              and its certificate is published against the batch number on the carton. Sold for research use; the {BRAND.assessmentName} tells
-              you which pen fits your goal — and when none does.
+              {count} pre-filled 3 mL dose-dial pens from {BRAND.range.name}, at the manufacturer&apos;s list prices. No vials, no reconstitution,
+              no drawing up. Every lot is tested by an independent laboratory and its certificate is published against the batch number on the
+              carton. Sold for research use; the {BRAND.assessmentName} tells you which pen fits your goal — and when none does.
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4 lg:grid-cols-2">
@@ -92,22 +96,25 @@ export default function ShopPage() {
         </Suspense>
       </section>
 
-      {/* Compare */}
+      {/* Compare — one manufacturer's category at a time */}
       <section className="rule-t bg-paper-2" aria-labelledby="compare-heading">
         <div className="container-x py-12 lg:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="label-mono">Side by side</p>
+              <p className="label-mono">Side by side · by category</p>
               <h2 id="compare-heading" className="mt-3 text-[1.75rem] uppercase sm:text-[2.25rem]">
                 Compare the range
               </h2>
             </div>
             <p className="max-w-md text-[13px] leading-relaxed text-muted">
-              Evidence grades come from the compound records — for blends, the strongest component grade for the pen&apos;s main goal. WADA status
-              covers every component in the pen.
+              {count} pens do not fit one table, so the range is compared a category at a time. Evidence grades come from the compound records —
+              for blends, the strongest component grade for the pen&apos;s main goal. WADA status and the regulatory line cover every component in
+              the pen.
             </p>
           </div>
-          <RangeCompare className="mt-6 bg-white" />
+          <Suspense fallback={<RangeCompareTabsSkeleton className="mt-6" />}>
+            <RangeCompareTabs className="mt-6" />
+          </Suspense>
         </div>
       </section>
 

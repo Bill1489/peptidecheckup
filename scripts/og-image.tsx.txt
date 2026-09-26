@@ -52,14 +52,14 @@ export default async function OpenGraphImage() {
             </div>
           </div>
           <div style={{ fontFamily: "IBM Plex Mono", fontSize: 18, letterSpacing: 3, color: "rgba(255,255,255,0.55)" }}>
-            OFFICIAL AERVYN STOCKIST · COA PER LOT · UK
+            OFFICIAL AERVYN STOCKIST · COA PER LOT · AED PRICING
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", fontSize: 128, lineHeight: 0.92, letterSpacing: -6 }}>
-          <div>SIX PENS.</div>
-          <div>ONE HONEST</div>
-          <div style={{ color: "#5d76ff" }}>ANSWER.</div>
+          <div>THE PEN.</div>
+          <div>THE PAPERWORK.</div>
+          <div style={{ color: "#5d76ff" }}>THE RIGHT ONE.</div>
         </div>
 
         <div
