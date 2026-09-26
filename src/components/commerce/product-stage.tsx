@@ -151,7 +151,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
             </li>
             <li className="flex items-center gap-2 bg-white px-3 py-2.5">
               <span className="h-1.5 w-1.5 shrink-0 bg-brand-600" aria-hidden />
-              Free UK shipping over {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}
+              Free {COMMERCE.market.short} shipping over {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}
             </li>
           </ul>
 

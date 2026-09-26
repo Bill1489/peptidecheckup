@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { formatDate } from "@/lib/utils";
+import { COMMERCE } from "@/lib/commerce/config";
 
 const certified = productsWithCoa();
 const labs = Array.from(new Set(certified.map((p) => p.coa!.lab))).sort();
@@ -115,7 +116,7 @@ const STORAGE: { label: string; value: string }[] = [
   { label: "Room temperature", value: "Short excursions in transit only — not for storage" },
   { label: "Copper peptide (GHK-Cu, Klow)", value: "As above; keep out of direct light between uses" },
   { label: "In transit", value: "Insulated packaging with gel packs, tracked; shipped chilled" },
-  { label: "Dispatch", value: "Same working day before 2 pm (UK)" },
+  { label: "Dispatch", value: `Same working day before 2 pm (${COMMERCE.market.short})` },
   { label: "Pen needles", value: "Not included; a pen-needle compatibility note is in the box" },
 ];
 

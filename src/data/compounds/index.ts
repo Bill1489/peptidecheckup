@@ -29,7 +29,7 @@ export const ALL_SLUGS = [
   "tesamorelin", "sermorelin", "cjc-1295", "ipamorelin", "somatropin", "igf-1-lr3",
   "bpc-157", "tb-500", "ghk-cu", "collagen-peptides", "pt-141", "kisspeptin", "melanotan-ii",
   "selank", "semax", "dsip", "epitalon", "mots-c", "elamipretide", "thymosin-alpha-1", "ll-37",
-  "nad", "kpv",
+  "nad", "kpv", "gonadorelin", "foxo4-dri",
 ] as const;
 
 export const COMPOUND_MAP: Record<string, Compound> = Object.fromEntries(

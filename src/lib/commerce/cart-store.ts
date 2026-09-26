@@ -113,10 +113,15 @@ export function computeTotals(
   if (promo?.type === "percent") discount = Math.round((subtotal * promo.value) / 100);
   if (promo?.type === "fixed") discount = Math.min(subtotal, promo.value);
 
-  const domestic = !opts.countryCode || opts.countryCode === "GB";
+  const country = opts.countryCode ?? COMMERCE.market.countryCode;
+  const domestic = country === COMMERCE.market.countryCode;
+  const forCountry = (o: (typeof COMMERCE.shippingOptions)[number]) =>
+    (o.regions as readonly string[]).includes(country) || (o.regions as readonly string[]).includes("*");
   const option =
-    COMMERCE.shippingOptions.find((o) => o.id === opts.shippingOptionId) ??
-    (domestic ? COMMERCE.shippingOptions[0] : COMMERCE.shippingOptions[2]);
+    COMMERCE.shippingOptions.find((o) => o.id === opts.shippingOptionId && forCountry(o)) ??
+    COMMERCE.shippingOptions.find((o) => (o.regions as readonly string[]).includes(country)) ??
+    COMMERCE.shippingOptions.find((o) => (o.regions as readonly string[]).includes("*")) ??
+    COMMERCE.shippingOptions[0];
   let shipping = itemCount === 0 ? 0 : option.price;
   const qualifiesFree = domestic && option.id === "standard" && subtotal - discount >= COMMERCE.freeShippingThreshold;
   if (qualifiesFree || promo?.type === "shipping") shipping = 0;

@@ -14,19 +14,19 @@ const CUT_OFF = "2 pm";
 
 export const metadata: Metadata = {
   title: "Shipping & returns",
-  description: `Delivery options and prices, free UK delivery over ${FREE_THRESHOLD}, the ${CUT_OFF} same-day dispatch cut-off, the ${SHIP_TO_COUNTRIES.length} countries we ship to, and how returns, damaged parcels and VAT are handled.`,
+  description: `Delivery options and prices, free ${COMMERCE.market.short} delivery over ${FREE_THRESHOLD}, the ${CUT_OFF} same-day dispatch cut-off, the ${SHIP_TO_COUNTRIES.length} countries we ship to, and how returns, damaged parcels and VAT are handled.`,
   alternates: { canonical: "/shipping/" },
   openGraph: {
     images: OG_IMAGES,
     title: "Shipping & returns",
-    description: `Delivery options, free UK delivery over ${FREE_THRESHOLD}, ${CUT_OFF} cut-off, ${SHIP_TO_COUNTRIES.length} destinations, returns and VAT.`,
+    description: `Delivery options, free ${COMMERCE.market.short} delivery over ${FREE_THRESHOLD}, ${CUT_OFF} cut-off, ${SHIP_TO_COUNTRIES.length} destinations, returns and VAT.`,
     url: "/shipping/",
   },
 };
 
 function regionsLabel(regions: readonly string[]) {
   if (regions.includes("*")) return "All other destinations";
-  return regions.map((r) => (r === "GB" ? "United Kingdom" : r)).join(", ");
+  return regions.map((r) => (r === COMMERCE.market.countryCode ? COMMERCE.market.name : r === "GB" ? "United Kingdom" : r)).join(", ");
 }
 
 const SECTIONS = [
@@ -54,7 +54,7 @@ export default function ShippingPage() {
       <section className="container-x pt-8 lg:pt-10" aria-label="Key facts">
         <dl className="cell-grid sm:grid-cols-2 lg:grid-cols-4">
           <Fact label="Same-day dispatch" value={`Order by ${CUT_OFF}, working days`} />
-          <Fact label="Free UK delivery" value={`Standard tracked · orders over ${FREE_THRESHOLD}`} />
+          <Fact label={`Free ${COMMERCE.market.short} delivery`} value={`Standard tracked · orders over ${FREE_THRESHOLD}`} />
           <Fact label="Ships to" value={`${SHIP_TO_COUNTRIES.length} countries`} />
           <Fact label="Prices" value={`Include VAT at ${VAT_PERCENT}`} />
         </dl>
@@ -115,7 +115,7 @@ export default function ShippingPage() {
                 Estimates are working days from dispatch, not from the moment you order.{" "}
                 {standard && (
                   <>
-                    {standard.label} is free on UK orders of {FREE_THRESHOLD} or more after any discount; express and international rates are
+                    {standard.label} is free on {COMMERCE.market.short} orders of {FREE_THRESHOLD} or more after any discount; express and international rates are
                     always charged.
                   </>
                 )}
@@ -138,7 +138,7 @@ export default function ShippingPage() {
                 ))}
               </ul>
               <p>
-                Outside the UK, delivery is by the international tracked service. Import duties and local taxes are charged by the carrier on
+                Outside the {COMMERCE.market.short}, delivery is by the GCC or international chilled courier service. Import duties and local taxes are charged by the carrier on
                 arrival and are the recipient’s responsibility.
               </p>
             </Section>
@@ -146,7 +146,7 @@ export default function ShippingPage() {
             {/* Dispatch */}
             <Section id="dispatch" index="03" title="Dispatch and packaging">
               <div className="border border-ink px-4">
-                <SpecRow label="Cut-off" value={`${CUT_OFF} UK time, Monday to Friday`} />
+                <SpecRow label="Cut-off" value={`${CUT_OFF} ${COMMERCE.market.timezone}, Monday to Friday`} />
                 <SpecRow label="Before cut-off" value="Dispatched the same working day" />
                 <SpecRow label="After cut-off / weekends" value="Dispatched the next working day" />
                 <SpecRow label="Tracking" value="Emailed when the parcel leaves the lab" />
@@ -195,7 +195,7 @@ export default function ShippingPage() {
                 delivery. We replace the affected items or refund them; you do not need to return damaged vials.
               </p>
               <p>
-                A parcel is treated as lost when tracking shows no movement for 5 working days (UK) or 15 working days (international) after
+                A parcel is treated as lost when tracking shows no movement for 5 working days ({COMMERCE.market.short}) or 15 working days (international) after
                 dispatch. We then re-send the order or refund it in full, at your choice.
               </p>
             </Section>
@@ -203,11 +203,11 @@ export default function ShippingPage() {
             {/* VAT */}
             <Section id="vat" index="06" title="VAT and duties">
               <p>
-                All prices include UK VAT at {VAT_PERCENT}; the VAT element is shown on the checkout summary and the order confirmation. There
-                is no VAT-exempt pricing for non-UK destinations at present.
+                All prices include {COMMERCE.market.short} VAT at {VAT_PERCENT}; the VAT element is shown on the checkout summary and the order confirmation. There
+                is no VAT-exempt pricing for destinations outside the {COMMERCE.market.short} at present.
               </p>
               <p>
-                For deliveries outside the UK, import duties, local VAT or sales taxes and any carrier handling fee are collected on arrival by
+                For deliveries outside the {COMMERCE.market.short}, import duties, local VAT or sales taxes and any carrier handling fee are collected on arrival by
                 the carrier and are not included in the price.
               </p>
             </Section>

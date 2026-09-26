@@ -211,7 +211,7 @@ export default function HowItWorksPage() {
             <>
               {" "}
               {standard.label} shipping is {formatMoney(standard.price)} ({standard.eta}) and free on orders of{" "}
-              {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more; UK orders placed before 2 pm on a working day are dispatched the same day in
+              {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more; {COMMERCE.market.short} orders placed before 2 pm on a working day are dispatched the same day in
               insulated packaging.
             </>
           )}{" "}

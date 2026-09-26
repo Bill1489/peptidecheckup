@@ -180,7 +180,7 @@ export default function PrivacyPage() {
       <Prose>
         <h2 id="rights">Your rights</h2>
         <p>
-          Where UK data-protection law applies to information you send us, you have the right to access it, correct it, have it deleted, and object to or
+          Where applicable data-protection law applies to information you send us, you have the right to access it, correct it, have it deleted, and object to or
           restrict its processing. Because assessment data stays in your browser, you exercise those rights over it directly, by deleting it. To exercise
           any right over an order or an email address, email us. You also have the right to complain to the Information Commissioner’s Office.
         </p>

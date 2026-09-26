@@ -4,17 +4,21 @@ import { BRAND, RESEARCH_USE_LABEL } from "@/lib/brand";
  * Store configuration. Everything a merchant would change lives here.
  */
 export const COMMERCE = {
-  currency: "GBP" as const,
-  locale: "en-GB",
-  /** Prices include VAT (UK consumer pricing). */
+  /** Manufacturer list prices are in UAE dirhams; the store trades in the same currency. */
+  currency: "AED" as const,
+  locale: "en-AE",
+  /** Home market — drives copy ("UAE orders"), domestic shipping and the default checkout country. */
+  market: { countryCode: "AE", name: "United Arab Emirates", short: "UAE", timezone: "Gulf Standard Time" },
+  /** Prices include VAT (UAE consumer pricing, 5%). */
   taxInclusive: true,
-  vatRate: 0.2,
-  /** Free standard shipping at or above this subtotal (minor units). */
-  freeShippingThreshold: 15000,
+  vatRate: 0.05,
+  /** Free standard shipping at or above this subtotal (minor units — fils). */
+  freeShippingThreshold: 150000,
   shippingOptions: [
-    { id: "standard", label: "Standard tracked", eta: "2–3 working days", price: 495, regions: ["GB"] },
-    { id: "express", label: "Next working day", eta: "Order by 2 pm", price: 895, regions: ["GB"] },
-    { id: "international", label: "International tracked", eta: "5–10 working days", price: 1495, regions: ["*"] },
+    { id: "standard", label: "Standard chilled courier", eta: "1–2 working days", price: 2500, regions: ["AE"] },
+    { id: "express", label: "Same-day (Dubai & Abu Dhabi)", eta: "Order by 2 pm", price: 4500, regions: ["AE"] },
+    { id: "gcc", label: "GCC chilled courier", eta: "2–4 working days", price: 9500, regions: ["SA", "QA", "KW", "BH", "OM"] },
+    { id: "international", label: "International chilled courier", eta: "3–7 working days", price: 15000, regions: ["*"] },
   ],
   /** Demo promo codes — replace with your platform's discount engine. */
   promoCodes: {
@@ -23,7 +27,7 @@ export const COMMERCE = {
     FREESHIP: { type: "shipping", value: 0, label: "Free standard shipping" },
   } as Record<string, { type: "percent" | "fixed" | "shipping"; value: number; label: string }>,
   /** Countries we ship to (ISO-2). "*" is handled by the international option. */
-  shipTo: ["GB", "IE", "DE", "FR", "NL", "ES", "IT", "SE", "DK", "AT", "BE", "PT", "PL", "US", "CA", "AU", "NZ", "AE"],
+  shipTo: ["AE", "SA", "QA", "KW", "BH", "OM", "GB", "IE", "DE", "FR", "NL", "ES", "IT", "CH", "US", "CA", "AU", "NZ", "SG", "HK"],
   /** Checkout acknowledgements required for research-channel products. */
   requireAgeConfirmation: true,
   requireResearchAcknowledgement: true,
@@ -45,7 +49,7 @@ export const COMMERCE = {
     "Pre-filled dose-dial pens · no reconstitution",
     "Every lot third-party tested",
     "Certificate of analysis published per lot",
-    "Ships chilled · same day before 2 pm (UK)",
+    "Ships chilled · same-day dispatch before 2 pm",
     "18+ only · research use labelling",
     "The Peptide Checkup tells you when not to buy",
   ],

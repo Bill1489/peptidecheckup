@@ -1,7 +1,7 @@
 /**
  * Single source of truth for brand identity.
  *
- * PeptideCheckup is the store and the assessment. It is an independent UK
+ * PeptideCheckup is the store and the assessment. It is an independent
  * retailer of the AERVYN range of pre-filled peptide pens — AERVYN is the
  * manufacturer's brand (on the cartons and in the photography), not ours.
  */
@@ -20,7 +20,7 @@ export const BRAND = {
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://peptidecheckup.com").replace(/\/+$/, ""),
   tagline: "Peptide pens. Matched to you.",
   description:
-    "Official UK stockist of the AERVYN range — six pre-filled, dose-dial peptide pens, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
+    "Official stockist of the AERVYN range — pre-filled, dose-dial peptide pens at the manufacturer's list prices, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
   shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the Peptide Checkup assessment.",
   supportEmail: "hello@peptidecheckup.com",
   social: {
@@ -32,7 +32,7 @@ export const BRAND = {
   legalName: "PeptideCheckup Ltd",
   foundedYear: 2026,
   /** Where the business operates from — drives default currency, jurisdiction and shipping copy. */
-  homeCountry: "GB",
+  homeCountry: "AE",
   /** The manufacturer whose range we stock. Use for product/range references, never for the site itself. */
   range: {
     name: "AERVYN",
@@ -40,7 +40,7 @@ export const BRAND = {
     descriptor: "Performance Science",
     url: "https://aervyn.com",
     /** How we describe our relationship to the manufacturer. */
-    relationship: "Official UK stockist",
+    relationship: "Official stockist",
   },
 } as const;
 

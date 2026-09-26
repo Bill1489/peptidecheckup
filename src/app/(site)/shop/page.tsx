@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const STATS: { label: string; value: string }[] = [
   { label: "Pens in the range", value: String(count) },
   { label: "Certificates published", value: String(coaCount) },
-  { label: "Free UK shipping", value: `over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}` },
+  { label: `Free ${COMMERCE.market.short} shipping`, value: `over ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}` },
   { label: "Dispatch", value: "Same day before 2 pm · chilled" },
 ];
 

@@ -72,7 +72,7 @@ export const HOME_FAQ: FaqItem[] = [
   {
     id: "shipping",
     question: "When will my order ship?",
-    answer: `UK orders placed before 2 pm on a working day are dispatched the same day. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta}). ${international.label} is ${formatMoney(international.price)} (${international.eta}) to ${COMMERCE.shipTo.length - 1} other countries. Pens travel in insulated packaging and go in the fridge on arrival.`,
+    answer: `${COMMERCE.market.short} orders placed before 2 pm on a working day are dispatched the same day. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta}). ${international.label} is ${formatMoney(international.price)} (${international.eta}) to ${COMMERCE.shipTo.length - 1} other countries. Pens travel in insulated packaging and go in the fridge on arrival.`,
     link: { href: "/shipping", label: "Shipping and returns" },
   },
   {
@@ -144,7 +144,7 @@ export const MORE_FAQ: FaqItem[] = [
   {
     id: "countries",
     question: "Which countries do you ship to?",
-    answer: `The United Kingdom and ${COMMERCE.shipTo.length - 1} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
+    answer: `The ${COMMERCE.market.name} and ${COMMERCE.shipTo.length - 1} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
     link: { href: "/shipping", label: "Shipping" },
   },
   {

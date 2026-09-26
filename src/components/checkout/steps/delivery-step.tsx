@@ -96,7 +96,7 @@ export function DeliveryStep({
       <div className="grid gap-3">
         <div className="flex items-baseline justify-between gap-4">
           <p className="label-mono text-ink">Delivery method</p>
-          <p className="label-mono">{domestic ? "United Kingdom" : "International"}</p>
+          <p className="label-mono">{domestic ? COMMERCE.market.name : "International"}</p>
         </div>
         <RadioRows
           name="delivery-method"

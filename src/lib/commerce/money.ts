@@ -1,18 +1,26 @@
 import { COMMERCE } from "./config";
 
-/** Format minor units (pence) as a currency string, e.g. 4950 → "£49.50". */
+/**
+ * Format minor units (fils) as a currency string, e.g. 105000 → "AED 1,050".
+ * Whole amounts are shown without decimals (the manufacturer lists whole dirhams);
+ * fractional amounts keep two decimals.
+ */
 export function formatMoney(minor: number, opts?: { trimZeros?: boolean }) {
   const value = minor / 100;
+  const whole = minor % 100 === 0;
   const formatted = new Intl.NumberFormat(COMMERCE.locale, {
     style: "currency",
     currency: COMMERCE.currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    currencyDisplay: "code",
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: whole ? 0 : 2,
   }).format(value);
-  return opts?.trimZeros ? formatted.replace(/\.00$/, "") : formatted;
+  // Intl renders the code without a space in some locales; normalise to "AED 1,050".
+  const normalised = formatted.replace(/^([A-Z]{3})\s?/, "$1 ").replace(/\u00a0/g, " ");
+  return opts?.trimZeros ? normalised.replace(/\.00$/, "") : normalised;
 }
 
-/** "from £39" for variant ranges. */
+/** "from AED 850" for variant ranges. */
 export function formatFrom(minors: number[]) {
   const min = Math.min(...minors);
   return `from ${formatMoney(min, { trimZeros: true })}`;

@@ -135,7 +135,7 @@ function FilledCart({ lines, promoCode, onNavigate }: { lines: CartLine[]; promo
             <dt className="font-display text-[15px] uppercase">Total</dt>
             <dd className="font-mono text-[1.25rem] tnum">{formatMoney(totals.total)}</dd>
           </div>
-          <p className="mt-1 text-right font-mono text-[10px] uppercase tracking-[0.12em] text-muted">VAT included · UK standard shipping shown</p>
+          <p className="mt-1 text-right font-mono text-[10px] uppercase tracking-[0.12em] text-muted">VAT included · {COMMERCE.market.short} standard shipping shown</p>
         </dl>
         <Button href="/checkout/" variant="primary" size="xl" className="mt-4 w-full justify-between" onClick={onNavigate}>
           Checkout
@@ -294,7 +294,7 @@ function FreeShipping({ remaining, progress }: { remaining: number; progress: nu
     <div className="mx-5 mt-5 mb-5">
       <div className="flex items-baseline justify-between gap-3 font-mono text-[10.5px] uppercase tracking-[0.12em]">
         <span className={unlocked ? "text-brand-700" : "text-muted"}>
-          {unlocked ? "Free UK shipping unlocked" : `${formatMoney(remaining)} away from free UK shipping`}
+          {unlocked ? `Free ${COMMERCE.market.short} shipping unlocked` : `${formatMoney(remaining)} away from free ${COMMERCE.market.short} shipping`}
         </span>
         <span className="text-muted tnum">{pct}%</span>
       </div>

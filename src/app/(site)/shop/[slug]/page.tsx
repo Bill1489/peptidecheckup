@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     keywords: [
       product.name,
       ...compounds.flatMap((c) => [c.name, ...c.aliases]),
-      `buy ${product.name} pen UK`,
+      `buy ${product.name} pen ${COMMERCE.market.short}`,
       `${product.name} certificate of analysis`,
       "pre-filled peptide pen",
       ...product.tags,

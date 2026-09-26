@@ -46,6 +46,7 @@ export function ProductVisual({
   const f = format ?? product?.visual.format ?? "vial";
   const t = TONES[tone ?? product?.visual.tone ?? "ink"];
   const codeText = (code ?? product?.visual.accentText ?? product?.name ?? "").toUpperCase();
+  const accent = product?.visual.color;
   const metaText = meta ?? product?.variants.find((v) => v.id === product.defaultVariantId)?.label ?? "";
   const batchText = batch ?? product?.coa?.batch ?? "";
 
@@ -72,7 +73,7 @@ export function ProductVisual({
           <Shape format={f} t={t} code={codeText} meta={metaText} batch={batchText} muted />
         </g>
       )}
-      <Shape format={f} t={t} code={codeText} meta={metaText} batch={batchText} />
+      <Shape format={f} t={t} code={codeText} meta={metaText} batch={batchText} accent={accent} />
       {/* baseline */}
       <line x1="60" y1="352" x2="340" y2="352" stroke="#0b0b0c" strokeWidth="1" />
     </svg>
@@ -146,6 +147,7 @@ function Shape({
   meta,
   batch,
   muted,
+  accent,
 }: {
   format: ProductFormat;
   t: (typeof TONES)[ProductTone];
@@ -153,8 +155,11 @@ function Shape({
   meta: string;
   batch: string;
   muted?: boolean;
+  /** Packaging colour — used for the pen's label text and band */
+  accent?: string;
 }) {
   const stroke = muted ? "#9a988f" : "#0b0b0c";
+  const labelColor = accent ?? "#0b0b0c";
   switch (format) {
     case "vial":
       return (
@@ -174,7 +179,7 @@ function Shape({
       return (
         <g>
           <rect x="176" y="48" width="48" height="304" fill={t.fill} stroke={stroke} />
-          <rect x="176" y="48" width="48" height="34" fill="#0b0b0c" stroke={stroke} />
+          <rect x="176" y="48" width="48" height="34" fill={accent ?? "#0b0b0c"} stroke={stroke} />
           <rect x="186" y="82" width="28" height="70" fill="#ffffff" stroke={stroke} />
           <line x1="192" y1="96" x2="208" y2="96" stroke="#0b0b0c" />
           <line x1="192" y1="110" x2="208" y2="110" stroke="#0b0b0c" />
@@ -188,7 +193,7 @@ function Shape({
               fontFamily="var(--font-plex-mono), ui-monospace, monospace"
               fontSize="11"
               fontWeight="600"
-              fill="#0b0b0c"
+              fill={labelColor}
               textAnchor="middle"
               transform="rotate(90 200 180)"
             >
