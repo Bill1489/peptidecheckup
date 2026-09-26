@@ -60,7 +60,7 @@ export function ProductDetail({ product }: { product: Product }) {
       </nav>
       <div className="mt-5 flex items-center gap-3">
         <ProductSwatch product={product} className="h-4 w-4" />
-        <h1 className="text-balance text-[2.25rem] uppercase sm:text-[3rem] lg:text-[3.5rem]">{product.name}</h1>
+        <h1 className="min-w-0 text-balance break-words text-[2.25rem] uppercase sm:text-[3rem] lg:text-[2.75rem] xl:text-[3.5rem]">{product.name}</h1>
       </div>
       <p className="mt-3 text-[15px] leading-relaxed text-muted sm:text-[16px]">{product.subtitle}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
