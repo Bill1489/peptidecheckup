@@ -180,10 +180,11 @@ export default function PrivacyPage() {
       <Prose>
         <h2 id="rights">Your rights</h2>
         <p>
-          Where applicable data-protection law — including the {COMMERCE.market.name}&apos;s Personal Data Protection Law and the law where you live —
-          applies to information you send us, you have the right to access it, correct it, have it deleted, and object to or restrict its processing.
-          Because assessment data stays in your browser, you exercise those rights over it directly, by deleting it. To exercise any right over an order or
-          an email address, email us. You also have the right to complain to the data-protection authority where you live.
+          Where applicable data-protection law — the {COMMERCE.market.short} GDPR and the Data Protection Act 2018, and the law where you live — applies
+          to information you send us, you have the right to access it, correct it, have it deleted, and object to or restrict its processing. Because
+          assessment data stays in your browser, you exercise those rights over it directly, by deleting it. To exercise any right over an order or an
+          email address, email us. You also have the right to complain to the Information Commissioner&apos;s Office (ICO) or the data-protection
+          authority where you live.
         </p>
       </Prose>
 

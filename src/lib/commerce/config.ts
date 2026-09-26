@@ -4,21 +4,29 @@ import { BRAND, RESEARCH_USE_LABEL } from "@/lib/brand";
  * Store configuration. Everything a merchant would change lives here.
  */
 export const COMMERCE = {
-  /** Manufacturer list prices are in UAE dirhams; the store trades in the same currency. */
-  currency: "AED" as const,
-  locale: "en-AE",
-  /** Home market — drives copy ("UAE orders"), domestic shipping and the default checkout country. */
-  market: { countryCode: "AE", name: "United Arab Emirates", short: "UAE", timezone: "Gulf Standard Time" },
-  /** Prices include VAT (UAE consumer pricing, 5%). */
+  /** The store trades in pounds sterling. */
+  currency: "GBP" as const,
+  locale: "en-GB",
+  /** Home market — drives copy ("UK orders"), domestic shipping and the default checkout country. */
+  market: { countryCode: "GB", name: "United Kingdom", short: "UK", timezone: "UK time" },
+  /**
+   * How sterling prices are set. The manufacturer lists in UAE dirhams
+   * (docs/AERVYN-PRICES-2026-09-26.txt); each pen's GBP price is that list
+   * price × `rate`, rounded to the nearest `roundTo` minor units. The rate is
+   * fixed, not live — review it monthly and regenerate the catalogue prices
+   * (docs/GBP-PRICES-2026-09-26.txt has the working).
+   */
+  pricing: { listCurrency: "AED", rate: 0.205, rateSetOn: "2026-09-26", roundTo: 500 },
+  /** Prices include VAT (UK consumer pricing, 20%). */
   taxInclusive: true,
-  vatRate: 0.05,
-  /** Free standard shipping at or above this subtotal (minor units — fils). */
-  freeShippingThreshold: 150000,
+  vatRate: 0.2,
+  /** Free standard shipping at or above this subtotal (minor units — pence). */
+  freeShippingThreshold: 30000,
   shippingOptions: [
-    { id: "standard", label: "Standard chilled courier", eta: "1–2 working days", price: 2500, regions: ["AE"] },
-    { id: "express", label: "Same-day (Dubai & Abu Dhabi)", eta: "Order by 2 pm", price: 4500, regions: ["AE"] },
-    { id: "gcc", label: "GCC chilled courier", eta: "2–4 working days", price: 9500, regions: ["SA", "QA", "KW", "BH", "OM"] },
-    { id: "international", label: "International chilled courier", eta: "3–7 working days", price: 15000, regions: ["*"] },
+    { id: "standard", label: "Standard chilled courier", eta: "1–2 working days", price: 595, regions: ["GB"] },
+    { id: "express", label: "Next-day pre-noon chilled courier", eta: "Next working day · order by 2 pm", price: 995, regions: ["GB"] },
+    { id: "eu", label: "EU chilled courier", eta: "2–4 working days", price: 1495, regions: ["IE", "DE", "FR", "NL", "ES", "IT"] },
+    { id: "international", label: "International chilled courier", eta: "3–7 working days", price: 2495, regions: ["*"] },
   ],
   /** Demo promo codes — replace with your platform's discount engine. */
   promoCodes: {
@@ -27,7 +35,7 @@ export const COMMERCE = {
     FREESHIP: { type: "shipping", value: 0, label: "Free standard shipping" },
   } as Record<string, { type: "percent" | "fixed" | "shipping"; value: number; label: string }>,
   /** Countries we ship to (ISO-2). "*" is handled by the international option. */
-  shipTo: ["AE", "SA", "QA", "KW", "BH", "OM", "GB", "IE", "DE", "FR", "NL", "ES", "IT", "CH", "US", "CA", "AU", "NZ", "SG", "HK"],
+  shipTo: ["GB", "IE", "DE", "FR", "NL", "ES", "IT", "CH", "US", "CA", "AU", "NZ", "SG", "HK", "AE", "SA", "QA", "KW", "BH", "OM"],
   /** Checkout acknowledgements required for research-channel products. */
   requireAgeConfirmation: true,
   requireResearchAcknowledgement: true,

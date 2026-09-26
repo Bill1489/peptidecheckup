@@ -14,6 +14,7 @@ import {
 import type { Product } from "@/data/products";
 import type { Compound, RegulatoryStatus, StackEvidence, StackNote } from "@/data/types";
 import { HUMAN_EVIDENCE_LABELS, REGULATORY_LABELS } from "@/data/types";
+import { HOME_JURISDICTION, HOME_JURISDICTION_NAMED } from "@/components/marketing/copy";
 import { COMMERCE } from "@/lib/commerce/config";
 import { formatDate } from "@/lib/utils";
 
@@ -133,9 +134,16 @@ function CompoundRecord({ compound, compact }: { compound: Compound; compact: bo
                   <span className="text-ink">Other jurisdictions</span> · {other.summary}
                 </li>
               )}
-              <li>
-                <span className="text-ink">{COMMERCE.market.name}</span> · no entry on record — check with the local regulator before you rely on any status.
-              </li>
+              {HOME_JURISDICTION_NAMED ? (
+                <li>
+                  <span className="text-ink">{COMMERCE.market.name}</span> · {compound.regulatory[HOME_JURISDICTION].summary} · reviewed{" "}
+                  {formatDate(compound.regulatory[HOME_JURISDICTION].lastReviewed, { month: "short" })}
+                </li>
+              ) : (
+                <li>
+                  <span className="text-ink">{COMMERCE.market.name}</span> · no entry on record — check with the local regulator before you rely on any status.
+                </li>
+              )}
             </ul>
           </dd>
         </div>

@@ -19,6 +19,8 @@ export function PenSpec({ product, className }: { product: Product; className?: 
   const components = productComponents(product);
   const inTheBox = product.specs.find((s) => s.label.toLowerCase() === "in the box")?.value;
   const klass = product.specs.find((s) => s.label.toLowerCase() === "class")?.value;
+  // "AED 1,650" — the manufacturer's list price our sterling price is set from; the spec value carries a trailing note we drop here.
+  const listPrice = product.specs.find((s) => s.label.toLowerCase() === "manufacturer's list price")?.value.split(" · ")[0];
 
   return (
     <section className={className} aria-labelledby="pen-heading">
@@ -43,6 +45,20 @@ export function PenSpec({ product, className }: { product: Product; className?: 
             />
             {klass && <SpecRow label="Class" value={<span className="break-words">{klass}</span>} className="items-start" />}
             {product.purity && <SpecRow label="Purity" value={<span className="font-mono text-[13px] tnum">{product.purity}</span>} />}
+            {listPrice && (
+              <SpecRow
+                label="List price"
+                value={
+                  <span className="break-words">
+                    <span className="font-mono text-[13px] tnum">{listPrice}</span> ·{" "}
+                    <Link href="/shipping/#vat" className="link-rule">
+                      converted at a fixed rate
+                    </Link>
+                  </span>
+                }
+                className="items-start"
+              />
+            )}
             <SpecRow label="Dialling" value={<span className="break-words">{pen.dialing}</span>} className="items-start" />
             <SpecRow label="Storage" value={<span className="break-words">{pen.storage}</span>} className="items-start" />
           </>

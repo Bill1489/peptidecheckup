@@ -22,7 +22,7 @@ const freeFrom = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true }
 
 export const metadata: Metadata = {
   title: `The range — ${count} pre-filled peptide pens, every lot tested`,
-  description: `${count} pre-filled 3 mL dose-dial pens from ${BRAND.range.name}, stocked by ${BRAND.displayName} at the manufacturer's list prices in ${COMMERCE.currency}, ${blends} of them blends, each with a published certificate of analysis. ${categories.length} categories: ${categoryList}. VAT included, free ${COMMERCE.market.short} shipping over ${freeFrom}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
+  description: `${count} pre-filled 3 mL dose-dial pens from ${BRAND.range.name}, stocked by ${BRAND.displayName} and priced in ${COMMERCE.currency} from the manufacturer's list, ${blends} of them blends, each with a published certificate of analysis. ${categories.length} categories: ${categoryList}. VAT included, free ${COMMERCE.market.short} shipping over ${freeFrom}. The ${BRAND.assessmentName} tells you which pen fits — or not to buy.`,
   alternates: { canonical: "/shop/" },
   openGraph: {
     images: OG_IMAGES,
@@ -73,7 +73,7 @@ export default function ShopPage() {
             </p>
             <h1 className="mt-4 break-words text-[2.75rem] uppercase leading-[0.92] sm:text-[4rem] lg:text-[5.5rem]">The range</h1>
             <p className="mt-5 max-w-xl text-pretty text-[15px] leading-relaxed text-muted sm:text-[16px]">
-              {count} pre-filled 3 mL dose-dial pens from {BRAND.range.name}, at the manufacturer&apos;s list prices. No vials, no reconstitution,
+              {count} pre-filled 3 mL dose-dial pens from {BRAND.range.name}, priced in sterling from the manufacturer&apos;s list. No vials, no reconstitution,
               no drawing up. Every lot is tested by an independent laboratory and its certificate is published against the batch number on the
               carton. Sold for research use; the {BRAND.assessmentName} tells you which pen fits your goal — and when none does.
             </p>

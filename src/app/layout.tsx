@@ -27,8 +27,8 @@ export const metadata: Metadata = {
   description: BRAND.description,
   applicationName: BRAND.name,
   keywords: [
-    "buy peptides UAE",
-    "peptide pens Dubai",
+    "buy peptides UK",
+    "peptide pens UK",
     "peptide store",
     "peptide comparison",
     "compare peptides",

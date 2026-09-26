@@ -1,9 +1,11 @@
 import { COMPOUNDS, getCompound } from "@/data/compounds";
+import { COUNTRY_MAP } from "@/data/countries";
 import { defaultVariant, PRODUCTS, type Product } from "@/data/products";
 import { JURISDICTION_LABELS, type Jurisdiction } from "@/data/types";
 import { joinNames } from "@/components/commerce/product-utils";
 import { SECTION_META, SECTION_ORDER } from "@/lib/assessment/types";
 import { BRAND } from "@/lib/brand";
+import { COMMERCE } from "@/lib/commerce/config";
 import { formatMoney } from "@/lib/commerce/money";
 
 /**
@@ -23,6 +25,11 @@ export const CHECKUP_SHORT = BRAND.assessmentName.split(" ").at(-1) ?? BRAND.ass
 export const NAMED_JURISDICTIONS = (Object.keys(JURISDICTION_LABELS) as Jurisdiction[]).filter(
   (j) => j !== "OTHER",
 );
+
+/** The regulatory jurisdiction of the store's home market ("UK" for Great Britain), or "OTHER" if it is not on record. */
+export const HOME_JURISDICTION: Jurisdiction = COUNTRY_MAP[COMMERCE.market.countryCode]?.jurisdiction ?? "OTHER";
+/** True when the home market has its own maintained regulatory entry rather than falling back to the general one. */
+export const HOME_JURISDICTION_NAMED = HOME_JURISDICTION !== "OTHER";
 
 export const SECTION_COUNT = SECTION_ORDER.length;
 export const OPTIONAL_SECTION_COUNT = SECTION_ORDER.filter((id) => SECTION_META[id].optional).length;
@@ -86,7 +93,7 @@ export function penComponents(product: Product): string {
   return slugs.map((slug) => getCompound(slug)?.name ?? slug.toUpperCase()).join(" + ");
 }
 
-/** Single-pen price with trailing zeros trimmed, e.g. "AED 1,250". */
+/** Single-pen price with trailing zeros trimmed, e.g. "£255". */
 export function penPrice(product: Product): string {
   return formatMoney(defaultVariant(product).price, { trimZeros: true });
 }

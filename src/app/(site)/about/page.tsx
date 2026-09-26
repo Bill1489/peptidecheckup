@@ -40,7 +40,7 @@ const TOC = [
 const PRINCIPLES: { title: string; body: string }[] = [
   {
     title: "One format",
-    body: "Every product is the same object: a pre-filled 3 mL dose-dial pen from one manufacturer, at the manufacturer's list price. No vials, no diluent, no kits, no supplies. If a compound does not suit the format, it is not in the range.",
+    body: "Every product is the same object: a pre-filled 3 mL dose-dial pen from one manufacturer, priced in sterling from the manufacturer's list at a fixed, published rate. No vials, no diluent, no kits, no supplies. If a compound does not suit the format, it is not in the range.",
   },
   {
     title: "Test every lot",

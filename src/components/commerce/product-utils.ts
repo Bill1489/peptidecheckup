@@ -30,7 +30,7 @@ export const CHANNEL_SHORT: Record<SaleChannel, string> = {
   supplies: "Supplies",
 };
 
-/** Card-level price line: a single price, or "from AED x" when variants differ. */
+/** Card-level price line: a single price, or "from £x" when variants differ. */
 export function priceLine(product: Product): string | null {
   const { min, max } = priceRange(product);
   if (max === 0) return null;

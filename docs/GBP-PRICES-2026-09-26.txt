@@ -1,0 +1,29 @@
+Sterling prices set on 2026-09-26 from the manufacturer's AED list (docs/AERVYN-PRICES-2026-09-26.txt).
+Rule: GBP = AED × 0.205 (mid-market AED/GBP was 0.203–0.206 that week), rounded to the nearest £5. Prices include UK VAT at 20%.
+Review the rate monthly; if it moves more than ~3%, re-run the rule and update src/data/products/catalog.ts and COMMERCE.pricing.
+
+slug               name                AED list  AED×rate  GBP price
+ghk-cu             GHK-Cu                 1,050    215.25       £215
+glow               Glow™                  1,450    297.25       £295
+klow               KLOW™                  1,650    338.25       £340
+kpv                KPV                      850    174.25       £175
+mots-c             MOTS-C                 1,250    256.25       £255
+nad                NAD+                   1,400    287.00       £285
+retatrutide        R3T                    1,800    369.00       £370
+tesamorelin        Tesamorelin            1,250    256.25       £255
+wolverine          Wolverine™             1,150    235.75       £235
+bpc-157            BPC-157                  820    168.10       £170
+cagrisema          CagriSema              1,750    358.75       £360
+cjc-1295           CJC-1295 no DAC          880    180.40       £180
+epitalon           Epitalon               1,080    221.40       £220
+foxo4-dri          FOXO4-DRI              1,600    328.00       £330
+gonadorelin        Gonadorelin              980    200.90       £200
+ipamorelin         Ipamorelin               850    174.25       £175
+liraglutide        Liraglutide            1,150    235.75       £235
+ll-37              LL-37                    980    200.90       £200
+pt-141             PT-141                   950    194.75       £195
+semaglutide        Semaglutide            1,300    266.50       £265
+sermorelin         Sermorelin               920    188.60       £190
+tb-500             TB-500                   880    180.40       £180
+thymosin-alpha-1   Thymosin Alpha-1       1,020    209.10       £210
+tirzepatide        Tirzepatide            1,550    317.75       £320

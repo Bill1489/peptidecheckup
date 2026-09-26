@@ -70,7 +70,7 @@ export function BuyPanel({ compound }: { compound: Compound }) {
   if (state === "buy" && product && variant) {
     const prices = product.variants.map((v) => v.price).filter((p) => p > 0);
     const multi = product.variants.length > 1;
-    // Only worth saying "from AED x" when a cheaper size than the one shown exists.
+    // Only worth saying "from £x" when a cheaper size than the one shown exists.
     const cheaperExists = multi && prices.some((p) => p < variant.price);
     return (
       <section className="p-5 sm:p-6" aria-label={`Buy ${product.name}`}>

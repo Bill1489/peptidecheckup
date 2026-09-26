@@ -3,7 +3,7 @@ import { COUNTRIES, COUNTRY_MAP, type CountryDef } from "@/data/countries";
 
 const MARKET = COMMERCE.market.countryCode;
 
-/** Regions served by a dedicated (non catch-all) option other than the home market — the GCC courier's countries. */
+/** Regions served by a dedicated (non catch-all) option other than the home market — the EU courier's countries. */
 const REGIONAL_CODES: readonly string[] = COMMERCE.shippingOptions.flatMap((o) => (o.regions as readonly string[]).filter((r) => r !== "*" && r !== MARKET));
 
 /**
@@ -48,7 +48,7 @@ export function canShipTo(countryCode: string): boolean {
   return (COMMERCE.shipTo as readonly string[]).includes(countryCode);
 }
 
-/** The home market — same-day and standard couriers, free standard delivery over the threshold. */
+/** The home market — next-day and standard couriers, free standard delivery over the threshold. */
 export function isDomestic(countryCode: string): boolean {
   return countryCode === MARKET;
 }
@@ -58,7 +58,7 @@ export function isRegional(countryCode: string): boolean {
   return REGIONAL_CODES.includes(countryCode);
 }
 
-/** "United Arab Emirates" · "GCC" · "International" — the delivery zone shown next to the method list. */
+/** "United Kingdom" · "EU" · "International" — the delivery zone shown next to the method list. */
 export function zoneLabel(countryCode: string): string {
   if (isDomestic(countryCode)) return COMMERCE.market.name;
   if (isRegional(countryCode)) {

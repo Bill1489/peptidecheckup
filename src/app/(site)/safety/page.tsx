@@ -219,9 +219,9 @@ export default function SafetyPage() {
         <h2 id="adverse">Reporting side effects</h2>
         <p>
           If you experience a suspected side effect from any medicine or product, tell a healthcare professional and report it to your national
-          pharmacovigilance scheme — in the {COMMERCE.market.name}, the Ministry of Health and Prevention&apos;s adverse drug reaction reporting; elsewhere
-          the MHRA Yellow Card scheme, MedWatch, or the equivalent where you live. Reporting helps regulators identify problems, including with
-          unregulated and falsified products.
+          pharmacovigilance scheme — in the {COMMERCE.market.short}, the MHRA Yellow Card scheme; elsewhere MedWatch (US), the EMA&apos;s national
+          reporting systems, or the equivalent where you live. Reporting helps regulators identify problems, including with unregulated and falsified
+          products.
         </p>
       </Prose>
 

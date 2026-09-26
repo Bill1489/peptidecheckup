@@ -6,7 +6,7 @@ Read this before touching code. It is the single shared contract for every contr
 
 **The client is AERVYN · Performance Science.** The store is their brand; the assessment keeps its product name **"Peptide Checkup"** (`BRAND.assessmentName`). Never hard-code either — use `BRAND.name` ("AERVYN"), `BRAND.displayName` ("Aervyn"), `BRAND.descriptor` ("Performance Science"), `BRAND.assessmentName`. The wordmark is AERV + helix glyph + N (`Logo`/`Wordmark`/`HelixGlyph`/`LogoMark` in `src/components/ui/logo.tsx`).
 
-**The range is the manufacturer's full list of pre-filled 3 mL dose-dial peptide pens (24 as of 26 Sep 2026, synced from aervynlabs.com/products with their AED list prices — see docs/AERVYN-PRICES-2026-09-26.txt). The table below is the original six and is kept for orientation only** (`src/data/products/catalog.ts`, all `channel: "research"`, real photos in `/public/products`, per-product packaging colour in `visual.color`):
+**The range is the manufacturer's full list of pre-filled 3 mL dose-dial peptide pens (24 as of 26 Sep 2026, synced from aervynlabs.com/products; their AED list prices are in docs/AERVYN-PRICES-2026-09-26.txt and the sterling prices derived from them in docs/GBP-PRICES-2026-09-26.txt). The table below is the original six and is kept for orientation only** (`src/data/products/catalog.ts`, all `channel: "research"`, real photos in `/public/products`, per-product packaging colour in `visual.color`):
 
 | Product | Contents | Colour | For |
 | --- | --- | --- | --- |

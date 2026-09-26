@@ -13,6 +13,8 @@ import {
   blendProducts,
   CHECKUP,
   CHECKUP_SHORT,
+  HOME_JURISDICTION,
+  HOME_JURISDICTION_NAMED,
   latestReviewDate,
   NAMED_JURISDICTIONS,
   pluralise,
@@ -177,9 +179,12 @@ export default function MethodologyPage() {
             inferred from a compound’s class.
           </li>
           <li>
-            The report uses the jurisdiction for the country you enter. Where that is not one of the {NAMED_JURISDICTIONS.length} named jurisdictions — the{" "}
-            {COMMERCE.market.name}, our home market, is not yet one of them — it uses the general entry and tells you to check with your national regulator.
-            The pen page says the same.
+            The report uses the jurisdiction for the country you enter.{" "}
+            {HOME_JURISDICTION_NAMED
+              ? `The ${COMMERCE.market.name}, our home market, has its own entry (${JURISDICTION_LABELS[HOME_JURISDICTION]}) and the pen page shows it first.`
+              : `The ${COMMERCE.market.name}, our home market, is not yet one of them.`}{" "}
+            Where the country is not one of the {NAMED_JURISDICTIONS.length} named jurisdictions, the report uses the general entry and tells you to check
+            with your national regulator. The pen page says the same.
           </li>
           <li>
             Anti-doping status under the World Anti-Doping Code is recorded separately — prohibited at all times, in competition only, or not listed — and

@@ -4,6 +4,7 @@ import { COUNTRY_MAP } from "@/data/countries";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES, RESEARCH_USE_LABEL } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
+import { currencyNoun, pricingRuleText } from "@/lib/commerce/money";
 import { formatDate } from "@/lib/utils";
 import { authorisedElsewhereNames, CHECKUP, CHECKUP_SHORT, joinNames } from "@/components/marketing/copy";
 import { CtaBand } from "@/components/marketing/cta-band";
@@ -11,23 +12,15 @@ import { Note, Prose, TrustPage } from "@/components/marketing/page-shell";
 
 /** Jurisdiction follows the brand's home country (see BRAND.homeCountry); falls back to the store market. */
 const HOME = COUNTRY_MAP[BRAND.homeCountry]?.name ?? COMMERCE.market.name;
+/** The legal system named in the governing-law clause — England and Wales for a UK business, otherwise the home country. */
+const GOVERNING_LAW = BRAND.homeCountry === "GB" ? "England and Wales" : HOME;
+const GOVERNING_LAW_THE = BRAND.homeCountry === "GB" ? GOVERNING_LAW : `the ${GOVERNING_LAW}`;
 const VAT_PERCENT = `${Math.round(COMMERCE.vatRate * 100)}%`;
 
-/** "United Arab Emirates dirhams (AED)" — from the currency code, so the terms follow the store configuration. */
-function currencyName(code: string): string {
-  try {
-    const name = new Intl.DisplayNames(["en"], { type: "currency" }).of(code);
-    if (!name || name === code) return code;
-    const words = name.split(" ");
-    const unit = words.pop() ?? "";
-    return `${[...words, `${unit.toLowerCase()}s`].join(" ")} (${code})`;
-  } catch {
-    return code;
-  }
-}
-const CURRENCY = currencyName(COMMERCE.currency);
+/** "pounds sterling (GBP)" — from the currency code, so the terms follow the store configuration. */
+const CURRENCY = `${currencyNoun(COMMERCE.currency)} (${COMMERCE.currency})`;
 
-const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.range.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing in ${COMMERCE.currency}, cold-chain returns, liability and the law of the ${HOME}.`;
+const DESCRIPTION = `Terms for using ${BRAND.displayName} and buying ${BRAND.range.name} pens: educational content, research-use terms of sale for pre-filled pens, 18+, orders and pricing in ${COMMERCE.currency}, cold-chain returns, liability and the law of ${GOVERNING_LAW_THE}.`;
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -140,9 +133,10 @@ export default function TermsPage() {
         <h2 id="orders">Orders, pricing and delivery</h2>
         <ul>
           <li>
-            <strong>Prices</strong> are the manufacturer&apos;s list prices, shown in {CURRENCY} and inclusive of {COMMERCE.market.short} VAT at {VAT_PERCENT}.
-            Delivery charges are shown at checkout before you pay; duties and taxes on deliveries outside the {COMMERCE.market.short} are the recipient&apos;s
-            responsibility.
+            <strong>Prices</strong> are shown in {CURRENCY} and include {COMMERCE.market.short} VAT at {VAT_PERCENT}. They are set from the
+            manufacturer&apos;s {currencyNoun(COMMERCE.pricing.listCurrency)} list price at a fixed rate ({pricingRuleText()}) that we review monthly; the
+            price shown when you order is the price you pay. Delivery charges are shown at checkout before you pay; duties and taxes on deliveries
+            outside the {COMMERCE.market.short} are the recipient&apos;s responsibility.
           </li>
           <li>
             <strong>Acceptance.</strong> Your order is an offer to buy. We accept it when we dispatch the goods and send the dispatch confirmation; until
@@ -215,7 +209,7 @@ export default function TermsPage() {
           To the fullest extent permitted by law, we are not liable for any loss or damage arising from your use of, or reliance on, the site, any report
           or any match, or from any use of a pen contrary to its labelling. Our total liability in connection with any order is limited to the price paid
           for that order. Nothing in these terms excludes or limits liability for death or personal injury caused by negligence, for fraud, for breach of
-          terms implied by consumer law, or for anything else that cannot be excluded or limited under the law of the {HOME}.
+          terms implied by consumer law, or for anything else that cannot be excluded or limited under the law of {GOVERNING_LAW_THE}.
         </p>
       </Prose>
 
@@ -241,7 +235,7 @@ export default function TermsPage() {
       <Prose>
         <h2 id="law">Governing law</h2>
         <p>
-          These terms are governed by the law of the <strong>{HOME}</strong>, and the courts of the {HOME} have exclusive jurisdiction over any dispute
+          These terms are governed by the law of <strong>{GOVERNING_LAW_THE}</strong>, and the courts of {GOVERNING_LAW_THE} have exclusive jurisdiction over any dispute
           arising from them, except that if you are a consumer resident elsewhere you may also rely on mandatory protections of your local law and bring
           proceedings in your local courts.
         </p>

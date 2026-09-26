@@ -227,7 +227,7 @@ export default function HowItWorksPage() {
               dispatched the same day, chilled, in insulated packaging.
             </>
           )}{" "}
-          The <Link href="/shipping">shipping page</Link> has every option — same-day, GCC and international — and the returns policy.
+          The <Link href="/shipping">shipping page</Link> has every option — next-day, EU and international — and the returns policy.
         </p>
       </Prose>
 

@@ -117,7 +117,7 @@ export function DeliveryStep({
           {domestic
             ? `Orders placed before 2 pm ${COMMERCE.market.timezone} on a working day are dispatched the same day, chilled. Standard tracked delivery is free on orders of ${formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })} or more.`
             : regional
-              ? "Dispatched chilled within one working day by the GCC courier. Duties and local taxes may be charged on arrival and are the recipient’s responsibility."
+              ? "Dispatched chilled within one working day by the EU courier. Duties and local taxes may be charged on arrival and are the recipient’s responsibility."
               : "Dispatched chilled within one working day. Duties and local taxes may be charged on arrival and are the recipient’s responsibility; we decline orders where import of the product is prohibited."}
         </p>
       </div>

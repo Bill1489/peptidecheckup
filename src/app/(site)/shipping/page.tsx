@@ -8,7 +8,7 @@ import { SpecRow } from "@/components/ui/card";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
-import { formatMoney } from "@/lib/commerce/money";
+import { currencyNoun, formatMoney, pricingRuleText } from "@/lib/commerce/money";
 
 const FREE_THRESHOLD = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 const VAT_PERCENT = `${Math.round(COMMERCE.vatRate * 100)}%`;
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-/** "United Arab Emirates" · "Saudi Arabia, Qatar, Kuwait, Bahrain and Oman" · "All other destinations" — from the country catalogue. */
+/** "United Kingdom" · "Ireland, Germany, France, Netherlands, Spain and Italy" · "All other destinations" — from the country catalogue. */
 function regionsLabel(regions: readonly string[]) {
   if (regions.includes("*")) return "All other destinations";
   return joinNames(regions.map((r) => shipToCountryName(r)));
@@ -39,7 +39,7 @@ const SECTIONS = [
   { id: "dispatch", label: "Dispatch and packaging" },
   { id: "returns", label: "Returns" },
   { id: "damaged", label: "Damaged or lost" },
-  { id: "vat", label: "VAT and duties" },
+  { id: "vat", label: "Pricing, VAT and duties" },
 ];
 
 export default function ShippingPage() {
@@ -116,10 +116,11 @@ export default function ShippingPage() {
                 </table>
               </div>
               <p>
-                Estimates are working days from dispatch, not from the moment you order; the same-day courier delivers on the day of dispatch.{" "}
+                Estimates are working days from dispatch, not from the moment you order; the next-day courier delivers before noon on the working day after
+                dispatch.{" "}
                 {standard && (
                   <>
-                    {standard.label} is free on {COMMERCE.market.short} orders of {FREE_THRESHOLD} or more after any discount; same-day, GCC and international rates
+                    {standard.label} is free on {COMMERCE.market.short} orders of {FREE_THRESHOLD} or more after any discount; next-day, EU and international rates
                     are always charged. Every option is a chilled service.
                   </>
                 )}
@@ -142,7 +143,7 @@ export default function ShippingPage() {
                 ))}
               </ul>
               <p>
-                Outside the {COMMERCE.market.short}, delivery is by the GCC or international chilled courier service. Import duties and local taxes are charged by the carrier on
+                Outside the {COMMERCE.market.short}, delivery is by the EU or international chilled courier service. Import duties and local taxes are charged by the carrier on
                 arrival and are the recipient’s responsibility.
               </p>
             </Section>
@@ -207,7 +208,12 @@ export default function ShippingPage() {
             </Section>
 
             {/* VAT */}
-            <Section id="vat" index="06" title="VAT and duties">
+            <Section id="vat" index="06" title="Pricing, VAT and duties">
+              <p>
+                Prices are in {currencyNoun(COMMERCE.currency)}. The manufacturer lists the range in {currencyNoun(COMMERCE.pricing.listCurrency)}; each
+                sterling price is set from that list at a fixed rate ({pricingRuleText()}), so it does not move with the daily exchange rate. The list price
+                is shown on every pen page. We review the rate monthly.
+              </p>
               <p>
                 All prices include {COMMERCE.market.short} VAT at {VAT_PERCENT}; the VAT element is shown on the checkout summary and the order confirmation. There
                 is no VAT-exempt pricing for destinations outside the {COMMERCE.market.short} at present.

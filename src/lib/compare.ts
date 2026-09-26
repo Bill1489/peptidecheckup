@@ -301,9 +301,9 @@ export interface CompoundCommerce {
   /** Only set for `buy`: the variant "Add to cart" should use. */
   variant?: ProductVariant;
   state: CommerceState;
-  /** Plain price of the variant to buy, e.g. "AED 1,250" or "from AED 1,250". Only set for `buy`. */
+  /** Plain price of the variant to buy, e.g. "£255" or "from £255". Only set for `buy`. */
   price?: string;
-  /** "AED 1,250" · "In CagriSema · AED 1,750" · "Consultation" · "Not sold" · "Out of stock" · "Not in the Aervyn range" */
+  /** "£255" · "In CagriSema · £360" · "Consultation" · "Not sold" · "Out of stock" · "Not in the Aervyn range" */
   priceLabel: string;
   /** Availability wording from the catalogue, or "Not in the Aervyn range" when nothing is linked. */
   availabilityLabel: string;
@@ -353,7 +353,7 @@ function variantToBuy(product: Product): ProductVariant {
   return product.variants.find((v) => v.stock > 0 && v.price > 0) ?? preferred;
 }
 
-/** "AED 1,250" for the variant on offer (via formatMoney); "from AED 1,250" only when a cheaper size exists. */
+/** "£255" for the variant on offer (via formatMoney); "from £255" only when a cheaper size exists. */
 export function variantPriceLabel(product: Product, variant: ProductVariant): string {
   const prices = product.variants.map((v) => v.price).filter((p) => p > 0);
   if (prices.length === 0 || variant.price <= 0) return AVAILABILITY_LABELS[product.availability];
@@ -371,7 +371,7 @@ export function variantPriceLabel(product: Product, variant: ProductVariant): st
  * resolve to their own pens rather than to Wolverine, Klow or Glow while those
  * pens are purchasable, and semaglutide to its own pen rather than CagriSema.
  * Only a compound with no single-compound pen — cagrilintide — resolves through
- * a blend; it is labelled "In CagriSema · AED 1,750" and carries `inBlend`,
+ * a blend; it is labelled "In CagriSema · £360" and carries `inBlend`,
  * `blendName` and `blendPartners`. Compounds in no pen at all are "Not in the
  * Aervyn range".
  */

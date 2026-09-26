@@ -108,7 +108,7 @@ function OrderDetail({ order, showAssessmentCta }: { order: Order; showAssessmen
               <ol className="cell-grid sm:grid-cols-3">
                 <NextStep index="01" title="Packed">
                   {option?.id === "express"
-                    ? `Packed chilled for same-day courier collection if you ordered before 2 pm ${COMMERCE.market.timezone} on a working day, otherwise the next working day.`
+                    ? `Packed chilled for next-day courier collection if you ordered before 2 pm ${COMMERCE.market.timezone} on a working day, otherwise the next working day.`
                     : `Packed chilled today if you ordered before 2 pm ${COMMERCE.market.timezone} on a working day, otherwise the next working day.`}
                 </NextStep>
                 <NextStep index="02" title="Tracked">

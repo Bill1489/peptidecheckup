@@ -31,7 +31,7 @@ export function HomeHero({ product }: { product: Product }) {
             The right one.
           </h1>
           <p className="mt-6 max-w-lg text-pretty text-[15px] leading-relaxed text-ink-3 sm:text-[17px]">
-            {count} pre-filled 3 mL dose-dial pens at the manufacturer&apos;s list prices, each lot tested by an independent laboratory with the
+            {count} pre-filled 3 mL dose-dial pens, priced in sterling from the manufacturer&apos;s list, each lot tested by an independent laboratory with the
             certificate published against the lot number. The {ASSESSMENT_MINUTES}-minute {CHECKUP} matches you to one of them — or tells you not to
             buy.
           </p>

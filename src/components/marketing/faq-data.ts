@@ -4,7 +4,7 @@ import { PRODUCTS } from "@/data/products";
 import { JURISDICTION_LABELS } from "@/data/types";
 import { BRAND } from "@/lib/brand";
 import { COMMERCE } from "@/lib/commerce/config";
-import { formatMoney } from "@/lib/commerce/money";
+import { currencyNoun, formatMoney, pricingRuleText } from "@/lib/commerce/money";
 import { SUITABILITY_DESCRIPTIONS } from "@/lib/engine/types";
 import { titleCase } from "@/lib/utils";
 import {
@@ -14,6 +14,8 @@ import {
   blendProducts,
   CHECKUP,
   CHECKUP_SHORT,
+  HOME_JURISDICTION,
+  HOME_JURISDICTION_NAMED,
   investigationalNames,
   joinNames,
   NAMED_JURISDICTIONS,
@@ -34,9 +36,13 @@ const jurisdictionList = NAMED_JURISDICTIONS.map((j) => JURISDICTION_LABELS[j]).
 const option = (id: string) => COMMERCE.shippingOptions.find((o) => o.id === id);
 const standard = option("standard") ?? COMMERCE.shippingOptions[0];
 const express = option("express");
-const gcc = option("gcc");
+/** The regional courier (the EU option) — any dedicated option that is neither domestic nor the catch-all. */
+const regional = COMMERCE.shippingOptions.find((o) => !(o.regions as readonly string[]).includes("*") && !(o.regions as readonly string[]).includes(COMMERCE.market.countryCode));
 const international = option("international") ?? COMMERCE.shippingOptions[COMMERCE.shippingOptions.length - 1];
-const gccCountries = gcc ? joinNames((gcc.regions as readonly string[]).map((c) => shipToCountryName(c))) : "";
+const regionalCountries = regional ? joinNames((regional.regions as readonly string[]).map((c) => shipToCountryName(c))) : "";
+const homeStatusNote = HOME_JURISDICTION_NAMED
+  ? `The ${COMMERCE.market.name}, our home market, is one of them — the ${JURISDICTION_LABELS[HOME_JURISDICTION]} entry is what the pen page shows first.`
+  : `The ${COMMERCE.market.name} is not yet one of the named jurisdictions: the pen page says so, and the report uses the general entry and tells you to check with the local regulator.`;
 const freeFrom = formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true });
 const checkupPromo = COMMERCE.promoCodes.CHECKUP10;
 const blends = blendProducts();
@@ -82,7 +88,7 @@ export const HOME_FAQ: FaqItem[] = [
   {
     id: "shipping",
     question: "When will my order ship?",
-    answer: `${COMMERCE.market.short} orders placed before 2 pm ${COMMERCE.market.timezone} on a working day are dispatched the same day, chilled. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more${express ? `; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta.toLowerCase()})` : ""}.${gcc ? ` ${gcc.label} is ${formatMoney(gcc.price)} (${gcc.eta}) to ${gccCountries}.` : ""} ${international.label} is ${formatMoney(international.price)} (${international.eta}) to the other countries we ship to. Every option is a chilled service; put the pen in the fridge on arrival.`,
+    answer: `${COMMERCE.market.short} orders placed before 2 pm ${COMMERCE.market.timezone} on a working day are dispatched the same day, chilled. ${standard.label} is ${formatMoney(standard.price)} (${standard.eta}) and free on orders of ${freeFrom} or more${express ? `; ${express.label.toLowerCase()} is ${formatMoney(express.price)} (${express.eta.toLowerCase()})` : ""}.${regional ? ` ${regional.label} is ${formatMoney(regional.price)} (${regional.eta}) to ${regionalCountries}.` : ""} ${international.label} is ${formatMoney(international.price)} (${international.eta}) to the other countries we ship to. Every option is a chilled service; put the pen in the fridge on arrival.`,
     link: { href: "/shipping", label: "Shipping and returns" },
   },
   {
@@ -151,6 +157,12 @@ export const MORE_FAQ: FaqItem[] = [
       : "The report is free and does not change based on what you might buy.",
   },
   {
+    id: "pricing",
+    question: "How are the prices set?",
+    answer: `Prices are in ${currencyNoun(COMMERCE.currency)} and include ${COMMERCE.market.short} VAT at ${Math.round(COMMERCE.vatRate * 100)}%. The manufacturer lists the range in ${currencyNoun(COMMERCE.pricing.listCurrency)}; each sterling price is that list price converted at a fixed rate (${pricingRuleText()}), so it does not move with the daily exchange rate. The list price is shown in the specification on every pen page, and we review the rate monthly.`,
+    link: { href: "/shipping/#vat", label: "Pricing and VAT" },
+  },
+  {
     id: "account",
     question: "Do I need an account?",
     answer:
@@ -160,13 +172,13 @@ export const MORE_FAQ: FaqItem[] = [
   {
     id: "countries",
     question: "Which countries do you ship to?",
-    answer: `The ${COMMERCE.market.name}${gcc ? `, the GCC (${gccCountries})` : ""} and ${COMMERCE.shipTo.length - 1 - (gcc ? gcc.regions.length : 0)} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
+    answer: `The ${COMMERCE.market.name}${regional ? `, the ${regional.id.toUpperCase()} (${regionalCountries})` : ""} and ${COMMERCE.shipTo.length - 1 - (regional ? regional.regions.length : 0)} other countries, listed at checkout. It is your responsibility to check that the pens you order can be imported and held where you live; research-use compounds are restricted in some countries and we cannot advise on local law.`,
     link: { href: "/shipping", label: "Shipping" },
   },
   {
     id: "regulatory-source",
     question: "Where does the regulatory status come from?",
-    answer: `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”. The ${COMMERCE.market.name} is not yet one of the named jurisdictions: the pen page says so, and the report uses the general entry and tells you to check with the local regulator.`,
+    answer: `From a database we maintain by hand for the ${jurisdictionList}, plus a general entry for other jurisdictions. Each entry records the regulator, the licensed indication where one exists, any caveats and the date it was last reviewed. Status is never inferred by software — if we have not confirmed it, the entry says “Unclear”. ${homeStatusNote}`,
     link: { href: "/methodology", label: "Methodology" },
   },
   {

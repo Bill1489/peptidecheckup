@@ -20,7 +20,7 @@ export const BRAND = {
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://peptidecheckup.com").replace(/\/+$/, ""),
   tagline: "Peptide pens. Matched to you.",
   description:
-    "Official stockist of the AERVYN range — pre-filled, dose-dial peptide pens at the manufacturer's list prices, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
+    "Official UK stockist of the AERVYN range — pre-filled, dose-dial peptide pens priced in pounds sterling from the manufacturer's list, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
   shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the Peptide Checkup assessment.",
   supportEmail: "hello@peptidecheckup.com",
   social: {
@@ -32,7 +32,7 @@ export const BRAND = {
   legalName: "PeptideCheckup Ltd",
   foundedYear: 2026,
   /** Where the business operates from — drives default currency, jurisdiction and shipping copy. */
-  homeCountry: "AE",
+  homeCountry: "GB",
   /** The manufacturer whose range we stock. Use for product/range references, never for the site itself. */
   range: {
     name: "AERVYN",
