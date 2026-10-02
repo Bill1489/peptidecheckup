@@ -29,7 +29,7 @@ Blends carry `blend: string[]` (compound slugs); single-compound pens carry `com
 
 **An e-commerce store for batch-tested peptides, fed by an ad → assessment → report lead funnel.**
 
-- Paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup") → symptom landing page `/start/[symptom]` → assessment `/assessment` → rules-engine report `/report` → **product matches** ("Your matches") → cart → checkout → order confirmation.
+- Paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup") → chrome-less landing page `/checkup/[symptom]` (generic: `/checkup`; the in-site equivalents are `/start/[symptom]`) → assessment `/assessment` → rules-engine report `/report` → **product matches** ("Your matches") → cart → checkout → order confirmation.
 - The store is the destination: `/shop`, `/shop/[slug]`, cart drawer, `/checkout`, `/order?id=`, `/account/orders`, `/lab-testing`, `/shipping`.
 - The evidence layer stays and is a differentiator: `/peptides`, `/peptides/[slug]`, `/compare`, `/methodology`. **Brand promise: the only peptide store whose assessment tells you when *not* to buy.** A "Higher concern" compound is never added to the cart from a report; it links to "speak to a clinician" instead.
 - Static export, no backend. Cart, orders and assessment live in the browser (zustand + localStorage). Payments use a provider abstraction (`mock` for the demo; Stripe when keys are set). Leads/orders POST to webhooks when configured.

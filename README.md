@@ -15,7 +15,8 @@ Live demo: **https://bill1489.github.io/peptidecheckup/**
 | Cart & checkout | drawer, `/checkout`, `/order?id=`, `/account/orders` | Client-side cart (localStorage), mock/Stripe payment abstraction, orders posted to a webhook |
 | Lab testing | `/lab-testing` | How batches are tested; CoA table |
 | Shipping | `/shipping` | Shipping & returns policy generated from config |
-| Ad landing pages | `/start/[symptom]` | `tired`, `weight`, `fat-loss`, `muscle`, `performance`, `recovery`, `skin`, `hair`, `libido`, `sleep`, `longevity` — pre-select the goal and pass UTM context |
+| Paid-traffic landing page | `/checkup`, `/checkup/[symptom]` | Chrome-less landing page for ads: the ad's question as the headline (`tired`, `weight`, `fat-loss`, `muscle`, `performance`, `recovery`, `skin`, `hair`, `libido`, `sleep`, `longevity`), a sample result, proof strip, how it works, the three verdicts, FAQ. Every CTA forwards `utm_*` and click IDs into the assessment; `data-cta` attributes mark the CTAs for pixels. Symptom variants are `noindex` |
+| Goal pages (organic) | `/start`, `/start/[symptom]` | In-site versions of the same entry points with full navigation — pre-select the goal and pass UTM context |
 | Assessment | `/assessment` → `/assessment/start` | 10 sections, ~45 questions with conditional logic, save/resume (localStorage), 18+ gate, pregnancy handling |
 | Report | `/report` | Deterministic rules-engine output: evidence, regulatory status, suitability labels, 3-layer dosing, stack intelligence, "not without professional review", clinician questions, monitoring, source assessment, print/PDF |
 | Directory | `/peptides` | 28 compounds, filters by goal / family / evidence / regulatory status / WADA |
