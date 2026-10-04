@@ -15,14 +15,14 @@ export const BRAND = {
   descriptor: "Batch-tested peptide pens",
   /** Name of the assessment / quiz product (same as the store name). */
   assessmentName: "Peptide Checkup",
-  domain: "peptidecheckup.com",
+  domain: "comparepeptide.co.uk",
   /** Canonical origin. Overridable at build time (e.g. a preview host) via NEXT_PUBLIC_SITE_URL. */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://peptidecheckup.com").replace(/\/+$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://comparepeptide.co.uk").replace(/\/+$/, ""),
   tagline: "Peptide pens. Matched to you.",
   description:
     "Official UK stockist of the AERVYN range — pre-filled, dose-dial peptide pens priced in pounds sterling from the manufacturer's list, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
   shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the Peptide Checkup assessment.",
-  supportEmail: "hello@peptidecheckup.com",
+  supportEmail: "hello@comparepeptide.co.uk",
   social: {
     x: "https://x.com/peptidecheckup",
     instagram: "https://instagram.com/peptidecheckup",

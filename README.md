@@ -47,7 +47,7 @@ npm run lint
 
 ## Deploy
 
-Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the static export with the correct `basePath` and publishes to GitHub Pages. The same `out/` folder can be dropped onto Netlify, Vercel, Cloudflare Pages or any static host — set `NEXT_PUBLIC_BASE_PATH` to `""` for a root domain (e.g. `peptidecheckup.com`).
+Production is **Cloudflare Pages** (project `comparepeptide`) on `https://comparepeptide.co.uk` (`www` redirects to the apex via `public/_redirects`). Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the static export at the root path with `NEXT_PUBLIC_SITE_URL=https://comparepeptide.co.uk` and uploads `out/` with Wrangler; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. To deploy by hand: `NEXT_PUBLIC_SITE_URL=https://comparepeptide.co.uk npm run build && npx wrangler pages deploy out --project-name=comparepeptide --branch=main`. The same `out/` folder works on any static host — set `NEXT_PUBLIC_BASE_PATH` when hosting under a sub-path.
 
 ## Integration points (before public launch)
 

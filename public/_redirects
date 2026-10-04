@@ -1,0 +1,2 @@
+# Cloudflare Pages redirects — one canonical host.
+https://www.comparepeptide.co.uk/* https://comparepeptide.co.uk/:splat 301
