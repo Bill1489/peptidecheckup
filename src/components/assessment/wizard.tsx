@@ -35,7 +35,6 @@ import { ActionBar } from "./action-bar";
 import { EmailCaptureScreen } from "./email-capture";
 import { GeneratingScreen } from "./generating";
 import { useAnswers, useCoarsePointer, useMounted } from "./hooks";
-import { AUTO_ADVANCE_MS } from "./questions/option-cards";
 import { StepRenderer } from "./step-renderer";
 import { TopBar } from "./top-bar";
 import { Under18Screen } from "./under-18";
@@ -84,7 +83,6 @@ export function AssessmentWizard() {
   const [attemptedStepId, setAttemptedStepId] = React.useState<string | null>(null);
   const [underage, setUnderage] = React.useState(false);
   const [phase, setPhase] = React.useState<Phase>("idle");
-  const keyTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ready = mounted && hydrated;
   const step = React.useMemo(() => resolveStep(answers, position), [answers, position]);
@@ -104,13 +102,6 @@ export function AssessmentWizard() {
   React.useEffect(() => {
     if (step.kind === "review") router.prefetch("/report/");
   }, [step.kind, router]);
-
-  React.useEffect(
-    () => () => {
-      if (keyTimer.current) clearTimeout(keyTimer.current);
-    },
-    [],
-  );
 
   /* ---------------------------------------------------------------- */
   /* Navigation                                                        */
@@ -162,17 +153,6 @@ export function AssessmentWizard() {
     if (next.section !== current.section || next.kind === "review") state.markSectionComplete(current.section);
     go(next, 1);
   }, [cleanupOnLeave, go]);
-
-  /** Auto-advance callback that is a no-op if the user has already moved on (avoids double advances). */
-  const advanceFrom = React.useCallback(
-    (stepId: string) => () => {
-      const state = useAssessmentStore.getState();
-      if (resolveStep(state.answers, state.position).id !== stepId) return;
-      goNext();
-    },
-    [goNext],
-  );
-  const onAdvance = React.useMemo(() => advanceFrom(step.id), [advanceFrom, step.id]);
 
   const goBack = React.useCallback(() => {
     const state = useAssessmentStore.getState();
@@ -298,31 +278,19 @@ export function AssessmentWizard() {
       const optionStep = step.kind === "single" || step.kind === "yesno";
       if (inField || !optionStep) return;
 
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        goNext();
-        return;
-      }
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        goBack();
-        return;
-      }
+      // 1–9 selects the option with that index; Enter (or Continue) moves on. Arrow keys never change step.
       if (/^[1-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey) {
         const options = stepOptions(step, useAssessmentStore.getState().answers);
         const option = options[Number(e.key) - 1];
         if (!option) return;
         e.preventDefault();
         setAnswer(step.field, option.value);
-        const needsFollowUp = option.followUp || option.noAutoAdvance || step.followUp?.when.includes(option.value);
-        if (keyTimer.current) clearTimeout(keyTimer.current);
-        if (!needsFollowUp) keyTimer.current = setTimeout(advanceFrom(step.id), AUTO_ADVANCE_MS);
       }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ready, underage, phase, step, onPrimary, goNext, goBack, setAnswer, advanceFrom]);
+  }, [ready, underage, phase, step, onPrimary, setAnswer]);
 
   /* ---------------------------------------------------------------- */
   /* Render                                                            */
@@ -363,7 +331,7 @@ export function AssessmentWizard() {
               <AnimatePresence mode="wait" custom={direction} initial={false}>
                 <motion.div key={step.id} custom={direction} variants={variants} initial="enter" animate="center" exit="exit">
                   <StepBody step={step} eyebrow={eyebrow} coarse={coarse} completedAt={isReview ? answers.completedAt : undefined}>
-                    <StepRenderer step={step} showErrors={showErrors} onAdvance={onAdvance} onEdit={editStep} onAddSection={jumpToSection} />
+                    <StepRenderer step={step} showErrors={showErrors} onEdit={editStep} onAddSection={jumpToSection} />
                   </StepBody>
                 </motion.div>
               </AnimatePresence>

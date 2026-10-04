@@ -3,9 +3,6 @@
 import * as React from "react";
 import type { StepOption } from "@/lib/assessment/flow";
 import { cn } from "@/lib/utils";
-import { useLatest } from "../hooks";
-
-export const AUTO_ADVANCE_MS = 350;
 
 export interface OptionCardsProps {
   options: StepOption[];
@@ -13,8 +10,6 @@ export interface OptionCardsProps {
   /** Multi-select toggles; single-select replaces */
   multi?: boolean;
   onChange: (value: string) => void;
-  /** Single-select only: called ~350 ms after a choice that needs no follow-up */
-  onAdvance?: () => void;
   columns?: 1 | 2;
   /** Big, centred labels (yes / no) */
   size?: "md" | "lg";
@@ -28,42 +23,12 @@ export interface OptionCardsProps {
 /**
  * Option cells in a shared-border grid. The square marker on the left carries
  * the keyboard index and fills cobalt when selected; the whole cell inverts to
- * ink when selected or hovered.
+ * ink when selected or hovered. Choosing an option only records the answer —
+ * the step never moves on by itself; Continue (or Enter) does that, so a
+ * mis-tap can be corrected and any notice the choice reveals can be read.
  */
-export function OptionCards({
-  options,
-  value,
-  multi,
-  onChange,
-  onAdvance,
-  columns = 1,
-  size = "md",
-  label,
-  numbered = true,
-  className,
-}: OptionCardsProps) {
-  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const advanceRef = useLatest(onAdvance);
-
-  React.useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-
+export function OptionCards({ options, value, multi, onChange, columns = 1, size = "md", label, numbered = true, className }: OptionCardsProps) {
   const isSelected = (v: string) => (Array.isArray(value) ? value.includes(v) : value === v);
-
-  const select = (option: StepOption) => {
-    onChange(option.value);
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-    if (!multi && onAdvance && !option.followUp && !option.noAutoAdvance) {
-      timer.current = setTimeout(() => advanceRef.current?.(), AUTO_ADVANCE_MS);
-    }
-  };
 
   return (
     <div
@@ -86,7 +51,7 @@ export function OptionCards({
               role={multi ? "checkbox" : "radio"}
               aria-checked={selected}
               data-option
-              onClick={() => select(option)}
+              onClick={() => onChange(option.value)}
               className={cn(
                 "relative flex w-full items-center gap-3 rounded-none text-left transition-colors duration-150 focus-visible:z-10",
                 size === "lg" ? "min-h-[5.5rem] justify-center px-4 py-5 sm:min-h-[6.5rem]" : "min-h-14 px-4 py-3.5",

@@ -26,24 +26,23 @@ import { YesNoCards } from "./questions/yes-no-cards";
 export interface StepRendererProps {
   step: Step;
   showErrors: boolean;
-  onAdvance: () => void;
   onEdit: (stepId: string) => void;
   onAddSection: (sectionId: SectionId) => void;
 }
 
 /** Maps a step definition to its question component. */
-export function StepRenderer({ step, showErrors, onAdvance, onEdit, onAddSection }: StepRendererProps) {
+export function StepRenderer({ step, showErrors, onEdit, onAddSection }: StepRendererProps) {
   switch (step.kind) {
     case "single":
-      return <SingleSelect step={step} showErrors={showErrors} onAdvance={onAdvance} />;
+      return <SingleSelect step={step} showErrors={showErrors} />;
     case "yesno":
-      return <YesNoCards step={step} showErrors={showErrors} onAdvance={onAdvance} />;
+      return <YesNoCards step={step} showErrors={showErrors} />;
     case "text":
       return <TextArea step={step} />;
     case "number":
       return <NumberField step={step} showErrors={showErrors} />;
     case "goal":
-      return <GoalCards onAdvance={onAdvance} />;
+      return <GoalCards />;
     case "focus":
       return <FocusCards showErrors={showErrors} />;
     case "secondary-goals":
@@ -53,7 +52,7 @@ export function StepRenderer({ step, showErrors, onAdvance, onEdit, onAddSection
     case "body":
       return <BodyMetrics showErrors={showErrors} />;
     case "country":
-      return <CountryPicker onAdvance={onAdvance} />;
+      return <CountryPicker />;
     case "conditions":
       return <ConditionGrid />;
     case "medications":
@@ -73,7 +72,7 @@ export function StepRenderer({ step, showErrors, onAdvance, onEdit, onAddSection
   }
 }
 
-function SingleSelect({ step, showErrors, onAdvance }: { step: SingleStep; showErrors: boolean; onAdvance: () => void }) {
+function SingleSelect({ step, showErrors }: { step: SingleStep; showErrors: boolean }) {
   const answers = useAnswers();
   const setAnswer = useSetAnswer();
   const value = answers[step.field] as string | undefined;
@@ -88,7 +87,6 @@ function SingleSelect({ step, showErrors, onAdvance }: { step: SingleStep; showE
         options={options}
         value={value}
         onChange={(v) => setAnswer(step.field, v)}
-        onAdvance={onAdvance}
         columns={step.columns ?? (options.length >= 4 ? 2 : 1)}
       />
       <Reveal show={Boolean(notice)}>{notice && <InlineNotice tone="brand">{notice}</InlineNotice>}</Reveal>

@@ -9,7 +9,7 @@ import { OptionCards } from "./option-cards";
 const ALCOHOL = (Object.keys(ALCOHOL_LABELS) as AlcoholUse[]).map((value) => ({ value, label: ALCOHOL_LABELS[value] }));
 const NICOTINE = (Object.keys(NICOTINE_LABELS) as NicotineUse[]).map((value) => ({ value, label: NICOTINE_LABELS[value] }));
 
-/** Alcohol and nicotine on one screen — two single-select groups, no auto-advance. */
+/** Alcohol and nicotine on one screen — two single-select groups. */
 export function LifestyleStep({ showErrors }: { showErrors?: boolean }) {
   const answers = useAnswers();
   const setAnswer = useSetAnswer();

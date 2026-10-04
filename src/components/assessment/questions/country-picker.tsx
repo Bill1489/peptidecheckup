@@ -8,27 +8,19 @@ import { jurisdictionLabel } from "@/lib/assessment/derived";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAnswers, useLatest, useSetAnswer } from "../hooks";
-import { AUTO_ADVANCE_MS, Marker } from "./option-cards";
+import { useAnswers, useSetAnswer } from "../hooks";
+import { Marker } from "./option-cards";
 
 /**
  * Q14 — searchable country list (cmdk). Shows the jurisdiction the regulatory
- * view maps to, e.g. "Regulatory view: United Kingdom".
+ * view maps to, e.g. "Regulatory view: United Kingdom". Choosing a country
+ * collapses the list to the selection; Continue moves on.
  */
-export function CountryPicker({ onAdvance }: { onAdvance?: () => void }) {
+export function CountryPicker() {
   const answers = useAnswers();
   const setAnswer = useSetAnswer();
   const [query, setQuery] = React.useState("");
   const [editing, setEditing] = React.useState(!answers.countryCode);
-  const advanceRef = useLatest(onAdvance);
-  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  React.useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
 
   const selected = answers.countryCode ? COUNTRY_MAP[answers.countryCode] : undefined;
   const results = React.useMemo(() => searchCountries(query), [query]);
@@ -37,8 +29,6 @@ export function CountryPicker({ onAdvance }: { onAdvance?: () => void }) {
     setAnswer("countryCode", code);
     setEditing(false);
     setQuery("");
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => advanceRef.current?.(), AUTO_ADVANCE_MS);
   };
 
   if (selected && !editing) {
@@ -54,14 +44,7 @@ export function CountryPicker({ onAdvance }: { onAdvance?: () => void }) {
               </p>
             </div>
           </div>
-          <Button
-            variant="inverted"
-            size="sm"
-            onClick={() => {
-              if (timer.current) clearTimeout(timer.current);
-              setEditing(true);
-            }}
-          >
+          <Button variant="inverted" size="sm" onClick={() => setEditing(true)}>
             Change
           </Button>
         </div>

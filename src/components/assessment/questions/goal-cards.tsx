@@ -13,7 +13,7 @@ import { OptionCards } from "./option-cards";
  * goal clears the focus areas (they are goal-specific) and drops the new goal
  * from the secondary list.
  */
-export function GoalCards({ onAdvance }: { onAdvance?: () => void }) {
+export function GoalCards() {
   const answers = useAnswers();
   const setAnswers = useAssessmentStore((s) => s.setAnswers);
 
@@ -27,5 +27,5 @@ export function GoalCards({ onAdvance }: { onAdvance?: () => void }) {
     });
   };
 
-  return <OptionCards label="What you want to change" options={GOAL_OPTIONS} value={answers.primaryGoal} onChange={choose} onAdvance={onAdvance} columns={2} />;
+  return <OptionCards label="What you want to change" options={GOAL_OPTIONS} value={answers.primaryGoal} onChange={choose} columns={2} />;
 }

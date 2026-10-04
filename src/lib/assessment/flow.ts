@@ -46,10 +46,6 @@ export interface StepOption {
   label: string;
   hint?: string;
   icon?: OptionIcon;
-  /** Selecting this option reveals a follow-up input, so do not auto-advance. */
-  followUp?: boolean;
-  /** Selecting this option shows a notice the user should read — no auto-advance. */
-  noAutoAdvance?: boolean;
 }
 
 export interface TextFollowUp {
@@ -501,7 +497,7 @@ const basics: Step[] = [
     title: "Are you pregnant, trying to conceive or breastfeeding?",
     visible: (a) => a.sex !== "male",
     options: [
-      { value: "yes", label: "Yes", noAutoAdvance: true },
+      { value: "yes", label: "Yes" },
       { value: "no", label: "No" },
       { value: "na", label: "Not applicable" },
       { value: "prefer_not", label: "Prefer not to say" },

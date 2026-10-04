@@ -28,14 +28,23 @@ function pairKey(a: string, b: string): string {
   return [a, b].sort().join("+");
 }
 
-/** Which compounds form the stack, and which pairs to analyse. */
+/**
+ * Which compounds form the stack, and which pairs to analyse.
+ *
+ * When the answers declare how the compounds group (`combinations` — one
+ * entry per pen, blends with several members), only those groups are stacks:
+ * a single-compound pen is not combined with the alternatives listed beside
+ * it. Only when nothing is declared — a hand-typed list of compounds — is the
+ * whole list treated as one stack.
+ */
 function stackMembers(ctx: EngineContext): { members: Compound[]; pairs: [Compound, Compound][] } {
   const bySlug = new Map(ctx.compounds.map((c) => [c.slug, c]));
+  const declared = ctx.answers.combinations.length > 0;
   const combos = ctx.answers.combinations
     .map((combo) => Array.from(new Set(combo)).map((s) => bySlug.get(s)).filter((c): c is Compound => Boolean(c)))
     .filter((combo) => combo.length >= 2);
 
-  const groups: Compound[][] = combos.length > 0 ? combos : [ctx.compounds];
+  const groups: Compound[][] = combos.length > 0 ? combos : declared ? [] : [ctx.compounds];
 
   const memberSet = new Map<string, Compound>();
   const pairSet = new Map<string, [Compound, Compound]>();

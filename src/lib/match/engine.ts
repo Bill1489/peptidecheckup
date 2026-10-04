@@ -552,9 +552,16 @@ export function rangeAnswers(answers: AssessmentAnswers): AssessmentAnswers {
   };
 }
 
-/** Answers restricted to a set of pens (the compounds inside them, each blend as a combination). */
-function answersForProducts(answers: AssessmentAnswers, products: Product[]): AssessmentAnswers {
+/**
+ * Answers restricted to a set of pens: the compounds inside them, each blend
+ * as a combination. Pens the user picked themselves (`together`) are also
+ * analysed as one stack, since they may intend to use them side by side; the
+ * alternatives the matcher adds are not — they are options, not a stack.
+ */
+function answersForProducts(answers: AssessmentAnswers, products: Product[], together: Product[] = []): AssessmentAnswers {
   const combos = products.map(productCompoundSlugs).filter((c) => c.length > 0);
+  const ownStack = uniq(together.flatMap(productCompoundSlugs));
+  if (ownStack.length >= 2) combos.push(ownStack);
   return {
     ...answers,
     consideredCompounds: uniq(combos.flat()).map((slug) => ({ slug })),
@@ -1089,8 +1096,9 @@ export function buildQuizResult(answers: AssessmentAnswers): { report: Report; m
   const match = matchProducts(answers, rangeReport);
 
   const shown = [match.primary, ...match.alternatives].filter((m): m is ProductMatch => Boolean(m));
-  const pens = uniq([...selectedProducts(answers), ...shown.map(productOf)]);
-  const reportAnswers = pens.length > 0 ? answersForProducts(answers, pens) : rangeAnswers(answers);
+  const own = selectedProducts(answers);
+  const pens = uniq([...own, ...shown.map(productOf)]);
+  const reportAnswers = pens.length > 0 ? answersForProducts(answers, pens, own) : rangeAnswers(answers);
   const report: Report = { ...generateReport(reportAnswers), answers };
 
   return { report, match };
