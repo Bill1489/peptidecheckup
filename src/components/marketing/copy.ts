@@ -17,7 +17,7 @@ import { formatMoney } from "@/lib/commerce/money";
 /** Headline time estimate used consistently across nav, hero and landing pages. */
 export const ASSESSMENT_MINUTES = 7;
 
-/** "Peptide Checkup" — the assessment's product name, from the brand file. */
+/** "Peptide Compare Checkup" — the assessment's product name, from the brand file. */
 export const CHECKUP = BRAND.assessmentName;
 /** "Checkup" — the short form used mid-sentence and on buttons once the full name has appeared. */
 export const CHECKUP_SHORT = BRAND.assessmentName.split(" ").at(-1) ?? BRAND.assessmentName;

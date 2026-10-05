@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { CheckupLanding, LANDING_FAQ } from "@/components/landing/checkup-landing";
-import { ASSESSMENT_MINUTES, CHECKUP } from "@/components/marketing/copy";
+import { ASSESSMENT_MINUTES, CHECKUP_SHORT } from "@/components/marketing/copy";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { PRODUCTS } from "@/data/products";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 
-const TITLE = `Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP}`;
+const TITLE = `Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP_SHORT}`;
 const DESCRIPTION = `Not sure which peptide fits? Answer short questions about your goal, history and medicines; a rules engine checks them against the evidence and scores all ${PRODUCTS.length} ${BRAND.range.name} pens. Land on the one that fits — or be told not to buy. Free, no account.`;
 
 export const metadata: Metadata = {

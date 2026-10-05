@@ -20,7 +20,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
     title: "Assess",
     links: [
-      { href: "/assessment", label: "Take the Peptide Checkup" },
+      { href: "/assessment", label: "Take the Checkup" },
       { href: "/start/weight", label: "Weight" },
       { href: "/start/recovery", label: "Injury & recovery" },
       { href: "/start/tired", label: "Energy" },

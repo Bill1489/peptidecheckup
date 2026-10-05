@@ -1,35 +1,37 @@
 /**
  * Single source of truth for brand identity.
  *
- * PeptideCheckup is the store and the assessment. It is an independent
+ * Peptide Compare is the store; its assessment is the Peptide Compare Checkup
+ * ("the Checkup" in running copy). It is an independent
  * retailer of the AERVYN range of pre-filled peptide pens — AERVYN is the
  * manufacturer's brand (on the cartons and in the photography), not ours.
  */
 export const BRAND = {
-  name: "PeptideCheckup",
+  name: "PeptideCompare",
   /** Display form used in prose. */
-  displayName: "Peptide Checkup",
+  displayName: "Peptide Compare",
   /** Wordmark split for two-tone logo rendering. */
-  wordmark: { a: "Peptide", b: "Checkup" },
+  wordmark: { a: "Peptide", b: "Compare" },
   /** Short line under the wordmark / in mono labels. */
   descriptor: "Batch-tested peptide pens",
-  /** Name of the assessment / quiz product (same as the store name). */
-  assessmentName: "Peptide Checkup",
+  /** Name of the assessment / quiz product. Its last word is the short form used mid-sentence ("the Checkup"). */
+  assessmentName: "Peptide Compare Checkup",
   domain: "comparepeptide.co.uk",
   /** Canonical origin. Overridable at build time (e.g. a preview host) via NEXT_PUBLIC_SITE_URL. */
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://comparepeptide.co.uk").replace(/\/+$/, ""),
   tagline: "Peptide pens. Matched to you.",
   description:
-    "Official UK stockist of the AERVYN range — pre-filled, dose-dial peptide pens priced in pounds sterling from the manufacturer's list, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Peptide Checkup, which also tells you when not to buy.",
-  shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the Peptide Checkup assessment.",
+    "Official UK stockist of the AERVYN range — pre-filled, dose-dial peptide pens priced in pounds sterling from the manufacturer's list, each lot third-party tested with a published certificate of analysis — matched to your goal by the 7-minute Checkup, which also tells you when not to buy.",
+  shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the 7-minute Checkup.",
   supportEmail: "hello@comparepeptide.co.uk",
   social: {
-    x: "https://x.com/peptidecheckup",
-    instagram: "https://instagram.com/peptidecheckup",
-    tiktok: "https://tiktok.com/@peptidecheckup",
+    x: "https://x.com/peptidecompare",
+    instagram: "https://instagram.com/peptidecompare",
+    tiktok: "https://tiktok.com/@peptidecompare",
   },
   /** Used in JSON-LD and metadata. */
-  legalName: "PeptideCheckup Ltd",
+  /** Placeholder until the client confirms the registered company name. */
+  legalName: "Peptide Compare Ltd",
   foundedYear: 2026,
   /** Where the business operates from — drives default currency, jurisdiction and shipping copy. */
   homeCountry: "GB",

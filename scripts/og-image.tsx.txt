@@ -39,11 +39,11 @@ export default async function OpenGraphImage() {
           <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
             <div style={{ display: "flex", width: 56, height: 56 }}>
               <svg width="56" height="56" viewBox="0 0 32 32" fill="none">
-                <path d="M5 17.5 L12.5 25 L27 7" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="square" />
-                <rect x="2.2" y="14.7" width="5.6" height="5.6" fill="#ffffff" />
-                <rect x="9.7" y="22.2" width="5.6" height="5.6" fill="#ffffff" />
-                <rect x="17" y="13" width="4.6" height="4.6" fill="#ffffff" />
-                <rect x="24.2" y="4.2" width="5.6" height="5.6" fill="#1d3bff" />
+                <path d="M4 23 L12 9 L20 23 L28 9" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="square" strokeLinejoin="miter" />
+                <rect x="0.75" y="19.75" width="6.5" height="6.5" fill="#ffffff" />
+                <rect x="8.75" y="5.75" width="6.5" height="6.5" fill="#ffffff" />
+                <rect x="16.75" y="19.75" width="6.5" height="6.5" fill="#ffffff" />
+                <rect x="24.75" y="5.75" width="6.5" height="6.5" fill="#1d3bff" />
               </svg>
             </div>
             <div style={{ display: "flex", fontSize: 30, letterSpacing: -0.5 }}>
@@ -51,12 +51,12 @@ export default async function OpenGraphImage() {
               <span style={{ color: "#5d76ff", marginLeft: 10 }}>{BRAND.wordmark.b.toUpperCase()}</span>
             </div>
           </div>
-          <div style={{ fontFamily: "IBM Plex Mono", fontSize: 18, letterSpacing: 3, color: "rgba(255,255,255,0.55)" }}>
-            OFFICIAL UK STOCKIST OF AERVYN · COA PER LOT · PRICED IN STERLING
+          <div style={{ display: "flex", fontFamily: "IBM Plex Mono", fontSize: 16, letterSpacing: 2, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap" }}>
+            OFFICIAL UK STOCKIST OF AERVYN · COA PER LOT
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", fontSize: 128, lineHeight: 0.92, letterSpacing: -6 }}>
+        <div style={{ display: "flex", flexDirection: "column", fontSize: 118, lineHeight: 0.92, letterSpacing: -5 }}>
           <div>THE PEN.</div>
           <div>THE PAPERWORK.</div>
           <div style={{ color: "#5d76ff" }}>THE RIGHT ONE.</div>

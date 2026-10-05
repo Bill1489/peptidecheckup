@@ -30,7 +30,7 @@ export const COMMERCE = {
   ],
   /** Demo promo codes — replace with your platform's discount engine. */
   promoCodes: {
-    CHECKUP10: { type: "percent", value: 10, label: "10% off — Peptide Checkup completed" },
+    CHECKUP10: { type: "percent", value: 10, label: "10% off — Checkup completed" },
     FIRST15: { type: "percent", value: 15, label: "15% off your first order" },
     FREESHIP: { type: "shipping", value: 0, label: "Free standard shipping" },
   } as Record<string, { type: "percent" | "fixed" | "shipping"; value: number; label: string }>,
@@ -59,7 +59,7 @@ export const COMMERCE = {
     "Certificate of analysis published per lot",
     "Ships chilled · same-day dispatch before 2 pm",
     "18+ only · research use labelling",
-    "The Peptide Checkup tells you when not to buy",
+    "The Checkup tells you when not to buy",
   ],
 } as const;
 

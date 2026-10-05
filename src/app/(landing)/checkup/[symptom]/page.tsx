@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CheckupLanding } from "@/components/landing/checkup-landing";
-import { ASSESSMENT_MINUTES, CHECKUP } from "@/components/marketing/copy";
+import { ASSESSMENT_MINUTES, CHECKUP_SHORT } from "@/components/marketing/copy";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import { getSymptom, goalForSymptom, SYMPTOMS } from "@/lib/funnel";
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const def = getSymptom(symptom);
   if (!def) return {};
   const goal = goalForSymptom(def);
-  const title = `${goal.funnelHeadline} Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP}`;
+  const title = `${goal.funnelHeadline} Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP_SHORT}`;
   return {
     title: { absolute: `${title} · ${BRAND.displayName}` },
     description: def.metaDescription,
@@ -51,7 +51,7 @@ export default async function CheckupSymptomLandingPage({ params }: { params: Pr
         data={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          name: `${goal.funnelHeadline} Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP}`,
+          name: `${goal.funnelHeadline} Take the ${ASSESSMENT_MINUTES}-minute ${CHECKUP_SHORT}`,
           description: def.metaDescription,
           url: `${BRAND.url}/checkup/${def.slug}/`,
           isPartOf: { "@type": "WebSite", name: BRAND.name, url: BRAND.url },

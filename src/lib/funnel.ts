@@ -5,7 +5,7 @@ import { BRAND } from "@/lib/brand";
 
 /**
  * Ad-funnel entry points. Each paid-ad creative lands on `/start/[symptom]`,
- * which names the pen(s) the Peptide Checkup most often lands on for that
+ * which names the pen(s) the Checkup most often lands on for that
  * symptom and hands off to `/assessment/?goal=…&symptom=…`.
  *
  * Copy rules (see docs/BRIEF.md §2): calm, honest, second person, British

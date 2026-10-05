@@ -4,7 +4,7 @@ Read this before touching code. It is the single shared contract for every contr
 
 ## 0. v3 — what changed (read first)
 
-**The client is AERVYN · Performance Science.** The store is their brand; the assessment keeps its product name **"Peptide Checkup"** (`BRAND.assessmentName`). Never hard-code either — use `BRAND.name` ("AERVYN"), `BRAND.displayName` ("Aervyn"), `BRAND.descriptor` ("Performance Science"), `BRAND.assessmentName`. The wordmark is AERV + helix glyph + N (`Logo`/`Wordmark`/`HelixGlyph`/`LogoMark` in `src/components/ui/logo.tsx`).
+**The store is Peptide Compare** (`BRAND.name` "PeptideCompare", `BRAND.displayName` "Peptide Compare"), an independent official stockist of the AERVYN range — AERVYN is the manufacturer's brand (`BRAND.range`), never the site's. The assessment is the **Peptide Compare Checkup** (`BRAND.assessmentName`; "the Checkup" mid-sentence via `CHECKUP_SHORT`). Never hard-code any of these. The mark is the four-residue chain with a cobalt terminal (`LogoMark`), the wordmark two-tone PEPTIDE / COMPARE (`Wordmark`), both in `src/components/ui/logo.tsx`; the logo kit is in `docs/logo/`.
 
 **The range is the manufacturer's full list of pre-filled 3 mL dose-dial peptide pens (24 as of 26 Sep 2026, synced from aervynlabs.com/products; their AED list prices are in docs/AERVYN-PRICES-2026-09-26.txt and the sterling prices derived from them in docs/GBP-PRICES-2026-09-26.txt). The table below is the original six and is kept for orientation only** (`src/data/products/catalog.ts`, all `channel: "research"`, real photos in `/public/products`, per-product packaging colour in `visual.color`):
 
@@ -29,7 +29,7 @@ Blends carry `blend: string[]` (compound slugs); single-compound pens carry `com
 
 **An e-commerce store for batch-tested peptides, fed by an ad → assessment → report lead funnel.**
 
-- Paid ads ("Feeling tired all the time? Take the 7-minute Peptide Checkup") → chrome-less landing page `/checkup/[symptom]` (generic: `/checkup`; the in-site equivalents are `/start/[symptom]`) → assessment `/assessment` → rules-engine report `/report` → **product matches** ("Your matches") → cart → checkout → order confirmation.
+- Paid ads ("Feeling tired all the time? Take the 7-minute Checkup") → chrome-less landing page `/checkup/[symptom]` (generic: `/checkup`; the in-site equivalents are `/start/[symptom]`) → assessment `/assessment` → rules-engine report `/report` → **product matches** ("Your matches") → cart → checkout → order confirmation.
 - The store is the destination: `/shop`, `/shop/[slug]`, cart drawer, `/checkout`, `/order?id=`, `/account/orders`, `/lab-testing`, `/shipping`.
 - The evidence layer stays and is a differentiator: `/peptides`, `/peptides/[slug]`, `/compare`, `/methodology`. **Brand promise: the only peptide store whose assessment tells you when *not* to buy.** A "Higher concern" compound is never added to the cart from a report; it links to "speak to a clinician" instead.
 - Static export, no backend. Cart, orders and assessment live in the browser (zustand + localStorage). Payments use a provider abstraction (`mock` for the demo; Stripe when keys are set). Leads/orders POST to webhooks when configured.
@@ -42,7 +42,7 @@ Blends carry `blend: string[]` (compound slugs); single-compound pens carry `com
 
 ## 2. Brand & voice
 
-- Name **PeptideCheckup** (prose "Peptide Checkup"), from `src/lib/brand.ts`. Tagline: *Batch-tested peptides. Matched to you.*
+- Name **PeptideCompare** (prose "Peptide Compare"), from `src/lib/brand.ts`. Tagline: *Peptide pens. Matched to you.*
 - Voice: direct, technical, dry. Short sentences. Facts over adjectives. UK English. No exclamation marks, no emojis, no "unlock your potential". Never a health claim for research products ("researched for", "studied in", never "helps you heal").
 - Compliance language for the assessment/report is unchanged: suitability labels **Potentially relevant / Higher concern / Insufficient information**; regulatory status only from the database; dosing = research information, not a recommendation; `DISCLAIMER_SHORT` / `DISCLAIMER_REPORT`.
 - Commerce honesty: no fake reviews, star ratings, countdown timers, "17 people are viewing", fake press logos. Trust = certificates of analysis, batch numbers, lab names, shipping facts, and the assessment saying no.

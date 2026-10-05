@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/shop", label: "The range" },
-  { href: "/assessment", label: "Peptide Checkup" },
+  { href: "/assessment", label: "The Checkup" },
   { href: "/peptides", label: "Evidence" },
   { href: "/compare", label: "Compare" },
   { href: "/lab-testing", label: "Lab testing" },
