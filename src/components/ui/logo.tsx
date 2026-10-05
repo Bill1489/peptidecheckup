@@ -63,7 +63,7 @@ export function Logo({
   tone?: "dark" | "light";
   className?: string;
   markClassName?: string;
-  /** Accepted for API compatibility; the Peptide Compare wordmark has no descriptor line. */
+  /** Accepted for API compatibility; the Compare Peptide wordmark has no descriptor line. */
   descriptor?: boolean;
 }) {
   return (

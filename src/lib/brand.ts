@@ -1,21 +1,21 @@
 /**
  * Single source of truth for brand identity.
  *
- * Peptide Compare is the store; its assessment is the Peptide Compare Checkup
+ * Compare Peptide is the store; its assessment is the Compare Peptide Checkup
  * ("the Checkup" in running copy). It is an independent
  * retailer of the AERVYN range of pre-filled peptide pens — AERVYN is the
  * manufacturer's brand (on the cartons and in the photography), not ours.
  */
 export const BRAND = {
-  name: "PeptideCompare",
+  name: "ComparePeptide",
   /** Display form used in prose. */
-  displayName: "Peptide Compare",
+  displayName: "Compare Peptide",
   /** Wordmark split for two-tone logo rendering. */
-  wordmark: { a: "Peptide", b: "Compare" },
+  wordmark: { a: "Compare", b: "Peptide" },
   /** Short line under the wordmark / in mono labels. */
   descriptor: "Batch-tested peptide pens",
   /** Name of the assessment / quiz product. Its last word is the short form used mid-sentence ("the Checkup"). */
-  assessmentName: "Peptide Compare Checkup",
+  assessmentName: "Compare Peptide Checkup",
   domain: "comparepeptide.co.uk",
   /** Canonical origin. Overridable at build time (e.g. a preview host) via NEXT_PUBLIC_SITE_URL. */
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://comparepeptide.co.uk").replace(/\/+$/, ""),
@@ -25,13 +25,13 @@ export const BRAND = {
   shortDescription: "Batch-tested AERVYN peptide pens, matched to your goal by the 7-minute Checkup.",
   supportEmail: "hello@comparepeptide.co.uk",
   social: {
-    x: "https://x.com/peptidecompare",
-    instagram: "https://instagram.com/peptidecompare",
-    tiktok: "https://tiktok.com/@peptidecompare",
+    x: "https://x.com/comparepeptide",
+    instagram: "https://instagram.com/comparepeptide",
+    tiktok: "https://tiktok.com/@comparepeptide",
   },
   /** Used in JSON-LD and metadata. */
   /** Placeholder until the client confirms the registered company name. */
-  legalName: "Peptide Compare Ltd",
+  legalName: "Compare Peptide Ltd",
   foundedYear: 2026,
   /** Where the business operates from — drives default currency, jurisdiction and shipping copy. */
   homeCountry: "GB",

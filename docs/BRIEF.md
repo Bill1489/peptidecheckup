@@ -4,7 +4,7 @@ Read this before touching code. It is the single shared contract for every contr
 
 ## 0. v3 — what changed (read first)
 
-**The store is Peptide Compare** (`BRAND.name` "PeptideCompare", `BRAND.displayName` "Peptide Compare"), an independent official stockist of the AERVYN range — AERVYN is the manufacturer's brand (`BRAND.range`), never the site's. The assessment is the **Peptide Compare Checkup** (`BRAND.assessmentName`; "the Checkup" mid-sentence via `CHECKUP_SHORT`). Never hard-code any of these. The mark is the four-residue chain with a cobalt terminal (`LogoMark`), the wordmark two-tone PEPTIDE / COMPARE (`Wordmark`), both in `src/components/ui/logo.tsx`; the logo kit is in `docs/logo/`.
+**The store is Compare Peptide** (`BRAND.name` "ComparePeptide", `BRAND.displayName` "Compare Peptide"), an independent official stockist of the AERVYN range — AERVYN is the manufacturer's brand (`BRAND.range`), never the site's. The assessment is the **Compare Peptide Checkup** (`BRAND.assessmentName`; "the Checkup" mid-sentence via `CHECKUP_SHORT`). Never hard-code any of these. The mark is the four-residue chain with a cobalt terminal (`LogoMark`), the wordmark two-tone PEPTIDE / COMPARE (`Wordmark`), both in `src/components/ui/logo.tsx`; the logo kit is in `docs/logo/`.
 
 **The range is the manufacturer's full list of pre-filled 3 mL dose-dial peptide pens (24 as of 26 Sep 2026, synced from aervynlabs.com/products; their AED list prices are in docs/AERVYN-PRICES-2026-09-26.txt and the sterling prices derived from them in docs/GBP-PRICES-2026-09-26.txt). The table below is the original six and is kept for orientation only** (`src/data/products/catalog.ts`, all `channel: "research"`, real photos in `/public/products`, per-product packaging colour in `visual.color`):
 
@@ -42,7 +42,7 @@ Blends carry `blend: string[]` (compound slugs); single-compound pens carry `com
 
 ## 2. Brand & voice
 
-- Name **PeptideCompare** (prose "Peptide Compare"), from `src/lib/brand.ts`. Tagline: *Peptide pens. Matched to you.*
+- Name **ComparePeptide** (prose "Compare Peptide"), from `src/lib/brand.ts`. Tagline: *Peptide pens. Matched to you.*
 - Voice: direct, technical, dry. Short sentences. Facts over adjectives. UK English. No exclamation marks, no emojis, no "unlock your potential". Never a health claim for research products ("researched for", "studied in", never "helps you heal").
 - Compliance language for the assessment/report is unchanged: suitability labels **Potentially relevant / Higher concern / Insufficient information**; regulatory status only from the database; dosing = research information, not a recommendation; `DISCLAIMER_SHORT` / `DISCLAIMER_REPORT`.
 - Commerce honesty: no fake reviews, star ratings, countdown timers, "17 people are viewing", fake press logos. Trust = certificates of analysis, batch numbers, lab names, shipping facts, and the assessment saying no.

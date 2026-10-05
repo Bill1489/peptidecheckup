@@ -1,8 +1,8 @@
-# Peptide Compare
+# Compare Peptide
 
 **Peptide pens. Matched to you.**
 
-An independent stockist's e-commerce site for the AERVYN range of pre-filled, dose-dial peptide pens (24 pens, priced in GBP from the manufacturer's AED list at a fixed published rate — UK market), fed by an evidence-led assessment funnel — the **Peptide Compare Checkup** ("the Checkup"). Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Checkup"), complete a structured 10-section questionnaire, and are matched deterministically to the right pen — with the reasons shown on the product page — or told not to buy when their answers raise a safety flag. Every claim traces back to a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research.
+An independent stockist's e-commerce site for the AERVYN range of pre-filled, dose-dial peptide pens (24 pens, priced in GBP from the manufacturer's AED list at a fixed published rate — UK market), fed by an evidence-led assessment funnel — the **Compare Peptide Checkup** ("the Checkup"). Users arrive from paid ads ("Feeling tired all the time? Take the 7-minute Checkup"), complete a structured 10-section questionnaire, and are matched deterministically to the right pen — with the reasons shown on the product page — or told not to buy when their answers raise a safety flag. Every claim traces back to a maintained database of compound evidence, regulatory status (UK / US / EU / AU / CA) and published dosing research.
 
 Live demo: **https://bill1489.github.io/peptidecheckup/**
 
@@ -32,7 +32,7 @@ Live demo: **https://bill1489.github.io/peptidecheckup/**
 - **Report contract** — `src/lib/engine/types.ts` (`Report`) is what the engine emits and the report UI renders.
 - **Commerce** — products in `src/data/products/catalog.ts` (typed by `types.ts`), cart in `src/lib/commerce/cart-store.ts`, store config (currency, VAT, shipping, promo codes, payment provider, webhooks) in `src/lib/commerce/config.ts`, orders/payments in `src/lib/commerce/orders.ts` and `payments.ts`. Sale channels per product: `research` (research-use labelling + 18+/intended-use acknowledgement), `prescription` (consultation-gated, never sold directly), `supplement`, `cosmetic`, `supplies`, or `not_sold`.
 - **Matcher** — `src/lib/match/engine.ts` scores the six pens from the quiz answers and the rules-engine report (goal, focus, evidence, experience, safety verdict) and routes to the winning product page.
-- **Brand** — a single constant in `src/lib/brand.ts` (store brand **Peptide Compare**, official stockist of the AERVYN range; assessment name **Peptide Compare Checkup**, "the Checkup" mid-sentence); the chain mark and two-tone wordmark live in `src/components/ui/logo.tsx` and `src/app/icon.svg`, with the full logo kit (SVG/PNG lockups, icons, usage notes) in `docs/logo/`. Product photography is in `public/products`.
+- **Brand** — a single constant in `src/lib/brand.ts` (store brand **Compare Peptide**, official stockist of the AERVYN range; assessment name **Compare Peptide Checkup**, "the Checkup" mid-sentence); the chain mark and two-tone wordmark live in `src/components/ui/logo.tsx` and `src/app/icon.svg`, with the full logo kit (SVG/PNG lockups, icons, usage notes) in `docs/logo/`. Product photography is in `public/products`.
 
 See `docs/BRIEF.md` for the full build brief, design system and questionnaire/report spec.
 
@@ -61,4 +61,4 @@ Production is **Cloudflare Pages** (project `comparepeptide`) on `https://compar
 
 ## Disclaimer
 
-PeptideCompare provides educational information and a structured summary of published research and regulatory status. It is not medical advice and does not replace consultation with a qualified healthcare professional.
+ComparePeptide provides educational information and a structured summary of published research and regulatory status. It is not medical advice and does not replace consultation with a qualified healthcare professional.
