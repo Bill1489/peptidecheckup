@@ -28,7 +28,7 @@ export function VariantPicker({
         <span>{product.pen ? "Pack" : "Size"}</span>
         <span className="tnum">{product.variants.length} options</span>
       </p>
-      <div role="radiogroup" aria-label={product.pen ? "Pack" : "Variant"} className={cn("grid gap-px border border-ink bg-ink", cols)}>
+      <div role="radiogroup" aria-label={product.pen ? "Pack" : "Variant"} className={cn("grid gap-2", cols)}>
         {product.variants.map((v) => (
           <VariantOption key={v.id} product={product} variant={v} selected={v.id === value} onSelect={() => onChange(v.id)} />
         ))}
@@ -59,12 +59,12 @@ function VariantOption({
       disabled={soldOut}
       onClick={onSelect}
       className={cn(
-        "flex min-h-[4.5rem] flex-col items-start justify-between gap-2 px-3 py-2.5 text-left transition-colors duration-150 focus-visible:outline-offset-[-3px]",
-        selected ? "bg-ink text-white" : "bg-white text-ink hover:bg-paper-2",
+        "flex min-h-[4.5rem] flex-col items-start justify-between gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors duration-150",
+        selected ? "border-brand-700 bg-brand-700 text-white" : "border-line bg-white text-ink hover:border-brand-300 hover:bg-brand-50",
         soldOut && "cursor-not-allowed text-muted-2 hover:bg-white",
       )}
     >
-      <span className={cn("font-sans text-[13px] font-semibold uppercase tracking-[0.04em]", soldOut && "line-through")}>{variant.label}</span>
+      <span className={cn("font-sans text-[14px] font-medium", soldOut && "line-through")}>{variant.label}</span>
       <span className="flex w-full items-baseline justify-between gap-2">
         <span className="font-mono text-[13px] tnum">{formatMoney(variant.price)}</span>
         <span

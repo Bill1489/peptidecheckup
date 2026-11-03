@@ -14,6 +14,7 @@ import { AVAILABILITY_LABELS, defaultVariant, purchasable, type Product } from "
 import { BRAND } from "@/lib/brand";
 import { useCartStore } from "@/lib/commerce/cart-store";
 import { COMMERCE } from "@/lib/commerce/config";
+import { PurchasedRecently } from "@/components/commerce/purchased-recently";
 import { formatMoney, percentOff } from "@/lib/commerce/money";
 import { cn } from "@/lib/utils";
 
@@ -83,7 +84,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
           {intro}
 
           {/* Price */}
-          <div className="mt-6 border-t border-ink pt-5">
+          <div className="mt-6 border-t border-line pt-5">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="font-mono text-[2rem] leading-none tnum">{formatMoney(variant.price)}</span>
               {variant.compareAtPrice && variant.compareAtPrice > variant.price && (
@@ -95,9 +96,10 @@ export function ProductStage({ product, intro, children }: { product: Product; i
                 </>
               )}
             </div>
-            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+            <p className="mt-2 text-[13px] text-muted">
               {variant.unitNote ? `${variant.unitNote} · ` : ""}VAT included · {variant.label}
             </p>
+            <PurchasedRecently slug={product.slug} variant="inline" className="mt-3" />
           </div>
 
           {multi && <VariantPicker product={product} value={variant.id} onChange={setVariantId} className="mt-6" />}
@@ -143,8 +145,8 @@ export function ProductStage({ product, intro, children }: { product: Product; i
           </div>
 
           {/* Shipping facts */}
-          <ul className="mt-5 grid grid-cols-2 gap-px border border-ink bg-ink font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink">
-            <li className="flex items-center gap-2 bg-white px-3 py-2.5">
+          <ul className="mt-5 grid grid-cols-1 gap-2 text-[13px] text-ink sm:grid-cols-2">
+            <li className="flex items-center gap-2 rounded-2xl border border-line bg-white px-3 py-3">
               {product.shipping.coldChain ? (
                 <>
                   <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -157,7 +159,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
                 </>
               )}
             </li>
-            <li className="flex items-center gap-2 bg-white px-3 py-2.5">
+            <li className="flex items-center gap-2 rounded-2xl border border-line bg-white px-3 py-3">
               <span className="h-1.5 w-1.5 shrink-0 bg-brand-600" aria-hidden />
               Free {COMMERCE.market.short} shipping over {formatMoney(COMMERCE.freeShippingThreshold, { trimZeros: true })}
             </li>
@@ -169,7 +171,7 @@ export function ProductStage({ product, intro, children }: { product: Product; i
 
       {/* Mobile sticky bar */}
       {!ctaVisible && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
           <div className="container-x flex h-16 items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-display text-[13px] uppercase leading-none">{product.name}</p>

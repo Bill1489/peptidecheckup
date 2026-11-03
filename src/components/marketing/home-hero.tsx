@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PRODUCTS, type Product } from "@/data/products";
 import { BRAND } from "@/lib/brand";
 import { ASSESSMENT_MINUTES, CHECKUP } from "./copy";
+import { PurchasedRecently } from "@/components/commerce/purchased-recently";
 import { PenCaption } from "./pen-cell";
 
 /**
@@ -48,13 +49,16 @@ export function HomeHero({ product }: { product: Product }) {
 
         <Link
           href={productPath(product.slug)}
-          className="group block w-full border border-ink bg-white text-ink lg:max-w-[32rem] lg:justify-self-end"
+          className="group relative block w-full overflow-hidden rounded-3xl border border-line bg-white text-ink shadow-card lg:max-w-[32rem] lg:justify-self-end"
           aria-label={`${product.name} — view pen`}
         >
-          <ProductImage product={product} prefer="hand" frame="portrait" priority sizes="(min-width: 1024px) 40vw, 100vw" />
-          <span className="flex items-center justify-between gap-4 border-t border-ink px-4 py-3 text-ink">
+          <div className="relative">
+            <ProductImage product={product} prefer="hand" frame="portrait" priority sizes="(min-width: 1024px) 40vw, 100vw" />
+            <PurchasedRecently slug={product.slug} />
+          </div>
+          <span className="flex items-center justify-between gap-4 border-t border-line px-4 py-3 text-ink">
             <PenCaption product={product} />
-            <span className="shrink-0 font-mono text-[11px] font-medium uppercase tracking-[0.12em] underline decoration-transparent underline-offset-[3px] transition-colors duration-150 group-hover:text-brand-600 group-hover:decoration-current">
+            <span className="shrink-0 text-[13px] font-medium underline decoration-transparent underline-offset-[3px] transition-colors duration-150 group-hover:text-brand-700 group-hover:decoration-current">
               Details
             </span>
           </span>

@@ -18,9 +18,9 @@ export function CartButton({ className, tone = "dark" }: { className?: string; t
       onClick={() => setOpen(true)}
       aria-label={`Open cart, ${count} item${count === 1 ? "" : "s"}`}
       className={cn(
-        "relative inline-flex h-11 items-center gap-2 border px-3 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors",
+        "relative inline-flex h-11 items-center gap-2 rounded-full border px-3 text-[14px] font-medium transition-colors",
         tone === "dark"
-          ? "border-ink bg-white text-ink hover:bg-ink hover:text-white"
+          ? "border-line bg-white text-ink hover:border-brand-300 hover:bg-brand-50"
           : "border-white/40 bg-transparent text-white hover:bg-white hover:text-ink",
         className,
       )}
@@ -29,8 +29,8 @@ export function CartButton({ className, tone = "dark" }: { className?: string; t
       <span className="hidden sm:inline">Cart</span>
       <span
         className={cn(
-          "inline-flex h-5 min-w-5 items-center justify-center px-1 font-mono text-[10.5px] tnum",
-          count > 0 ? "bg-brand-600 text-white" : "bg-paper-3 text-ink",
+          "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 font-mono text-[11px] tnum",
+          count > 0 ? "bg-brand-700 text-white" : "bg-paper-3 text-ink",
         )}
       >
         {count}

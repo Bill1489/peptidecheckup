@@ -4,6 +4,8 @@ import { ProductImage, ProductSwatch } from "@/components/commerce/product-image
 import { ILLUSTRATION_CAPTION, hasPhoto, productPath } from "@/components/commerce/product-utils";
 import type { Product } from "@/data/products";
 import { cn } from "@/lib/utils";
+import { PurchasedRecently } from "@/components/commerce/purchased-recently";
+import { purchasedIn24h } from "@/lib/commerce/recent-orders";
 import { penDose, penPrice } from "./copy";
 
 /**
@@ -29,10 +31,11 @@ export function PenCell({
     <Link
       href={productPath(product.slug)}
       className={cn("hover-invert flex flex-1 flex-col bg-white text-ink", className)}
-      aria-label={`${product.name} — ${penDose(product)} — ${penPrice(product)}`}
+      aria-label={`${product.name} — ${penDose(product)} — ${penPrice(product)} — ${purchasedIn24h(product.slug)} purchased in the last 24 hours`}
     >
-      <div className="relative border-b border-current">
+      <div className="relative border-b border-line">
         <ProductImage product={product} prefer="pack" frame="square" priority={priority} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw" />
+        <PurchasedRecently slug={product.slug} />
         {!hasPhoto(product) && (
           <span className="absolute bottom-0 right-0 bg-white/90 px-2 py-1 font-mono text-[8.5px] uppercase tracking-[0.12em] text-muted">{ILLUSTRATION_CAPTION}</span>
         )}
@@ -40,13 +43,13 @@ export function PenCell({
       <span className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
         <span className="flex items-center gap-2">
           <ProductSwatch product={product} />
-          <span className="font-display text-[15px] uppercase leading-none tracking-[-0.02em] sm:text-[16px]">{product.name}</span>
+          <span className="font-display text-[17px] leading-none tracking-[-0.02em] sm:text-[18px]">{product.name}</span>
         </span>
-        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{penDose(product)}</span>
+        <span className="text-[13px] text-muted">{penDose(product)}</span>
         {bestFor && <span className="mt-1 text-[13px] leading-relaxed text-ink-3">{product.bestFor}</span>}
         <span className="mt-auto flex items-center justify-between gap-3 pt-3">
           <span className="font-mono text-[14px] tnum">{penPrice(product)}</span>
-          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.12em]">
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium">
             Details
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </span>
@@ -68,7 +71,7 @@ export function PenThumb({ product, className }: { product: Product; className?:
 /** Mono caption line: swatch · name · contents · price. */
 export function PenCaption({ product, className }: { product: Product; className?: string }) {
   return (
-    <span className={cn("flex min-w-0 items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em]", className)}>
+    <span className={cn("flex min-w-0 items-center gap-3 text-[13px]", className)}>
       <ProductSwatch product={product} />
       <span className="min-w-0 break-words">
         {product.name} · {penDose(product)} · <span className="tnum">{penPrice(product)}</span>

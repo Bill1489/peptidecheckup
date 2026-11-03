@@ -25,13 +25,13 @@ export function LogoMark({
   /** brand = ink nodes + cobalt terminal; light = white on dark; ink = mono */
   tone?: "brand" | "light" | "ink";
 }) {
-  const ink = tone === "light" ? "#ffffff" : "#0b0b0c";
-  const terminal = tone === "brand" ? "#1d3bff" : tone === "light" ? "#8fa1ff" : "#0b0b0c";
+  const ink = tone === "light" ? "#ffffff" : "#3c332f";
+  const terminal = tone === "brand" ? "#9a5560" : tone === "light" ? "#f6e6e4" : "#3c332f";
   return (
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" className={cn("h-7 w-7 shrink-0", className)}>
-      <path d={MARK_PATH} stroke={ink} strokeWidth="2.6" strokeLinecap="square" strokeLinejoin="miter" />
+      <path d={MARK_PATH} stroke={ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
       {MARK_NODES.map(([x, y], i) => (
-        <rect key={i} x={x} y={y} width={MARK_NODE_SIZE} height={MARK_NODE_SIZE} fill={i === MARK_NODES.length - 1 ? terminal : ink} />
+        <rect key={i} x={x} y={y} width={MARK_NODE_SIZE} height={MARK_NODE_SIZE} rx="1.6" fill={i === MARK_NODES.length - 1 ? terminal : ink} />
       ))}
     </svg>
   );
@@ -41,11 +41,11 @@ export function Wordmark({ className, tone = "dark" }: { className?: string; ton
   return (
     <span
       className={cn(
-        "font-display text-[15px] font-extrabold uppercase leading-none tracking-[-0.01em]",
+        "font-display text-[18px] font-medium leading-none tracking-[-0.02em]",
         tone === "dark" ? "text-ink" : "text-white",
         className,
       )}
-      style={{ fontStretch: "112%", fontVariationSettings: '"wdth" 112' }}
+      style={{ fontVariationSettings: '"SOFT" 40, "opsz" 36, "wght" 520' }}
     >
       {BRAND.wordmark.a}
       <span className={tone === "dark" ? "text-brand-600" : "text-brand-300"}> {BRAND.wordmark.b}</span>

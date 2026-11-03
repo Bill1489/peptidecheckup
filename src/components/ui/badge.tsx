@@ -42,7 +42,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-none border font-mono font-medium uppercase tracking-[0.08em] whitespace-nowrap",
+        "inline-flex items-center gap-1.5 rounded-full border font-sans font-medium tracking-normal whitespace-nowrap",
         size === "xs" && "h-5 px-1.5 text-[10px]",
         size === "sm" && "h-6 px-2 text-[10.5px]",
         size === "md" && "h-7 px-2.5 text-[11.5px]",
