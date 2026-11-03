@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Fraunces, IBM_Plex_Mono } from "next/font/google";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { BRAND, OG_IMAGES } from "@/lib/brand";
 import "./globals.css";
@@ -9,13 +9,6 @@ const archivo = Archivo({
   subsets: ["latin"],
   display: "swap",
   axes: ["wdth"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  axes: ["SOFT", "opsz"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -64,22 +57,22 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f6f1eb",
+  themeColor: "#0b0b0c",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${fraunces.variable} ${plexMono.variable} h-full`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${plexMono.variable} h-full`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster
           position="bottom-center"
           toastOptions={{
             classNames: {
-              toast: "!rounded-2xl !border !border-line !bg-white !text-ink !shadow-card !font-sans",
-              description: "!text-muted",
+              toast: "!rounded-none !border !border-ink !bg-ink !text-white !shadow-none !font-sans",
+              description: "!text-white/70",
             },
           }}
         />

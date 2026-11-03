@@ -1,90 +1,91 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   DESIGN SYSTEM v3 — clinic
-   Warm ivory, dusty rose, soft charcoal. Serif headlines, clean sans
-   body, monospace only for prices and lot data. Rounded cards, quiet
-   shadows. Credible like a pharmacy, soft like an aesthetics clinic.
+   DESIGN SYSTEM v2 — "Lab Grotesk"
+   Flat, technical, high-contrast. White + ink + one signal colour
+   (cobalt). Hard 1px rules, square corners, expanded grotesk headlines,
+   monospace data labels. No shadows, no gradients, no blobs.
+   Keep this system. New work uses these tokens; it does not replace them.
 ------------------------------------------------------------------- */
 @theme {
   /* Typography */
   --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-fraunces), "Iowan Old Style", Palatino, Georgia, serif;
+  --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Surfaces */
-  --color-paper: #f6f1eb;
-  --color-paper-2: #efe6de;
-  --color-paper-3: #e4d8cd;
-  --color-white: #fffcf9;
+  /* Surfaces (legacy names kept so existing utilities keep working) */
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f3f0;
+  --color-paper-3: #e7e5e0;
+  --color-white: #ffffff;
 
-  /* Ink — warm charcoal, never pure black */
-  --color-ink: #3c332f;
-  --color-ink-2: #514740;
-  --color-ink-3: #5c514a;
-  --color-muted: #6e615a;
-  --color-muted-2: #8f8178;
+  /* Ink */
+  --color-ink: #0b0b0c;
+  --color-ink-2: #1f1f22;
+  --color-ink-3: #3d3d42;
+  --color-muted: #6b6a66;
+  --color-muted-2: #9a988f;
 
-  /* Signal — dusty rose */
-  --color-brand-50: #fbf4f3;
-  --color-brand-100: #f6e6e4;
-  --color-brand-200: #ebcfc9;
-  --color-brand-300: #d9aaa3;
-  --color-brand-400: #c4847c;
-  --color-brand-500: #b06d74;
-  --color-brand-600: #9a5560;
-  --color-brand-700: #7d4550;
-  --color-brand-800: #643842;
-  --color-brand-900: #4c2c34;
-  --color-brand-950: #321c22;
+  /* Signal — cobalt */
+  --color-brand-50: #eef1ff;
+  --color-brand-100: #dce2ff;
+  --color-brand-200: #b8c4ff;
+  --color-brand-300: #8fa1ff;
+  --color-brand-400: #5d76ff;
+  --color-brand-500: #2f4fff;
+  --color-brand-600: #1d3bff;
+  --color-brand-700: #1428c4;
+  --color-brand-800: #101f96;
+  --color-brand-900: #0d1a73;
+  --color-brand-950: #080f45;
 
-  /* Accent — softened terracotta, reserved for concern / alerts */
-  --color-accent-100: #fbe8e2;
-  --color-accent-200: #f3cbbf;
-  --color-accent-300: #e4a08e;
-  --color-accent-400: #d47b64;
-  --color-accent-500: #c45c45;
-  --color-accent-600: #a34734;
-  --color-accent-700: #7d3628;
+  /* Accent — safety orange (alerts, "higher concern") */
+  --color-accent-100: #ffe8df;
+  --color-accent-200: #ffc9b5;
+  --color-accent-300: #ff9f7a;
+  --color-accent-400: #ff7442;
+  --color-accent-500: #ff4a1c;
+  --color-accent-600: #d93a11;
+  --color-accent-700: #a82c0c;
 
-  /* Semantic — evidence grades */
-  --color-evidence-strong: #7d4550;
-  --color-evidence-moderate: #3c332f;
-  --color-evidence-limited: #6b5e56;
-  --color-evidence-preliminary: #b3a59c;
-  --color-evidence-insufficient: #e4d8cd;
+  /* Semantic — evidence grades (monochrome ladder + cobalt for strong) */
+  --color-evidence-strong: #1d3bff;
+  --color-evidence-moderate: #0b0b0c;
+  --color-evidence-limited: #3d3d42;
+  --color-evidence-preliminary: #9a988f;
+  --color-evidence-insufficient: #cfcdc7;
 
   /* Semantic — suitability / flags */
-  --color-relevant: #7d4550;
-  --color-relevant-soft: #fbf4f3;
-  --color-concern: #c45c45;
-  --color-concern-soft: #fbe8e2;
-  --color-caution: #9a7040;
-  --color-caution-soft: #f8efdf;
-  --color-unknown: #8a7b72;
-  --color-unknown-soft: #efe6de;
-  --color-info: #7d4550;
-  --color-info-soft: #fbf4f3;
+  --color-relevant: #1d3bff;
+  --color-relevant-soft: #eef1ff;
+  --color-concern: #ff4a1c;
+  --color-concern-soft: #ffe8df;
+  --color-caution: #b8860b;
+  --color-caution-soft: #fff4d6;
+  --color-unknown: #6b6a66;
+  --color-unknown-soft: #f4f3f0;
+  --color-info: #1d3bff;
+  --color-info-soft: #eef1ff;
 
   /* Lines */
-  --color-line: #eadfd6;
-  --color-line-strong: #dccfc4;
+  --color-line: #e7e5e0;
+  --color-line-strong: #0b0b0c;
   --color-line-dark: rgb(255 255 255 / 0.18);
 
-  /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 32px;
+  /* Radii — square by default */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
 
-  /* Shadows */
-  --shadow-soft: 0 1px 2px rgb(60 51 47 / 0.05);
-  --shadow-card: 0 1px 2px rgb(60 51 47 / 0.04), 0 10px 28px rgb(60 51 47 / 0.05);
-  --shadow-lift: 0 12px 32px rgb(125 69 80 / 0.12);
-  --shadow-glow: 0 0 0 4px rgb(154 85 96 / 0.12);
-  --shadow-inset: inset 0 1px 2px rgb(60 51 47 / 0.04);
+  /* Shadows — none. Kept as tokens so old utilities are inert. */
+  --shadow-soft: none;
+  --shadow-card: none;
+  --shadow-lift: none;
+  --shadow-glow: none;
+  --shadow-inset: none;
 
   /* Easing */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -137,31 +138,33 @@
   }
 
   body {
-    @apply bg-paper text-ink font-sans antialiased;
-    font-size: 16px;
-    line-height: 1.6;
-    font-feature-settings: "ss01", "kern";
+    @apply bg-white text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+    font-feature-settings: "ss01", "kern", "tnum";
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background: var(--color-brand-200);
-    color: var(--color-ink);
+    background: var(--color-brand-600);
+    color: #fff;
   }
 
-  /* Headlines: soft serif, sentence case, easy to read */
+  /* Headlines: expanded, heavy, tight */
   h1, h2, h3, h4, .font-display {
     @apply font-display;
-    font-weight: 520;
-    letter-spacing: -0.022em;
-    line-height: 1.12;
-    font-variation-settings: "SOFT" 40, "opsz" 72, "wght" 520;
+    font-weight: 800;
+    font-stretch: 112%;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    font-variation-settings: "wdth" 112;
   }
   h3, h4 {
-    font-weight: 520;
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-    font-variation-settings: "SOFT" 30, "opsz" 36, "wght" 520;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-stretch: 105%;
+    font-variation-settings: "wdth" 105;
   }
 
   :focus-visible {
@@ -227,35 +230,29 @@
 }
 @utility hairline { border: 1px solid var(--color-line); }
 
-/* Cards with air between them. Empty filler cells stay invisible. */
+/* Grid of cells with shared 1px borders (spec-sheet look) */
 @utility cell-grid {
   display: grid;
-  gap: 14px;
-  background: transparent;
-  border: none;
+  gap: 1px;
+  background: var(--color-line-strong);
+  border: 1px solid var(--color-line-strong);
 }
 @layer components {
-  .cell-grid > * {
-    background: var(--color-white);
-    border: 1px solid var(--color-line);
-    border-radius: 16px;
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
-  }
-  .cell-grid > [aria-hidden="true"]:empty {
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-  }
+  .cell-grid > * { background: #fff; }
 }
 
-/* Soft wash on hover. The old full-ink invert made every card feel like a spec sheet. */
+/* Invert on hover — the system's primary interaction.
+   Nested so the :hover rules live in the utilities layer with higher
+   specificity than plain bg-*/text-* utilities on the same element. */
 @utility hover-invert {
-  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
   &:hover {
-    background-color: var(--color-brand-50);
-    border-color: var(--color-brand-200);
-    box-shadow: var(--shadow-lift);
+    background-color: var(--color-ink);
+    color: #fff;
+    border-color: var(--color-ink);
+  }
+  &:hover :where(*) {
+    color: inherit;
   }
 }
 
@@ -281,12 +278,11 @@
   background-size: 48px 48px;
 }
 @utility glass {
-  background: rgb(246 241 235 / 0.92);
-  border-bottom: 1px solid var(--color-line);
-  backdrop-filter: blur(12px);
+  background: rgb(255 255 255 / 0.96);
+  border-bottom: 1px solid var(--color-line-strong);
 }
 @utility glass-dark {
-  background: rgb(60 51 47 / 0.94);
+  background: rgb(11 11 12 / 0.96);
   border-bottom: 1px solid var(--color-line-dark);
 }
 @utility skeleton {
@@ -315,17 +311,6 @@
 
 /* Tabular numerals for prices / data */
 @utility tnum { font-variant-numeric: tabular-nums; }
-
-/* Display type stays sentence case even where a utility asks for capitals.
-   Small mono labels (label-mono, badges) keep their uppercase. */
-h1.uppercase,
-h2.uppercase,
-h3.uppercase,
-h4.uppercase,
-.font-display.uppercase {
-  text-transform: none;
-  letter-spacing: -0.022em;
-}
 
 @media print {
   .no-print { display: none !important; }

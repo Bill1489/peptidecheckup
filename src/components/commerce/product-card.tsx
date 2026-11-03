@@ -45,7 +45,7 @@ export function ProductCard({
       <Link href={href} className="absolute inset-0 z-[1] focus-visible:outline-offset-[-2px]" aria-label={`${product.name} — view product`} />
 
       {/* Photograph */}
-      <div className={cn("relative border-b border-line bg-white", compact ? "p-2" : "p-3 sm:p-4")}>
+      <div className={cn("relative border-b border-ink bg-white", compact ? "p-2" : "p-3 sm:p-4")}>
           <ProductImage
           product={product}
           prefer="pack"
@@ -54,9 +54,9 @@ export function ProductCard({
           sizes={compact ? "(min-width: 1024px) 20vw, 50vw" : "(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"}
         />
         {flag && !compact && (
-          <span className="absolute left-3 top-3 z-[3] rounded-full bg-brand-700 px-2.5 py-1 text-[11px] font-medium text-white">{flag}</span>
+          <span className="absolute left-0 top-0 bg-ink px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-white">{flag}</span>
         )}
-        <PurchasedRecently slug={product.slug} className={compact ? "bottom-2 left-2 px-2 py-1 text-[10px]" : undefined} />
+        <PurchasedRecently slug={product.slug} />
         {!photo && (
           <span
             className={cn(
@@ -99,7 +99,7 @@ export function ProductCard({
         </div>
 
         {!compact && (
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 text-[13px] leading-snug text-muted">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
             {evidence ? (
               <>
                 <EvidenceMeter level={evidence.level} />
@@ -116,17 +116,22 @@ export function ProductCard({
 
       {/* Actions */}
       {!compact && (
-        <div className="relative z-[2] flex flex-col gap-2 border-t border-line p-3 sm:flex-row">
+        <div className="relative z-[2] grid grid-cols-1 gap-px border-t border-ink bg-ink sm:grid-cols-2">
           {purchasable(product) ? (
-            <AddToCartButton product={product} variantId={variant.id} size="md" className="h-11 min-w-0 flex-1" />
+            <AddToCartButton
+              product={product}
+              variantId={variant.id}
+              size="md"
+              className="h-12 w-full justify-between rounded-none border-0 px-4 font-mono text-[11px] font-medium tracking-[0.12em]"
+            />
           ) : (
-            <span className="flex h-11 flex-1 items-center justify-center rounded-full border border-line px-4 text-[14px] text-muted">
+            <span className="flex h-12 items-center bg-white px-4 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
               {product.availability === "out_of_stock" ? "Out of stock" : "Not available"}
             </span>
           )}
           <Link
             href={href}
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full border border-brand-200 bg-white px-4 text-[14px] font-medium text-ink transition-colors duration-150 hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-offset-[-2px]"
+            className="flex h-12 items-center justify-between bg-white px-4 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink transition-colors duration-150 hover:bg-ink hover:text-white focus-visible:outline-offset-[-2px]"
           >
             Details
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />

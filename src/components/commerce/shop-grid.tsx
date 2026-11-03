@@ -71,8 +71,8 @@ function Chip({ active, onClick, count, children }: { active: boolean; onClick: 
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13.5px] font-medium transition-colors duration-150",
-        active ? "border-brand-700 bg-brand-700 text-white" : "border-line bg-white text-ink-3 hover:border-brand-300 hover:text-ink",
+        "inline-flex h-11 shrink-0 items-center gap-1.5 border px-3.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] transition-colors duration-150",
+        active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-3 hover:border-ink hover:text-ink",
       )}
     >
       {children}
@@ -211,7 +211,7 @@ export function ShopGrid() {
       </div>
 
       {/* Strip — research notice, result count, sort */}
-      <div className="mt-6 flex flex-col gap-3 border-y border-line py-3 text-[13.5px] text-muted sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-6 flex flex-col gap-3 rule-y py-2.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-center gap-3" title={RESEARCH_USE_LABEL}>
           <span className="h-1.5 w-1.5 shrink-0 bg-accent-500" aria-hidden />
           Research use only · 18+ · intended-use acknowledgement at checkout
