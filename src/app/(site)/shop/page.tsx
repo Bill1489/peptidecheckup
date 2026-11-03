@@ -78,9 +78,9 @@ export default function ShopPage() {
               carton. Sold for research use; the {BRAND.assessmentName} tells you which pen fits your goal — and when none does.
             </p>
           </div>
-          <dl className="grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4 lg:grid-cols-2">
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2">
             {STATS.map((s) => (
-              <div key={s.label} className="bg-white px-4 py-3">
+              <div key={s.label} className="rounded-md border border-line bg-white px-4 py-3">
                 <dt className="label-mono">{s.label}</dt>
                 <dd className="mt-1 font-mono text-[13.5px] text-ink tnum">{s.value}</dd>
               </div>

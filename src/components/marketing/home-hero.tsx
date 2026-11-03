@@ -49,14 +49,14 @@ export function HomeHero({ product }: { product: Product }) {
 
         <Link
           href={productPath(product.slug)}
-          className="group block w-full border border-ink bg-white text-ink lg:max-w-[32rem] lg:justify-self-end"
+          className="group block w-full overflow-hidden rounded-xl border border-line bg-white text-ink lg:max-w-[32rem] lg:justify-self-end"
           aria-label={`${product.name} — view pen`}
         >
           <div className="relative">
             <ProductImage product={product} prefer="hand" frame="portrait" priority sizes="(min-width: 1024px) 40vw, 100vw" />
             <PurchasedRecently slug={product.slug} />
           </div>
-          <span className="flex items-center justify-between gap-4 border-t border-ink px-4 py-3 text-ink">
+          <span className="flex items-center justify-between gap-4 border-t border-line px-4 py-3 text-ink">
             <PenCaption product={product} />
             <span className="shrink-0 font-mono text-[11px] font-medium uppercase tracking-[0.12em] underline decoration-transparent underline-offset-[3px] transition-colors duration-150 group-hover:text-brand-600 group-hover:decoration-current">
               Details

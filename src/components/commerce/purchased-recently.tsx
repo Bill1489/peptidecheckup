@@ -2,9 +2,8 @@ import { purchasedIn24h } from "@/lib/commerce/recent-orders";
 import { cn } from "@/lib/utils";
 
 /**
- * "N purchased in 24 hours" on a pen. Same ink label as the rest of the
- * spec sheet: square, mono, no pill. `overlay` sits on the photograph;
- * `inline` sits under the price.
+ * Quiet count on a pen. A paper label on the photograph, and the same
+ * line under the price. No pulse, no pill.
  */
 export function PurchasedRecently({
   slug,
@@ -19,8 +18,8 @@ export function PurchasedRecently({
 
   if (variant === "inline") {
     return (
-      <p className={cn("mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-ink", className)}>
-        <span className="mr-2 inline-block h-1.5 w-1.5 bg-brand-600 align-middle" aria-hidden />
+      <p className={cn("mt-3 flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.08em] text-ink-2", className)}>
+        <span className="h-1.5 w-1.5 shrink-0 bg-brand-600" aria-hidden />
         {count} purchased in the last 24 hours
       </p>
     );
@@ -29,11 +28,11 @@ export function PurchasedRecently({
   return (
     <span
       className={cn(
-        "pointer-events-none absolute bottom-0 left-0 z-[3] max-w-full bg-ink px-2 py-1 font-mono text-[10px] font-medium uppercase leading-none tracking-[0.12em] text-white",
+        "pointer-events-none absolute bottom-2.5 left-2.5 z-[3] border border-line bg-white/95 px-2 py-1 font-mono text-[10px] uppercase leading-none tracking-[0.08em] text-ink",
         className,
       )}
     >
-      {count} purchased in 24 hrs
+      {count} in 24 hours
     </span>
   );
 }

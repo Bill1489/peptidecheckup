@@ -25,8 +25,8 @@ export function LogoMark({
   /** brand = ink nodes + cobalt terminal; light = white on dark; ink = mono */
   tone?: "brand" | "light" | "ink";
 }) {
-  const ink = tone === "light" ? "#ffffff" : "#0b0b0c";
-  const terminal = tone === "brand" ? "#1d3bff" : tone === "light" ? "#8fa1ff" : "#0b0b0c";
+  const ink = tone === "light" ? "#ffffff" : "#221c1a";
+  const terminal = tone === "brand" ? "#7d454c" : tone === "light" ? "#e0ccc6" : "#221c1a";
   return (
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" className={cn("h-7 w-7 shrink-0", className)}>
       <path d={MARK_PATH} stroke={ink} strokeWidth="2.6" strokeLinecap="square" strokeLinejoin="miter" />

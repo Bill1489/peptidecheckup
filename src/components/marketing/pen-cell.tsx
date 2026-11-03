@@ -43,7 +43,7 @@ export function PenCell({
       <span className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
         <span className="flex items-center gap-2">
           <ProductSwatch product={product} />
-          <span className="font-display text-[15px] uppercase leading-none tracking-[-0.02em] sm:text-[16px]">{product.name}</span>
+          <span className="font-display text-[16px] leading-none tracking-[-0.02em] sm:text-[17px]">{product.name}</span>
         </span>
         <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{penDose(product)}</span>
         {bestFor && <span className="mt-1 text-[13px] leading-relaxed text-ink-3">{product.bestFor}</span>}

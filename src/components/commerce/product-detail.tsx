@@ -101,7 +101,7 @@ export function ProductDetail({ product }: { product: Product }) {
             </h2>
             <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink">{product.description}</p>
             {product.highlights.length > 0 && (
-              <ul className="mt-4 border border-ink" aria-label="Highlights">
+              <ul className="mt-4 overflow-hidden rounded-md border border-line bg-white" aria-label="Highlights">
                 {product.highlights.map((h, i) => (
                   <li key={h} className="flex items-center gap-4 border-b border-line px-4 py-2.5 text-[13.5px] text-ink last:border-b-0">
                     <span className="font-mono text-[10.5px] text-muted tnum">{String(i + 1).padStart(2, "0")}</span>
@@ -121,10 +121,10 @@ export function ProductDetail({ product }: { product: Product }) {
             <h2 id="steps-heading" className="mt-1.5 text-[1.25rem] uppercase">
               How the pen works
             </h2>
-            <ol className="mt-4 border border-ink">
+            <ol className="mt-4 overflow-hidden rounded-md border border-line bg-white">
               {PEN_STEPS.map((s, i) => (
                 <li key={s.title} className="flex gap-4 border-b border-line p-4 last:border-b-0">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-ink font-mono text-[11px] font-semibold text-white tnum">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-50 font-mono text-[11px] font-medium text-brand-800 tnum">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div>
@@ -153,7 +153,7 @@ export function ProductDetail({ product }: { product: Product }) {
               Who this is for
             </h2>
             <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">{product.bestFor}</p>
-            <ul className="mt-4 border border-ink" aria-label="Matched against">
+            <ul className="mt-4 overflow-hidden rounded-md border border-line bg-white" aria-label="Matched against">
               {product.matchFor.map((m) => (
                 <li key={m} className="flex items-start gap-3 border-b border-line px-4 py-3 text-[14px] text-ink last:border-b-0">
                   <span className="mt-[7px] h-1.5 w-1.5 shrink-0 bg-brand-600" aria-hidden />
@@ -161,13 +161,13 @@ export function ProductDetail({ product }: { product: Product }) {
                 </li>
               ))}
             </ul>
-            <div className="mt-4 border border-ink bg-ink p-5 text-white">
-              <p className="label-mono text-white/60">Check your fit</p>
-              <p className="mt-2 text-pretty text-[14px] leading-relaxed text-white/85">
+            <div className="mt-4 border border-line bg-paper-2 p-5">
+              <p className="label-mono">Check your fit</p>
+              <p className="mt-2 text-pretty text-[15px] leading-relaxed text-ink-2">
                 The {BRAND.assessmentName} maps your goal and history against the evidence for this pen and tells you if it is a poor fit — even
                 after you have bought it.
               </p>
-              <Button href={assessmentPath(product)} variant="inverted" size="md" className="mt-4 w-full justify-between sm:w-auto">
+              <Button href={assessmentPath(product)} variant="primary" size="md" className="mt-4 w-full justify-between sm:w-auto">
                 Check your fit · 7 minutes
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>

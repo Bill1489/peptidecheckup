@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   DESIGN SYSTEM v2 — "Lab Grotesk"
-   Flat, technical, high-contrast. White + ink + one signal colour
-   (cobalt). Hard 1px rules, square corners, expanded grotesk headlines,
-   monospace data labels. No shadows, no gradients, no blobs.
-   Keep this system. New work uses these tokens; it does not replace them.
+   DESIGN SYSTEM — warm press
+   Same faces as the brand: Archivo for words, Plex Mono for prices,
+   lots and eyebrows. Plaster paper, warm ink, one pressed-rose signal.
+   Hairline rules, a few pixels of radius, no pills, no gradients.
 ------------------------------------------------------------------- */
 @theme {
   /* Typography */
@@ -13,77 +12,77 @@
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Surfaces (legacy names kept so existing utilities keep working) */
-  --color-paper: #ffffff;
-  --color-paper-2: #f4f3f0;
-  --color-paper-3: #e7e5e0;
-  --color-white: #ffffff;
+  /* Surfaces */
+  --color-paper: #f3efe8;
+  --color-paper-2: #ebe4db;
+  --color-paper-3: #e0d6cb;
+  --color-white: #fbf9f6;
 
-  /* Ink */
-  --color-ink: #0b0b0c;
-  --color-ink-2: #1f1f22;
-  --color-ink-3: #3d3d42;
-  --color-muted: #6b6a66;
-  --color-muted-2: #9a988f;
+  /* Ink — warm, printed, not screen-black */
+  --color-ink: #221c1a;
+  --color-ink-2: #3c342f;
+  --color-ink-3: #5a504a;
+  --color-muted: #6a5f58;
+  --color-muted-2: #94887f;
 
-  /* Signal — cobalt */
-  --color-brand-50: #eef1ff;
-  --color-brand-100: #dce2ff;
-  --color-brand-200: #b8c4ff;
-  --color-brand-300: #8fa1ff;
-  --color-brand-400: #5d76ff;
-  --color-brand-500: #2f4fff;
-  --color-brand-600: #1d3bff;
-  --color-brand-700: #1428c4;
-  --color-brand-800: #101f96;
-  --color-brand-900: #0d1a73;
-  --color-brand-950: #080f45;
+  /* Signal — pressed rose */
+  --color-brand-50: #f7f1ef;
+  --color-brand-100: #efe2de;
+  --color-brand-200: #e0ccc6;
+  --color-brand-300: #c9a59d;
+  --color-brand-400: #b07f78;
+  --color-brand-500: #965860;
+  --color-brand-600: #7d454c;
+  --color-brand-700: #66383e;
+  --color-brand-800: #4e2b30;
+  --color-brand-900: #3a2024;
+  --color-brand-950: #241416;
 
-  /* Accent — safety orange (alerts, "higher concern") */
-  --color-accent-100: #ffe8df;
-  --color-accent-200: #ffc9b5;
-  --color-accent-300: #ff9f7a;
-  --color-accent-400: #ff7442;
-  --color-accent-500: #ff4a1c;
-  --color-accent-600: #d93a11;
-  --color-accent-700: #a82c0c;
+  /* Accent — clay, only for concern and alerts */
+  --color-accent-100: #f8ebe6;
+  --color-accent-200: #efd2c8;
+  --color-accent-300: #e0aa98;
+  --color-accent-400: #cc7d68;
+  --color-accent-500: #b85a45;
+  --color-accent-600: #944433;
+  --color-accent-700: #6e3226;
 
-  /* Semantic — evidence grades (monochrome ladder + cobalt for strong) */
-  --color-evidence-strong: #1d3bff;
-  --color-evidence-moderate: #0b0b0c;
-  --color-evidence-limited: #3d3d42;
-  --color-evidence-preliminary: #9a988f;
-  --color-evidence-insufficient: #cfcdc7;
+  /* Semantic — evidence grades */
+  --color-evidence-strong: #66383e;
+  --color-evidence-moderate: #221c1a;
+  --color-evidence-limited: #5a504a;
+  --color-evidence-preliminary: #94887f;
+  --color-evidence-insufficient: #e0d6cb;
 
   /* Semantic — suitability / flags */
-  --color-relevant: #1d3bff;
-  --color-relevant-soft: #eef1ff;
-  --color-concern: #ff4a1c;
-  --color-concern-soft: #ffe8df;
-  --color-caution: #b8860b;
-  --color-caution-soft: #fff4d6;
-  --color-unknown: #6b6a66;
-  --color-unknown-soft: #f4f3f0;
-  --color-info: #1d3bff;
-  --color-info-soft: #eef1ff;
+  --color-relevant: #66383e;
+  --color-relevant-soft: #f7f1ef;
+  --color-concern: #b85a45;
+  --color-concern-soft: #f8ebe6;
+  --color-caution: #8a6430;
+  --color-caution-soft: #f6edd9;
+  --color-unknown: #6a5f58;
+  --color-unknown-soft: #ebe4db;
+  --color-info: #66383e;
+  --color-info-soft: #f7f1ef;
 
   /* Lines */
-  --color-line: #e7e5e0;
-  --color-line-strong: #0b0b0c;
-  --color-line-dark: rgb(255 255 255 / 0.18);
+  --color-line: #e3d9ce;
+  --color-line-strong: #d5c9bc;
+  --color-line-dark: rgb(255 255 255 / 0.16);
 
-  /* Radii — square by default */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
+  /* Radii — a catalogue, not a pill */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
 
-  /* Shadows — none. Kept as tokens so old utilities are inert. */
-  --shadow-soft: none;
-  --shadow-card: none;
-  --shadow-lift: none;
+  /* Shadows — hairlines do the work. Hover only. */
+  --shadow-soft: 0 1px 0 rgb(34 28 26 / 0.04);
+  --shadow-card: 0 1px 2px rgb(34 28 26 / 0.04);
+  --shadow-lift: 0 10px 24px rgb(34 28 26 / 0.08);
   --shadow-glow: none;
   --shadow-inset: none;
 
@@ -138,33 +137,33 @@
   }
 
   body {
-    @apply bg-white text-ink font-sans antialiased;
-    font-size: 15px;
-    line-height: 1.5;
-    font-feature-settings: "ss01", "kern", "tnum";
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.65;
+    font-feature-settings: "ss01", "kern";
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background: var(--color-brand-600);
-    color: #fff;
+    background: var(--color-brand-100);
+    color: var(--color-ink);
   }
 
-  /* Headlines: expanded, heavy, tight */
+  /* Headlines stay Archivo, just quieter: less stretch, less weight. */
   h1, h2, h3, h4, .font-display {
     @apply font-display;
-    font-weight: 800;
-    font-stretch: 112%;
-    letter-spacing: -0.035em;
-    line-height: 0.98;
-    font-variation-settings: "wdth" 112;
+    font-weight: 620;
+    font-stretch: 104%;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
+    font-variation-settings: "wdth" 104, "wght" 620;
   }
   h3, h4 {
-    font-weight: 700;
+    font-weight: 580;
     letter-spacing: -0.02em;
-    line-height: 1.1;
-    font-stretch: 105%;
-    font-variation-settings: "wdth" 105;
+    line-height: 1.16;
+    font-stretch: 100%;
+    font-variation-settings: "wdth" 100, "wght" 580;
   }
 
   :focus-visible {
@@ -208,7 +207,7 @@
 
 /* Mono label: the system's "eyebrow" */
 @utility label-mono {
-  @apply font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted;
+  @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink-3;
 }
 
 /* Expanded display for one-off headline overrides */
@@ -230,29 +229,32 @@
 }
 @utility hairline { border: 1px solid var(--color-line); }
 
-/* Grid of cells with shared 1px borders (spec-sheet look) */
+/* Catalogue cells. A little air, a hairline, still a grid. */
 @utility cell-grid {
   display: grid;
-  gap: 1px;
-  background: var(--color-line-strong);
-  border: 1px solid var(--color-line-strong);
+  gap: 12px;
+  background: transparent;
+  border: none;
 }
 @layer components {
-  .cell-grid > * { background: #fff; }
+  .cell-grid > * {
+    background: var(--color-white);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .cell-grid > [aria-hidden="true"]:empty {
+    background: transparent;
+    border-color: transparent;
+  }
 }
 
-/* Invert on hover — the system's primary interaction.
-   Nested so the :hover rules live in the utilities layer with higher
-   specificity than plain bg-*/text-* utilities on the same element. */
+/* Warm wash. The old full-ink invert made every card shout. */
 @utility hover-invert {
-  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+  transition: background-color 180ms ease, border-color 180ms ease;
   &:hover {
-    background-color: var(--color-ink);
-    color: #fff;
-    border-color: var(--color-ink);
-  }
-  &:hover :where(*) {
-    color: inherit;
+    background-color: var(--color-brand-50);
+    border-color: var(--color-brand-200);
   }
 }
 
@@ -278,11 +280,12 @@
   background-size: 48px 48px;
 }
 @utility glass {
-  background: rgb(255 255 255 / 0.96);
-  border-bottom: 1px solid var(--color-line-strong);
+  background: rgb(243 239 232 / 0.92);
+  border-bottom: 1px solid var(--color-line);
+  backdrop-filter: blur(10px);
 }
 @utility glass-dark {
-  background: rgb(11 11 12 / 0.96);
+  background: rgb(34 28 26 / 0.94);
   border-bottom: 1px solid var(--color-line-dark);
 }
 @utility skeleton {
@@ -311,6 +314,15 @@
 
 /* Tabular numerals for prices / data */
 @utility tnum { font-variant-numeric: tabular-nums; }
+
+/* Page titles speak in sentences. The wordmark and mono labels stay in capitals. */
+h1.uppercase,
+h2.uppercase,
+h3.uppercase,
+h4.uppercase {
+  text-transform: none;
+  letter-spacing: -0.028em;
+}
 
 @media print {
   .no-print { display: none !important; }

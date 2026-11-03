@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0c",
+  themeColor: "#f3efe8",
   width: "device-width",
   initialScale: 1,
 };
@@ -71,8 +71,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="bottom-center"
           toastOptions={{
             classNames: {
-              toast: "!rounded-none !border !border-ink !bg-ink !text-white !shadow-none !font-sans",
-              description: "!text-white/70",
+              toast: "!rounded-md !border !border-line !bg-white !text-ink !shadow-none !font-sans",
+              description: "!text-ink-3",
             },
           }}
         />

@@ -54,7 +54,7 @@ export function ProductCard({
           sizes={compact ? "(min-width: 1024px) 20vw, 50vw" : "(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"}
         />
         {flag && !compact && (
-          <span className="absolute left-0 top-0 bg-ink px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-white">{flag}</span>
+          <span className="absolute left-2.5 top-2.5 z-[3] bg-brand-700 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-white">{flag}</span>
         )}
         <PurchasedRecently slug={product.slug} />
         {!photo && (
@@ -75,7 +75,7 @@ export function ProductCard({
           <ProductSwatch product={product} />
           <h3
             className={cn(
-              "font-display uppercase leading-[1.02] tracking-[-0.02em] transition-colors duration-150 group-hover:text-brand-600",
+              "font-display leading-[1.05] tracking-[-0.02em] transition-colors duration-150 group-hover:text-brand-700",
               compact ? "text-[14px]" : "text-[17px] sm:text-[19px]",
             )}
           >
@@ -99,7 +99,7 @@ export function ProductCard({
         </div>
 
         {!compact && (
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 text-[13px] leading-snug text-ink-3">
             {evidence ? (
               <>
                 <EvidenceMeter level={evidence.level} />
@@ -116,22 +116,17 @@ export function ProductCard({
 
       {/* Actions */}
       {!compact && (
-        <div className="relative z-[2] grid grid-cols-1 gap-px border-t border-ink bg-ink sm:grid-cols-2">
+        <div className="relative z-[2] flex items-center gap-2 border-t border-line p-3">
           {purchasable(product) ? (
-            <AddToCartButton
-              product={product}
-              variantId={variant.id}
-              size="md"
-              className="h-12 w-full justify-between rounded-none border-0 px-4 font-mono text-[11px] font-medium tracking-[0.12em]"
-            />
+            <AddToCartButton product={product} variantId={variant.id} size="md" className="h-11 min-w-0 flex-1" />
           ) : (
-            <span className="flex h-12 items-center bg-white px-4 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+            <span className="flex h-11 flex-1 items-center justify-center border border-line px-4 text-[14px] text-muted">
               {product.availability === "out_of_stock" ? "Out of stock" : "Not available"}
             </span>
           )}
           <Link
             href={href}
-            className="flex h-12 items-center justify-between bg-white px-4 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-ink transition-colors duration-150 hover:bg-ink hover:text-white focus-visible:outline-offset-[-2px]"
+            className="inline-flex h-11 shrink-0 items-center gap-1.5 px-2 text-[14px] text-ink hover:text-brand-700 focus-visible:outline-offset-[-2px]"
           >
             Details
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />

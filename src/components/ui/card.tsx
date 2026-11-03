@@ -23,8 +23,8 @@ export function Card({
   return (
     <Tag
       className={cn(
-        "rounded-none border",
-        tone === "white" && "border-ink bg-white text-ink",
+        "rounded-md border",
+        tone === "white" && "border-line bg-white text-ink",
         tone === "grey" && "border-line bg-paper-2 text-ink",
         tone === "ink" && "border-ink bg-ink text-white",
         padding === "sm" && "p-4",

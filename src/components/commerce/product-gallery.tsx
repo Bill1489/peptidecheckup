@@ -31,7 +31,7 @@ export function ProductGallery({ product, className }: { product: Product; class
 
   return (
     <div className={className}>
-      <div className="relative border border-ink bg-white">
+      <div className="relative overflow-hidden rounded-xl border border-line bg-white">
         <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[3px]" style={{ background: color }} />
         <ProductImage product={product} prefer={kind} frame="portrait" priority sizes="(min-width: 1024px) 45vw, 100vw" className="w-full" />
       </div>
@@ -46,8 +46,8 @@ export function ProductGallery({ product, className }: { product: Product; class
                 aria-label={KIND_LABELS[k]}
                 onClick={() => setKind(k)}
                 className={cn(
-                  "relative h-16 w-16 overflow-hidden border bg-white transition-colors duration-150",
-                  k === kind ? "border-ink" : "border-line hover:border-ink",
+                  "relative h-16 w-16 overflow-hidden rounded-sm border bg-white transition-colors duration-150",
+                  k === kind ? "border-brand-600" : "border-line hover:border-brand-300",
                 )}
               >
                 <ProductImage product={product} prefer={k} frame="fill" sizes="64px" />
